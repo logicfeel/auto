@@ -85,6 +85,7 @@ var installMap = {
 var installMap = {
     file: [
         // 'install' 은 생략됨
+        // 파일명 관점에서 교체함
         {
             key: 'file1.c',
             chg: '$file1.c' // 'change' 이름도 허용함
@@ -95,7 +96,24 @@ var installMap = {
             chg: 'merge.c'
         }
     ],
-    regexp: [   // 'regex', 'reg' 도 허용함 같음의미로
+    dir : [
+        // 상위 dep1 은 제거됨
+        // 폴더 관점으로 교체함
+        {
+            key: 'dep1/aa',
+            chg: 'aa',
+        }
+    ],
+    path: [
+        // install 전체 겨올 관점에서 교체함
+        {
+            key: '/M1/aa.c',
+            chg: '/M2/aa.c'
+        }
+    ],
+    regexp: [   
+        // 'regex', 'reg' 도 허용함 같음의미로
+        // 정규식으로 관점으로 교체함
         {
             key: /fun(a-z)/,
             chg: (res, path) => {
@@ -143,3 +161,5 @@ var path = {
  *  - 콜백을 통한 사용자화 함수 변경 제공
  *  
  */
+
+// !! 폴더를 통째로 변경할수 있는 부분이 필요한다.
