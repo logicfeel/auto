@@ -1,0 +1,6 @@
+
+class Automation {
+    constructor() {
+        
+    }
+}
