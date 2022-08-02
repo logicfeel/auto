@@ -1,5 +1,5 @@
 
-// 해결자
+// 해결자..
 class Resolve {
     constructor() {
         
