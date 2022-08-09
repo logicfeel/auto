@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/logicfeel/auto/issues"
   },
-  "homepage": "https://github.com/logicfeel/auto#readme"
+  "homepage": "https://github.com/logicfeel/auto#readme",
+  "devDependencies": {
+    "entitybind": "github:logicfeel/EntityBind",
+    "r.x.x-auto": "github:logicfeel/Automation#r.x.x-auto"
+  }
 }
