@@ -15,6 +15,8 @@ class Automation {
 
     // public
     mod = new AutoCollection(this);
+    src = new SourceCollection(this);      // 소스
+    
 
     constructor(dir) {
         console.log('Automation load..')
@@ -47,11 +49,18 @@ class Automation {
 
 
 class AutoCollection extends PropertyCollection {
+
+    // protected
+    _super = [];
+    _sub = [];
+    _onwer = null;
+
+    // public
+    name = null;
+
     constructor(onwer) {
         super(onwer);
-        
-        this._super = [];
-        this._sub = [];
+    
     }
     
     _getSuperList() {
@@ -107,8 +116,22 @@ class AutoCollection extends PropertyCollection {
         return arr;
     }
 
+    /**
+     * 오토의 버전 검사
+     * 엔트리 오토를 기준으로 semmver로 정해진 버전 검사
+     * @param {*} obj 오토 객체
+     */
+    _valid(obj) {
+        return true;
+    }
+    
+    /**
+     * 오토를 mod 에 추가한다.
+     * @param {*} alias 별칭
+     * @param {*} obj 오토 객체
+     */
     add(alias, obj) {
-        super.add(alias, obj);
+        if (this._valid(obj)) super.add(alias, obj);
     }
     
     sub(alias, obj) {
