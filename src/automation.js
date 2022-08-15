@@ -12,7 +12,6 @@ class Automation {
     _resolve = null;
     _auto = null;
     _package = null;
-
     // public
     mod = new AutoCollection(this);
     src = new SourceCollection(this);      // 소스
