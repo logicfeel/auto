@@ -1,5 +1,5 @@
 
-const autoTask = require('../src/auto-task').getInstance(__dirname);
+const autoTask = require('../../src/auto-task').getInstance(__dirname);
 
 // let task = AutoTask.getInstance();
 
