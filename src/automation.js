@@ -37,9 +37,12 @@ class Automation {
         if (fs.existsSync(resolvePath)) this._resolve = require(resolvePath);
         if (fs.existsSync(autoPath)) this._auto = require(autoPath);
         // 필수
-        if (!fs.existsSync(packagePath)) throw new Error('package.json file fail...');
-        this._package = require(packagePath);
-        
+        if (!fs.existsSync(packagePath)) {
+            throw new Error('package.json file fail...');
+        } else {
+            this._package = require(packagePath);
+        }
+
         this.name = this._package.name;
     }
 }
