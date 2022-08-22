@@ -1,26 +1,37 @@
 
 const fs = require('fs');
 const path = require('path');
-const {MetaElement, PropertyCollection, MetaObject} = require('entitybind');
+const { MetaElement, PropertyCollection, MetaObject } = require('entitybind');
+const DependResolver = require('./depend-resolver');
+const { SourceCollection } = require('./original-source');
 
 class Automation {
     
     // private
-    _dir = null;
+    __dir = null;
     // protected
     _install = null;
-    _resolve = null;
     _auto = null;
     _package = null;
+    _resolver = new DependResolver(this);
     // public
     mod = new AutoCollection(this);
-    src = new SourceCollection(this);      // 소스
-    
+    src = new SourceCollection(this);
+    out = new SourceCollection(this);
+    dep = new DependCollection(this);
+    PATH = {};
 
     constructor(dir) {
         console.log('Automation load..')
 
-        this._dir = dir;
+        this.__dir = dir;
+        // PATH 설정
+        this.PATH.SRC = this.__dir + '/src'
+        this.PATH.OUT = this.__dir + '/out'
+        this.PATH.DEP = this.__dir + '/dep'
+
+// this._resolver = new DependResolver(this);
+
 
         // *.json 로딩
         let installPath;
@@ -28,9 +39,9 @@ class Automation {
         let autoPath;
         let packagePath;
 
-        installPath = this._dir + '/install.json';
-        resolvePath = this._dir + '/resolve.json';
-        packagePath = this._dir + '/package.json';
+        installPath = this.__dir + '/install.json';
+        resolvePath = this.__dir + '/resolve.json';
+        packagePath = this.__dir + '/package.json';
 
         // 파일검사
         // 선ㅐ
@@ -45,6 +56,22 @@ class Automation {
         }
 
         this.name = this._package.name;
+    }
+
+    readSource(isFill) {
+        this.src.addPath(this.PATH.SRC);
+        this.out.addPath(this.PATH.OUT);
+        if (isFill) {
+            this.src.fillSource();
+            this.out.fillSource();
+        }
+    }
+
+    /**
+     * 
+     */
+    __readPath() {
+
     }
 }
 
@@ -157,6 +184,13 @@ class AutoCollection extends PropertyCollection {
 
     select(seloector, obj) {}
    
+}
+
+class DependCollection extends PropertyCollection {
+    
+    constructor(onwer) {
+        super(onwer);
+    }
 }
 
 module.exports = Automation;
