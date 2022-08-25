@@ -30,9 +30,6 @@ class Automation {
         this.PATH.OUT = this.__dir + '/out'
         this.PATH.DEP = this.__dir + '/dep'
 
-// this._resolver = new DependResolver(this);
-
-
         // *.json 로딩
         let installPath;
         let resolvePath;
@@ -65,6 +62,9 @@ class Automation {
             this.src.fillSource();
             this.out.fillSource();
         }
+        // 의존서 해결자 가져오기
+        this._resolver.load();
+
     }
 
     /**
@@ -82,13 +82,13 @@ class AutoCollection extends PropertyCollection {
     // protected
     _super = [];
     _sub = [];
-    _onwer = null;
+    _owner = null;
 
     // public
     name = null;
 
-    constructor(onwer) {
-        super(onwer);
+    constructor(owner) {
+        super(owner);
     
     }
     
@@ -168,7 +168,7 @@ class AutoCollection extends PropertyCollection {
         // 별칭 이름 등록
         this._sub.push(alias);
         // 의존 모듈 등록
-        // this._onwer.dep[`${obj.package.name}.${alias}`] = obj;
+        // this._owner.dep[`${obj.package.name}.${alias}`] = obj;
     }
     
     super(alias, obj) {
@@ -176,7 +176,7 @@ class AutoCollection extends PropertyCollection {
         // 별칭 이름 등록
         this._super.push(alias);
         // 의존 모듈 등록  하위로 
-        // this._onwer.dep[`${obj.package.name}.${alias}`] = obj;
+        // this._owner.dep[`${obj.package.name}.${alias}`] = obj;
         // 
     }
 
@@ -188,8 +188,8 @@ class AutoCollection extends PropertyCollection {
 
 class DependCollection extends PropertyCollection {
     
-    constructor(onwer) {
-        super(onwer);
+    constructor(owner) {
+        super(owner);
     }
 }
 

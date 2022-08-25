@@ -1,5 +1,6 @@
 
 const fs = require('fs');
+const path = require('path');
 const { MetaElement, PropertyCollection, MetaObject } = require('entitybind');
 
 class OriginalSource {
@@ -10,14 +11,16 @@ class OriginalSource {
     // public
     content = null;
     fullPath = '';
-    
-    constructor(onwer, path) {
+    basePath = '';
+
+    constructor(onwer, fullPath) {
         // 필수 검사 필요!!
         this._auto = onwer;
-        this.fullPath = path;
+        this.fullPath = fullPath;
+        // TODO:: win, unix 방식 경로 설정가능하게!!
+        this.basePath = '/'+ path.relative(this._auto.__dir, this.fullPath);
     }
 }
-
 
 class SourceCollection extends PropertyCollection {
     
