@@ -66,7 +66,13 @@ class SourceCollection extends PropertyCollection {
     }
 
     fillSource() {
-
+        
+        let filePath;
+        
+        for (let i = 0; i < this.list.length; i++) {
+            filePath = this.list[i].fullPath;
+            this.list[i].content = fs.readFileSync(filePath,'utf-8');
+        }        
     }
 }
 

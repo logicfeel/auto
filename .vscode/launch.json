@@ -12,6 +12,15 @@
                 "<node_internals>/**"
             ],
             "program": "${file}"
-        }, 
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "task/m1/dist_test.js 실행",
+            "program": "${workspaceFolder}/task/m1/dist_test.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
     ]
 }

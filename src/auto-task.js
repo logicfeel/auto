@@ -35,7 +35,10 @@ class AutoTask {
         this._load();
 
         // src, out 읽기
-        this.entry.readSource();
+        this.entry.readSource(true);
+
+        // 의존성 설정
+        this.entry._resolver.resolve();
     }
 }
 
