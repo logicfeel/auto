@@ -1,23 +1,53 @@
+const { SourceBatch } = require('./source-batch');
+const path = require('path');
+
+// let instance;
 
 class AutoTask {
 
-    // private
-    __dir = null;
-    // protected
-    _instance = null;
     // public
     entry = null;
+    // protected
+    _instance = null;
+    // private
+    __dir = null;
+
+    // path = require('path');
 
     constructor() {
     }
 
     static getInstance(dir) {
         if (typeof this._instance === 'undefined') {
-            this._instance = new AutoTask();
+            this._instance = new this();
         }
         this._instance.__dir = dir;
 
         return this._instance;
+    }
+    // static getInstance(dir) {
+    //     if (typeof instance === 'undefined') {
+    //         instance = new AutoTask();
+    //     }
+    //     instance.__dir = dir;
+
+    //     return instance;
+    // }
+
+    
+    do_dist() {
+        // 로딩
+        this._load();
+
+        // src, out 읽기
+        this.entry.readSource(true);
+
+        // 의존성 설정
+        this.entry._resolver.resolve();
+
+        // 소스 배치
+        // const batch = SourceBatch.getInstance();
+
     }
 
     _load() {
@@ -30,16 +60,7 @@ class AutoTask {
         this.entry = new EntryAuto();
     }
 
-    do_dist() {
-        // 로딩
-        this._load();
 
-        // src, out 읽기
-        this.entry.readSource(true);
-
-        // 의존성 설정
-        this.entry._resolver.resolve();
-    }
 }
 
 module.exports = AutoTask;
