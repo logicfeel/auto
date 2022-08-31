@@ -24,10 +24,11 @@ class DependResolver {
         let indexArr = [];
 
         // 내부함수
-        function getRef(src, list) {
+        function getRef(src, list, alias = null) {
             let refObj = {
                 src: src,
-                list: list
+                alias: alias,
+                list: list,
             };
             return refObj;
         }
@@ -146,7 +147,7 @@ class DependResolver {
     __getMatchPath(pathKey, cnt) {
         
         let reg
-        let rtnArr = [];
+        let rArr = [];
         let index;
         let str = pathKey;
         let part, line, arrLine = [], column;
@@ -171,7 +172,7 @@ class DependResolver {
             // if (line > 0) column = arrLine[line - 1].length;
             // else column = index;
 
-            rtnArr.push({
+            rArr.push({
                 idx: index,
                 key: pathKey,
                 line: line,
@@ -179,10 +180,10 @@ class DependResolver {
             });
 
             // console.log(cnt)
-            console.log(index +' '+ pathKey +' '+ line +' '+ column)
+            console.log(`index:${index} ${line}:line column:${column} key:${pathKey}`)
         }
     
-        return rtnArr;
+        return rArr;
     }
 
     

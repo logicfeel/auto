@@ -9,7 +9,9 @@ class Automation {
     
     // private
     __dir = null;
+    __alias = null;
     // protected
+    _owner = null;  // 소유자
     _install = null;
     _auto = null;
     _package = null;
@@ -20,6 +22,22 @@ class Automation {
     out = new SourceCollection(this);
     dep = new DependCollection(this);
     PATH = {};
+    DIR = {
+        OUT: 'out',
+        SRC: 'src',
+        DEP: 'dep',
+        INS: 'install',
+        PUB: 'publish',
+    };
+
+    // 프로퍼티
+    get name() {
+        return this._package.name;
+    }
+    
+    get alias() {
+        return this.__alias;
+    }
 
     constructor(dir) {
         console.log('Automation load..')
@@ -52,12 +70,13 @@ class Automation {
             this._package = require(packagePath);
         }
 
-        this.name = this._package.name;
     }
 
     readSource(isFill) {
-        this.src.addPath(this.PATH.SRC);
-        this.out.addPath(this.PATH.OUT);
+        // this.src.addPath(this.PATH.SRC);
+        // this.out.addPath(this.PATH.OUT);
+        this.src.addDir(this.DIR.SRC);
+        this.out.addDir(this.DIR.OUT);
         if (isFill) {
             this.src.fillSource();
             this.out.fillSource();

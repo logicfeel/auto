@@ -5,4 +5,4 @@ const autoTask = require('../../src/auto-task').getInstance(__dirname);
 
 autoTask.do_dist();
 
-console.log(1)
+ console.log(1)

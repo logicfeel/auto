@@ -1,38 +1,28 @@
-const { SourceBatch } = require('./source-batch');
+const SourceBatch = require('./source-batch');
 const path = require('path');
-
-// let instance;
 
 class AutoTask {
 
     // public
     entry = null;
+    batch = SourceBatch.getInstance();
     // protected
     _instance = null;
     // private
     __dir = null;
 
-    // path = require('path');
 
     constructor() {
     }
 
+    // 내부에 사용
     static getInstance(dir) {
         if (typeof this._instance === 'undefined') {
             this._instance = new this();
         }
         this._instance.__dir = dir;
-
         return this._instance;
     }
-    // static getInstance(dir) {
-    //     if (typeof instance === 'undefined') {
-    //         instance = new AutoTask();
-    //     }
-    //     instance.__dir = dir;
-
-    //     return instance;
-    // }
 
     
     do_dist() {
@@ -46,7 +36,10 @@ class AutoTask {
         this.entry._resolver.resolve();
 
         // 소스 배치
-        // const batch = SourceBatch.getInstance();
+        this.batch.add(this.entry.src, 'dist');
+
+        // 저장
+        this.batch.save();
 
     }
 
