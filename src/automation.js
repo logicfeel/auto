@@ -28,6 +28,7 @@ class Automation {
         DEP: 'dep',
         INS: 'install',
         PUB: 'publish',
+        DIS: 'dist'
     };
 
     // 프로퍼티
@@ -101,13 +102,14 @@ class AutoCollection extends PropertyCollection {
     // protected
     _super = [];
     _sub = [];
-    _owner = null;
+    // _owner = null;
 
     // public
     name = null;
 
-    constructor(owner) {
-        super(owner);
+    // TODO:: owner 명칭 변경 (오타) !!
+    constructor(onwer) {
+        super(onwer);
     
     }
     
@@ -186,6 +188,8 @@ class AutoCollection extends PropertyCollection {
         this.add(alias, obj);
         // 별칭 이름 등록
         this._sub.push(alias);
+        // 의존성 등록
+        this._onwer.dep.add(alias, obj.src);
         // 의존 모듈 등록
         // this._owner.dep[`${obj.package.name}.${alias}`] = obj;
     }
@@ -207,8 +211,9 @@ class AutoCollection extends PropertyCollection {
 
 class DependCollection extends PropertyCollection {
     
-    constructor(owner) {
-        super(owner);
+    // TODO:: owner 명칭 변경 (오타) !!
+    constructor(onwer) {
+        super(onwer);
     }
 }
 

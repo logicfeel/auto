@@ -5,17 +5,19 @@ const { MetaElement, PropertyCollection, MetaObject } = require('entitybind');
 
 class OriginalSource {
     
-    // protected
-    _auto = null;
-    _ref = [];
     // public
     content = null;
     fullPath = '';
-    basePath = '';
-    path = null;
-    topDir = null;
-    subDir = null;
-    name = null;
+    location = null;
+    // protected
+    _auto = null;
+    _ref = [];
+    _target = null;
+    // private
+
+    // basePath = '';
+    // subDir = null;
+    // name = null;
 
     // constructor(onwer, fullPath, path) {
     //     // 필수 검사 필요!!
@@ -25,18 +27,43 @@ class OriginalSource {
     //     this.basePath = '/'+ path.relative(this._auto.__dir, this.fullPath);
     //     this.path = path;
     // }
-    constructor(onwer, fullPath, topDir) {
+
+    // 프로퍼티
+    get name() {
+        return path.basename(this.fullPath);
+    }
+    get subDir() {
+        return path.dirname(this.subPath);
+    }
+    get subPath() {
+        return path.relative(this._auto.__dir + path.sep + this.location, this.fullPath);
+    }
+    get baseDir() {
+        return path.dirname(this.basePath);
+    }
+    get basePath() {
+        return path.relative(this._auto.__dir, this.fullPath);
+    }
+
+    constructor(onwer, fullPath, location) {
+        
+        let top;
         // 필수 검사 필요!!
         this._auto = onwer;
         this.fullPath = fullPath;
+        this.location = location;
+
         // TODO:: win, unix 방식 경로 설정가능하게!!
-        this.basePath = '/'+ path.relative(this._auto.__dir +'/'+ topDir, this.fullPath);
-        this.path = path;
+        // this.basePath = '/'+ path.relative(this._auto.__dir +'/'+ topDir, this.fullPath);
+        // this.path = path;
     }
 }
 
 class SourceCollection extends PropertyCollection {
-    
+     
+    // private
+     #sep = path.sep;
+
     constructor(onwer) {
         super(onwer);
     }
@@ -78,10 +105,12 @@ class SourceCollection extends PropertyCollection {
     //     _addPath(path);
     // }
 
-    addDir(topDir, opt) {
+    addDir(location, opt) {
 
         const _this = this;
-        const dir = this._onwer.__dir +'/'+ topDir
+        const dir = this._onwer.__dir +'/'+ location
+        const sep = path.sep;
+
 
         // 내부 함수
         function _addPath(path, dir = '') {
@@ -98,15 +127,15 @@ class SourceCollection extends PropertyCollection {
                 if (fs.statSync(path +'/'+ arr[i]).isFile()) {
                     // 컬렉션에 등록
                     alias = dir + arr[i];
-                    org = new OriginalSource(_this._onwer, path +'/'+ arr[i], topDir);
+                    org = new OriginalSource(_this._onwer, path + sep + arr[i], location);
                     _this.add(alias, org);
-                } else if (fs.statSync(path +'/'+arr[i]).isDirectory()) {
-                    _addPath(path + '/' + arr[i], arr[i] + '/', dir);
+                } else if (fs.statSync(path + sep + arr[i]).isDirectory()) {
+                    _addPath(path + sep + arr[i], arr[i], dir);
                 }
             }
         }
-        
-        _addPath(dir);
+        // 폴더가 있는경우만
+        if (fs.existsSync(dir)) _addPath(dir);
     }
 
     fillSource() {

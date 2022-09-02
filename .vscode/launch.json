@@ -16,11 +16,20 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "task/m1/dist_test.js 실행",
-            "program": "${workspaceFolder}/task/m1/dist_test.js",
+            "name": "task/m1/test_dist.js 실행",
+            "program": "${workspaceFolder}/task/m1/test_dist.js",
             "skipFiles": [
                 "<node_internals>/**"
             ]
         },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "task/m2/test_dist.js 실행",
+            "program": "${workspaceFolder}/task/m2/test_dist.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },        
     ]
 }

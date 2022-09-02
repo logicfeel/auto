@@ -80,7 +80,7 @@ class DependResolver {
         // dep 가져오기
         for (let i = 0; i < this._auto.dep.count; i++) {       
             alias = this._auto.dep.properties[0];   // 별칭 얻기
-            for (let ii = 0; ii < this._auto.dep[i].src.count; ii++) {
+            for (let ii = 0; ii < this._auto.dep[i].count; ii++) {
                 this._ref.push(this.__createPath(this._auto.src[ii], 'dep', alias));
             }
         }
