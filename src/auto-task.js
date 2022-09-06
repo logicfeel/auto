@@ -40,34 +40,71 @@ class AutoTask {
 
     
     do_dist() {
-
-        /**
-         * 1. 오토를 재귀함수로 가져오는 방법과
-         * 2. 태스크에서 일괄적으로 가져오는 방법 
-         * 중 선택해야함
-         */
-        // function _loadAll(auto) {
-
-        // }
-
+        
         // 로딩
         this._load();
 
-        // src, out 읽기
-        this.entry.readSource(true);
-        
-        for (let i = 0; i < this.entry.mod.count; i++) {
-            // this.entry.mod[i].
+        // 대상 오토 조회
+        let list = this.entry._getAllList(true);
+
+        for (let i = 0; i < list.length; i++) {
+            list[i].readSource(true, false);
         }
 
-        // 의존성 설정
-        this.entry._resolver.resolve();
-
-        // 소스 배치
-        this.batch.add(this.entry.src, 'dist');
+        // 의존성 로딩 및 설정
+        for (let i = 0; i < list.length; i++) {
+            list[i]._resolver.load();
+            list[i]._resolver.resolve();
+            this.batch.add(list[i].src, 'dist');
+        }
 
         // 저장
-        this.batch.save();
+        this.batch.save(true);
+    }
+
+    do_depend() {
+        // 로딩
+        this._load();
+
+        // 대상 오토 조회
+        let list = this.entry._getDependList();
+
+        for (let i = 0; i < list.length; i++) {
+            list[i].readSource(true, false);
+        }
+
+        // 의존성 로딩 및 설정
+        for (let i = 0; i < list.length; i++) {
+            list[i]._resolver.load();
+            list[i]._resolver.resolve();
+            this.batch.add(list[i].src, 'dep');
+        }
+
+        // 저장
+        this.batch.save(true);        
+    }
+
+    do_install() {
+        // 로딩
+        this._load();
+
+        // 대상 오토 조회
+        let list = this.entry._getAllList(true);
+
+        for (let i = 0; i < list.length; i++) {
+            list[i].readSource(true, true);
+        }
+
+        // 의존성 로딩 및 설정
+        for (let i = 0; i < list.length; i++) {
+            list[i]._resolver.load();
+            list[i]._resolver.resolve();
+            this.batch.add(list[i].src, 'ins');
+            this.batch.add(list[i].out, 'ins');
+        }
+
+        // 저장
+        this.batch.save(true);
 
     }
 

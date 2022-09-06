@@ -8,6 +8,6 @@ let autoTask = AutoTask.getInstance(__dirname);
 // let task = AutoTask.getInstance();
 // console.log(autoTask.do_depend)
 
-autoTask.do_dist();
+autoTask.do_install();
 
 console.log(1)

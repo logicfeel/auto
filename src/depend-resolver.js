@@ -33,7 +33,7 @@ class DependResolver {
             return refObj;
         }
 
-        // 전체 소스 조회
+        // 원본 소스 조회
         for (let i = 0; i < this._org.length; i++) {
             arr = this.__getReferPath(this._org[i]);
             content = this._org[i].src.content;
@@ -81,7 +81,7 @@ class DependResolver {
         for (let i = 0; i < this._auto.dep.count; i++) {       
             alias = this._auto.dep.properties[0];   // 별칭 얻기
             for (let ii = 0; ii < this._auto.dep[i].count; ii++) {
-                this._ref.push(this.__createPath(this._auto.src[ii], 'dep', alias));
+                this._ref.push(this.__createPath(this._auto.dep[i][ii], 'dep', alias));
             }
         }
     }
@@ -101,7 +101,7 @@ class DependResolver {
         
         let arr = [];
         let relativePath = null;
-        let src, dir;
+        let src, dir, basePath, aliasPath;
 
         // 내부함수
         function getKey(src, ...keyPath) {
@@ -116,26 +116,31 @@ class DependResolver {
             for (let i = 0; i < this._ref.length; i++) {
                 src = this._ref[i].src;
                 if (['src', 'out'].indexOf(this._ref[i].location) > -1) {
-                    // 절대경로 추가
-                    // arr.push(getKey(src, src.basePath));
-                    // 상대경로 추가
+                    // 절대경로 
+                    basePath = path.sep + src.basePath;
                     dir = path.dirname(org.src.fullPath);
+                    // 상대경로 
                     relativePath = path.relative(dir, src.fullPath);
-                    arr.push(getKey(src, src.basePath, relativePath));
+                    arr.push(getKey(src, basePath, relativePath));
                 } else if (this._ref[i].location === 'dep') {
-                    // TODO:: 별칭 정보를 확인해서 삽입
+                    // 절대경로  (가상경로)
+                    aliasPath = path.sep + this._auto.DIR.DEP + path.sep + this._ref[i].alias + path.sep + src.subPath;
+                    dir = path.dirname(org.src.fullPath);
+                    // 상대경로 
+                    relativePath = path.relative(dir, this._auto.__dir + path.sep + aliasPath);
+                    arr.push(getKey(src, aliasPath, relativePath));
                 }
             }
         } else if (org.location === 'out') {
             for (let i = 0; i < this._ref.length; i++) {
                 src = this._ref[i].src;
                 if (['out'].indexOf(this._ref[i].location) > -1) {
-                    // 절대경로 추가
-                    // arr.push(getKey(src, src.basePath));
-                    // 상대경로 추가
+                    // 절대경로 
+                    basePath = path.sep + src.basePath;
+                    // 상대경로 
                     dir = path.dirname(org.src.fullPath);
                     relativePath = path.relative(dir, src.fullPath);
-                    arr.push(getKey(src, src.basePath, relativePath));
+                    arr.push(getKey(src, basePath, relativePath));
                 }
             }
         }

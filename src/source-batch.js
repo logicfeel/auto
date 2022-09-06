@@ -50,12 +50,12 @@ class SourceBatch {
     /**
      * 전처리와 후처리 나누어야 함
      */
-    save() {
+    save(isRelative = false) {
         // 경로 설정
         this.setFullPath();
         
         // 콘텐츠 수정
-        this.setContent(true);
+        this.setContent(isRelative);
 
         // 타겟 저장
         this.saveFile();
@@ -78,10 +78,27 @@ class SourceBatch {
                 } else {
                     // dir + location(DIS) + 사용처명-별칭 + subPath
                     useAuto = auto._owner;
-                    alias = auto.name +'-'+ auto.alias;
+                    alias = useAuto.name +'-'+ auto.alias;
                     saveDir = auto.__dir + path.sep + auto.DIR.DIS + path.sep + alias + path.sep + src.subPath;
                 }
                 this.__list[i].fullPath = saveDir;
+            
+            } else if (this.__list[i].location == 'dep') {
+                src = this.__list[i]._orignal;
+                useAuto = this.#autoTask.entry;
+                auto = this.__list[i]._orignal._auto;
+                alias = auto.alias;
+                saveDir = useAuto.__dir + path.sep + auto.DIR.DEP + path.sep + alias + path.sep + src.subPath;
+                this.__list[i].fullPath = saveDir;
+            
+            } else if (this.__list[i].location == 'ins') {
+                // TODO:: 컨첸츠 중복 검사 및 제거 알고니즘 추가해야함
+                src = this.__list[i]._orignal;
+                useAuto = this.#autoTask.entry;
+                auto = this.__list[i]._orignal._auto;
+                alias = auto.alias ? auto.name + path.sep + auto.alias : auto.name;
+                saveDir = useAuto.__dir + path.sep + auto.DIR.INS + path.sep + alias + path.sep + src.subPath;
+                this.__list[i].fullPath = saveDir;            
             }
         }
 
@@ -91,7 +108,8 @@ class SourceBatch {
     setContent(isRelative) {
         
         let org, content, arrObj = [], list, change, refSrc;
-        
+        let dir;
+
         for (let i = 0; i < this.__list.length; i++) {
             org = this.__list[i]._orignal;
             content = org.content;
@@ -103,14 +121,17 @@ class SourceBatch {
                 if (refSrc._target === null || refSrc._target.fullPath === null) {
                     // 상대경로 (오토기준)
                     if (isRelative) {
-                        change = path.relative(this.__list[i].baseDir, refSrc.basePath);       
+                        dir = path.dirname(this.__list[i].fullPath);
+                        change = path.relative(dir, refSrc.fullPath);       
                     } else {
                         change = path.sep + refSrc.basePath;
                     }
                 } else {
                     // 상대경로 (오토기준)
                     if (isRelative) {
-                        change = path.relative(this.__list[i].baseDir, refSrc._target.basePath);       
+                        dir = path.dirname(this.__list[i].fullPath);
+                        // change = path.relative(this.__list[i].baseDir, refSrc._target.basePath);       
+                        change = path.relative(dir, refSrc._target.fullPath);       
                     } else {
                         // change = path.sep + refSrc.basePath;
                         change = path.sep + refSrc._target.basePath;
@@ -178,6 +199,13 @@ class SourceBatch {
         var base_idx = 0, idx = 0;
         var org = content;
         var org_prev = '', org_next = ''
+
+        // 배열 정렬
+        arrObj.sort(function (a,b) {
+            if (a.idx > b.idx) return 1;
+            if (a.idx === b.idx) return 0;
+            if (a.idx < b.idx) return -1;
+        });
 
         for(var i = 0; i < arrObj.length; i++) {
             obj = arrObj[i];
