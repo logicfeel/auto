@@ -8,8 +8,8 @@ class DependResolver {
     _org = [];
     _ref = [];
 
-    constructor(owner) {
-        this._auto = owner;
+    constructor(auto) {
+        this._auto = auto;
     }
 
     load() {
@@ -20,11 +20,11 @@ class DependResolver {
     // 의존성 처리
     resolve() {
         
-        let arr, src, content, keyword;
+        let arr, src, data, keyword;
         let indexArr = [];
 
         // 내부함수
-        function getRef(src, list, alias = null) {
+        function createRefObj(src, list, alias = null) {
             let refObj = {
                 src: src,
                 alias: alias,
@@ -35,8 +35,8 @@ class DependResolver {
 
         // 원본 소스 조회
         for (let i = 0; i < this._org.length; i++) {
-            arr = this.__getReferPath(this._org[i]);
-            content = this._org[i].src.content;
+            arr = this.#getReferPath(this._org[i]);
+            data = this._org[i].src.data;
             // 참조 대상 조회
             for (let ii = 0; ii < arr.length; ii++) {
                 // 대상의 상대, 절대 경로
@@ -44,11 +44,11 @@ class DependResolver {
                 src = arr[ii].src;
                 for (let iii = 0; iii < arr[ii].path.length; iii++) {
                     keyword = arr[ii].path[iii];    
-                    indexArr = indexArr.concat(this.__getMatchPath(keyword, content));    // 벼열 합침
+                    indexArr = indexArr.concat(this.#getMatchPath(keyword, data));    // 벼열 합침
                 }
                 // 참조가 있으면 등록
                 if (indexArr.length > 0) {
-                    this._org[i].src._ref.push(getRef(src, indexArr));
+                    this._org[i].src._ref.push(createRefObj(src, indexArr));
                 }                
             }
         }
@@ -58,11 +58,11 @@ class DependResolver {
     _readOriginal() {
         // src 가져오기
         for (let i = 0; i < this._auto.src.count; i++) {
-            this._org.push(this.__createPath(this._auto.src[i], 'src'));
+            this._org.push(this.#createPath(this._auto.src[i], 'src'));
         }
         // out 가져오기
         for (let i = 0; i < this._auto.out.count; i++) {
-            this._org.push(this.__createPath(this._auto.out[i], 'out'));
+            this._org.push(this.#createPath(this._auto.out[i], 'out'));
         }
     }
 
@@ -71,22 +71,22 @@ class DependResolver {
         let alias = '';
         // src 가져오기        
         for (let i = 0; i < this._auto.src.count; i++) {
-            this._ref.push(this.__createPath(this._auto.src[i], 'src'));
+            this._ref.push(this.#createPath(this._auto.src[i], 'src'));
         }
         // out 가져오기
         for (let i = 0; i < this._auto.out.count; i++) {
-            this._ref.push(this.__createPath(this._auto.out[i], 'out'));
+            this._ref.push(this.#createPath(this._auto.out[i], 'out'));
         }
         // dep 가져오기
         for (let i = 0; i < this._auto.dep.count; i++) {       
             alias = this._auto.dep.properties[0];   // 별칭 얻기
             for (let ii = 0; ii < this._auto.dep[i].count; ii++) {
-                this._ref.push(this.__createPath(this._auto.dep[i][ii], 'dep', alias));
+                this._ref.push(this.#createPath(this._auto.dep[i][ii], 'dep', alias));
             }
         }
     }
 
-    __createPath(src, location, alias = '') {
+    #createPath(src, location, alias = '') {
         // 임시 객체
         let objPath = {
             location: location,
@@ -97,14 +97,14 @@ class DependResolver {
     }
 
     // 소스에 대한 참조 목록 가져오기
-    __getReferPath(org) {
+    #getReferPath(org) {
         
         let arr = [];
         let relativePath = null;
         let src, dir, basePath, aliasPath;
 
         // 내부함수
-        function getKey(src, ...keyPath) {
+        function createKeyObj(src, ...keyPath) {
             let key = {
                 path: keyPath,
                 src: src
@@ -121,14 +121,14 @@ class DependResolver {
                     dir = path.dirname(org.src.fullPath);
                     // 상대경로 
                     relativePath = path.relative(dir, src.fullPath);
-                    arr.push(getKey(src, basePath, relativePath));
+                    arr.push(createKeyObj(src, basePath, relativePath));
                 } else if (this._ref[i].location === 'dep') {
                     // 절대경로  (가상경로)
-                    aliasPath = path.sep + this._auto.DIR.DEP + path.sep + this._ref[i].alias + path.sep + src.subPath;
+                    aliasPath = path.sep + this._auto.LOC.DEP + path.sep + this._ref[i].alias + path.sep + src.subPath;
                     dir = path.dirname(org.src.fullPath);
                     // 상대경로 
-                    relativePath = path.relative(dir, this._auto.__dir + path.sep + aliasPath);
-                    arr.push(getKey(src, aliasPath, relativePath));
+                    relativePath = path.relative(dir, this._auto.dir + path.sep + aliasPath);
+                    arr.push(createKeyObj(src, aliasPath, relativePath));
                 }
             }
         } else if (org.location === 'out') {
@@ -140,7 +140,7 @@ class DependResolver {
                     // 상대경로 
                     dir = path.dirname(org.src.fullPath);
                     relativePath = path.relative(dir, src.fullPath);
-                    arr.push(getKey(src, basePath, relativePath));
+                    arr.push(createKeyObj(src, basePath, relativePath));
                 }
             }
         }
@@ -149,7 +149,7 @@ class DependResolver {
 
 
 
-    __getMatchPath(pathKey, cnt) {
+    #getMatchPath(pathKey, data) {
         
         let reg
         let rArr = [];
@@ -165,12 +165,12 @@ class DependResolver {
         
         reg = RegExp(str, 'gi');
     
-        while(reg.exec(cnt)) {
+        while(reg.exec(data)) {
             if (reg.lastIndex === 0) break;
 
             index = reg.lastIndex - pathKey.length - 1
             // line, column 구하기
-            part = cnt.substring(0, index);   // 내용 조각
+            part = data.substring(0, index);   // 내용 조각
             arrLine = part.split('\n');
             line = arrLine.length;
             column = arrLine[line - 1].length;
@@ -184,7 +184,7 @@ class DependResolver {
                 col: column,
             });
 
-            // console.log(cnt)
+            // console.log(data)
             console.log(`index:${index} ${line}:line column:${column} key:${pathKey}`)
         }
     

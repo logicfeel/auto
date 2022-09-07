@@ -1,16 +1,18 @@
 const path = require('path');
 const fs = require('fs');
-const AutoTask = require('./auto-task');
+// const AutoTask = require('./auto-task');
 
 // 배치 관리자
 class SourceBatch {
 
     // protected
     _instance = null;
+    _filter = [];
+    rootDir = null;    // 절대경로 최상위 경로
     // private
-    __list = [];
-    __storage = []; // 저장 위치
+    #list = [];
     #autoTask;
+    #storage = []; // 저장 위치
 
     constructor() {
     }
@@ -43,7 +45,7 @@ class SourceBatch {
             tar = new TargetSource(collection[i], location);
             org =  collection[i];
             org._target = tar;
-            this.__list.push(tar);
+            this.#list.push(tar);
         }
     }
 
@@ -55,64 +57,76 @@ class SourceBatch {
         this.setFullPath();
         
         // 콘텐츠 수정
-        this.setContent(isRelative);
+        this.setData(isRelative);
 
         // 타겟 저장
         this.saveFile();
     }
 
-    // 동일 내용의 경우 중복 제거 포함해야 함
+    // 
+    /**
+     * 저장할 경로 설정
+     * TODO:: 동일 내용의 경우 중복 제거 포함해야 함
+     */
     setFullPath() {
-        let auto, src, useAuto, alias, saveDir;
 
-        for (let i = 0; i < this.__list.length; i++) {
+        let auto, src, useAuto, entryAuto, alias, savePath;
+
+        entryAuto = this.#autoTask.entry;
+
+        for (let i = 0; i < this.#list.length; i++) {
             
-            if (this.__list[i].location == 'dist') {
-                src = this.__list[i]._orignal;
-                auto = src._auto;
+            src = this.#list[i]._orignal;
+            auto = src._auto;
+
+            if (this.#list[i].location == 'dist') {
+                // src = this.#list[i]._orignal;
+                // auto = src._auto;
                 // 엔트리의 경우
-                if (this.#autoTask.entry === src._auto && src.location === src._auto.DIR.SRC) {
+                if (entryAuto === src._auto && src.location === entryAuto.LOC.SRC) {
                     // dir + location(DIS) + subPath
-                    saveDir = auto.__dir + path.sep + auto.DIR.DIS + path.sep + src.subPath;
+                    savePath = auto.dir + path.sep + entryAuto.LOC.DIS + path.sep + src.subPath;
                 // 하위 오토의 경우
                 } else {
                     // dir + location(DIS) + 사용처명-별칭 + subPath
                     useAuto = auto._owner;
                     alias = useAuto.name +'-'+ auto.alias;
-                    saveDir = auto.__dir + path.sep + auto.DIR.DIS + path.sep + alias + path.sep + src.subPath;
+                    savePath = auto.dir + path.sep + entryAuto.LOC.DIS + path.sep + alias + path.sep + src.subPath;
                 }
-                this.__list[i].fullPath = saveDir;
+                this.#list[i].fullPath = savePath;
             
-            } else if (this.__list[i].location == 'dep') {
-                src = this.__list[i]._orignal;
-                useAuto = this.#autoTask.entry;
-                auto = this.__list[i]._orignal._auto;
+            } else if (this.#list[i].location == 'dep') {
+                // src = this.#list[i]._orignal;
+                // entryAuto = this.#autoTask.entry;
+                // auto = this.#list[i]._orignal._auto;
                 alias = auto.alias;
-                saveDir = useAuto.__dir + path.sep + auto.DIR.DEP + path.sep + alias + path.sep + src.subPath;
-                this.__list[i].fullPath = saveDir;
+                savePath = entryAuto.dir + path.sep + entryAuto.LOC.DEP + path.sep + alias + path.sep + src.subPath;
+                this.#list[i].fullPath = savePath;
             
-            } else if (this.__list[i].location == 'ins') {
+            } else if (this.#list[i].location == 'ins') {
                 // TODO:: 컨첸츠 중복 검사 및 제거 알고니즘 추가해야함
-                src = this.__list[i]._orignal;
-                useAuto = this.#autoTask.entry;
-                auto = this.__list[i]._orignal._auto;
+                // src = this.#list[i]._orignal;
+                // entryAuto = this.#autoTask.entry;
+                // auto = this.#list[i]._orignal._auto;
                 alias = auto.alias ? auto.name + path.sep + auto.alias : auto.name;
-                saveDir = useAuto.__dir + path.sep + auto.DIR.INS + path.sep + alias + path.sep + src.subPath;
-                this.__list[i].fullPath = saveDir;            
+                savePath = entryAuto.dir + path.sep + entryAuto.LOC.INS + path.sep + alias + path.sep + src.subPath;
+                this.#list[i].fullPath = savePath;
             }
         }
-
     }
 
-    // 경로해결 후 저장
-    setContent(isRelative) {
+    /**
+     * data 의 경로 변경
+     * @param {*} isRelative 상대경로 여부
+     */
+    setData(isRelative) {
         
-        let org, content, arrObj = [], list, change, refSrc;
+        let org, data, arrObj = [], list, change, refSrc;
         let dir;
 
-        for (let i = 0; i < this.__list.length; i++) {
-            org = this.__list[i]._orignal;
-            content = org.content;
+        for (let i = 0; i < this.#list.length; i++) {
+            org = this.#list[i]._orignal;
+            data = org.data;
             arrObj = []; // 초기화
 
             for (let ii = 0; ii < org._ref.length; ii++) {
@@ -121,7 +135,7 @@ class SourceBatch {
                 if (refSrc._target === null || refSrc._target.fullPath === null) {
                     // 상대경로 (오토기준)
                     if (isRelative) {
-                        dir = path.dirname(this.__list[i].fullPath);
+                        dir = path.dirname(this.#list[i].fullPath);
                         change = path.relative(dir, refSrc.fullPath);       
                     } else {
                         change = path.sep + refSrc.basePath;
@@ -129,12 +143,16 @@ class SourceBatch {
                 } else {
                     // 상대경로 (오토기준)
                     if (isRelative) {
-                        dir = path.dirname(this.__list[i].fullPath);
-                        // change = path.relative(this.__list[i].baseDir, refSrc._target.basePath);       
+                        dir = path.dirname(this.#list[i].fullPath);
                         change = path.relative(dir, refSrc._target.fullPath);       
                     } else {
-                        // change = path.sep + refSrc.basePath;
                         change = path.sep + refSrc._target.basePath;
+                        // if (this.rootDir === refSrc._target.location) {
+
+                        //     change = path.sep + refSrc._target.subPath;
+                        // } else {
+                        //     change = path.sep + this.location + path.sep + refSrc._target.subPath;
+                        // }
                     }
                     
                 }
@@ -149,18 +167,18 @@ class SourceBatch {
                 }
             }
             // 파일내용 저장
-            this.__list[i].content = this._replacePath(content, arrObj);
+            this.#list[i].data = this.#replacePath(data, arrObj);
         }
     }
 
     saveFile() {
 
-        let isExists, dirname, fullPath, content;
+        let isExists, dirname, fullPath, data;
         const _this = this;
 
-        for (let i = 0; i < this.__list.length; i++) {
-            fullPath = this.__list[i].fullPath;
-            content = this.__list[i].content;
+        for (let i = 0; i < this.#list.length; i++) {
+            fullPath = this.#list[i].fullPath;
+            data = this.#list[i].data;
             dirname = path.dirname(fullPath);
             // 디렉토리 만들기
             isExists = fs.existsSync(dirname);
@@ -168,7 +186,7 @@ class SourceBatch {
                 fs.mkdirSync(dirname, {recursive: true} );
             }
             // TODO:: try 로 예외 처리함
-            fs.writeFileSync(fullPath, content, 'utf8');   
+            fs.writeFileSync(fullPath, data, 'utf8');   
 
             // fs.writeFile(fullPath, content, 'utf8', function(error){ 
             //     console.log('write :'+ fullPath);
@@ -176,12 +194,12 @@ class SourceBatch {
         }
     }
 
-    getBathList() {
+    getBatchList() {
         
         let rArr = [];
 
-        for (let i = 0; i < this.__list.length; i++) {
-            rArr.push(this.__list[i].basePath);
+        for (let i = 0; i < this.#list.length; i++) {
+            rArr.push(this.#list[i].basePath);
         }
         return rArr;
     }
@@ -190,14 +208,14 @@ class SourceBatch {
 
     /**
      * 
-     * @param {*} content 
+     * @param {*} data 
      * @param {*} arrObj 
      * @returns 
      */
-    _replacePath(content, arrObj) {
+    #replacePath(data, arrObj) {
         var obj
         var base_idx = 0, idx = 0;
-        var org = content;
+        var org = data;
         var org_prev = '', org_next = ''
 
         // 배열 정렬
@@ -232,9 +250,11 @@ class SourceBatch {
 
 
 class TargetSource {
+    
     // public
-    location = null;
     fullPath = null;
+    location = null;
+    data = null;
     // protected
     _orignal = null;
 
@@ -246,13 +266,13 @@ class TargetSource {
         return path.dirname(this.subPath);
     }
     get subPath() {
-        return path.relative(this._orignal._auto.__dir + path.sep + this.location, this.fullPath);
+        return path.relative(this._orignal._auto.dir + path.sep + this.location, this.fullPath);
     }
     get baseDir() {
         return path.dirname(this.basePath);
     }
     get basePath() {
-        return path.relative(this._orignal._auto.__dir, this.fullPath);
+        return path.relative(this._orignal._auto.dir, this.fullPath);
     }
 
     constructor(org, location) {

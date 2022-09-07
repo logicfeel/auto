@@ -30,6 +30,25 @@
             "skipFiles": [
                 "<node_internals>/**"
             ]
-        },        
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "task/m2/test_depend.js 실행",
+            "program": "${workspaceFolder}/task/m2/test_depend.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },            
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "task/m2/test_install.js 실행",
+            "program": "${workspaceFolder}/task/m2/test_install.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
+
     ]
 }

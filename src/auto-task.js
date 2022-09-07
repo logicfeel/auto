@@ -9,7 +9,7 @@ class AutoTask {
     // protected
     static _instance = null;
     // private
-    __dir = null;
+    #__dir = null;
 
     constructor() {
     }
@@ -22,7 +22,7 @@ class AutoTask {
         }
         if (this._instance === null) {
             this._instance = new this();
-            this._instance.__dir = dir;
+            this._instance.#__dir = dir;
         }
         return this._instance;
     }
@@ -53,8 +53,8 @@ class AutoTask {
 
         // 의존성 로딩 및 설정
         for (let i = 0; i < list.length; i++) {
-            list[i]._resolver.load();
-            list[i]._resolver.resolve();
+            list[i].resolver.load();
+            list[i].resolver.resolve();
             this.batch.add(list[i].src, 'dist');
         }
 
@@ -66,6 +66,10 @@ class AutoTask {
         // 로딩
         this._load();
 
+        /**
+         * TODO:: 대상 오토의 1차 의존성의 구조까지 로딩해야함
+         * 확인필요 !!
+         */
         // 대상 오토 조회
         let list = this.entry._getDependList();
 
@@ -75,9 +79,9 @@ class AutoTask {
 
         // 의존성 로딩 및 설정
         for (let i = 0; i < list.length; i++) {
-            list[i]._resolver.load();
-            list[i]._resolver.resolve();
-            this.batch.add(list[i].src, 'dep');
+            list[i].resolver.load();
+            list[i].resolver.resolve();
+            this.batch.add(list[i].src, this.entry.LOC.DEP);
         }
 
         // 저장
@@ -97,14 +101,17 @@ class AutoTask {
 
         // 의존성 로딩 및 설정
         for (let i = 0; i < list.length; i++) {
-            list[i]._resolver.load();
-            list[i]._resolver.resolve();
-            this.batch.add(list[i].src, 'ins');
-            this.batch.add(list[i].out, 'ins');
+            list[i].resolver.load();
+            list[i].resolver.resolve();
+            this.batch.add(list[i].src, this.entry.LOC.INS);
+            this.batch.add(list[i].out, this.entry.LOC.INS);
         }
 
         // 저장
-        this.batch.save(true);
+        // this.batch.save(true);
+        // this.batch.install
+        this.batch.rootDir = this.entry.LOC.INS;
+        this.batch.save();  // 절대경로
 
     }
 
@@ -112,7 +119,7 @@ class AutoTask {
     _load() {
         console.log('_load()....');
         // 현재 폴더의 auto.js 파일 로딩
-        let entryFile  = this.__dir + '/auto.js'
+        let entryFile  = this.#__dir + '/auto.js'
         // 다양한 조건에 예외조건을 수용해야함
         const EntryAuto = require(entryFile);
         // 타입 검사해야함
