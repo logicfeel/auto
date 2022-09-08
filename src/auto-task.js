@@ -55,11 +55,14 @@ class AutoTask {
         for (let i = 0; i < list.length; i++) {
             list[i].resolver.load();
             list[i].resolver.resolve();
-            this.batch.add(list[i].src, 'dist');
+            this.batch.add(list[i].src);
         }
 
         // 저장
-        this.batch.save(true);
+        // this.batch.isRoot = true;
+        // this.batch.save(this.entry.LOC.DIS, true);
+        this.batch.defaultPath = 2;
+        this.batch.save(this.entry.LOC.DIS);
     }
 
     do_depend() {
@@ -81,11 +84,14 @@ class AutoTask {
         for (let i = 0; i < list.length; i++) {
             list[i].resolver.load();
             list[i].resolver.resolve();
-            this.batch.add(list[i].src, this.entry.LOC.DEP);
+            this.batch.add(list[i].src);
         }
 
         // 저장
-        this.batch.save(true);        
+        // this.batch.isRoot = true;
+        // this.batch.save(this.entry.LOC.DEP, true);        
+        // this.batch.defaultPath = 1;
+        this.batch.save(this.entry.LOC.DEP);        
     }
 
     do_install() {
@@ -103,15 +109,18 @@ class AutoTask {
         for (let i = 0; i < list.length; i++) {
             list[i].resolver.load();
             list[i].resolver.resolve();
-            this.batch.add(list[i].src, this.entry.LOC.INS);
-            this.batch.add(list[i].out, this.entry.LOC.INS);
+            this.batch.add(list[i].src);
+            this.batch.add(list[i].out);
         }
 
         // 저장
         // this.batch.save(true);
         // this.batch.install
-        this.batch.rootDir = this.entry.LOC.INS;
-        this.batch.save();  // 절대경로
+        // this.batch.rootDir = this.entry.LOC.INS;
+        this.batch.isRoot = false;  // insall 뒤부터
+        this.batch.defaultPath = 2; // 절대경로
+        // this.batch.save(this.entry.LOC.DEP, false);  // 절대경로
+        this.batch.save(this.entry.LOC.INS);  // 절대경로
 
     }
 
@@ -125,8 +134,6 @@ class AutoTask {
         // 타입 검사해야함
         this.entry = new EntryAuto();
     }
-
-
 }
 
 module.exports = AutoTask;

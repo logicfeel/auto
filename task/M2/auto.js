@@ -1,7 +1,11 @@
 const Automation = require('../../src/automation');
 let Mod1 = require('../m1/auto');
+let Mod1_1 = require('./module/m1/auto');
+
 let mod1 = new Mod1();
 let mod2 = new Mod1();
+let mod3 = new Mod1_1();
+
 
 class Auto extends Automation {
     
@@ -11,18 +15,19 @@ class Auto extends Automation {
         super(__dirname);
 
         // 오토 가져오기
-        this.mod.sub('M1', mod1);
+        // this.mod.sub('M1', mod1);
         // this.mod.sub('M1', mod2);
         // this.mod.super('M1', mod1);
+        this.mod.sub('M1', mod3);
 
         // 인스톨 경로 설정
         // 앤트리 설정 영억
-        this._install.root = this.LOC.INS;  // 기준 상대 경로
-        this._install.absolute = false;     // 절대경로 여부
-        this._install.autoPath = false;     // 자동경로 여부
-        this._install.pathType = 0;         // 경로방식 여부(0:자동, 1:상대, 2:절대)
+        // this._install.root = this.LOC.INS;  // 기준 상대 경로
+        // this._install.absolute = false;     // 기본 경로설정 : depend, dist, instll 에서 사용
+        this._install.defautPath = 0;       // 기본경로 방식 (0:자동, 1:상대, 2:절대)
+        // this._install.pathType = 0;         // 경로방식 여부(0:자동, 1:상대, 2:절대)
         this._install.sub = false;          // 하위 로드 여부
-        this._install.strict = false;       // 이름변경 업격검사
+        this._install.strict = false;       // 이름 엄격검사 유무
         this._install.over = false;         // 중복제거 유무
         // 하위 설정 영역
         this._install.change = [
