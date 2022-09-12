@@ -61,11 +61,11 @@ class AutoTask {
         // 저장
         // this.batch.isRoot = true;
         // this.batch.save(this.entry.LOC.DIS, true);
-        this.batch.defaultPath = 2;
+        this.batch.defaultPath = 2;     // 기본절대경로
         this.batch.save(this.entry.LOC.DIS);
     }
 
-    do_depend() {
+    do_depend() { 
         // 로딩
         this._load();
 
@@ -90,7 +90,7 @@ class AutoTask {
         // 저장
         // this.batch.isRoot = true;
         // this.batch.save(this.entry.LOC.DEP, true);        
-        // this.batch.defaultPath = 1;
+        // this.batch.defaultPath = 1;      // 기본상대경로
         this.batch.save(this.entry.LOC.DEP);        
     }
 
@@ -117,11 +117,10 @@ class AutoTask {
         // this.batch.save(true);
         // this.batch.install
         // this.batch.rootDir = this.entry.LOC.INS;
-        this.batch.isRoot = false;  // insall 뒤부터
-        this.batch.defaultPath = 2; // 절대경로
+        // this.batch.isRoot = false;  // insall 뒤부터
+        this.batch.defaultPath = 2;         // 기본절대경로
         // this.batch.save(this.entry.LOC.DEP, false);  // 절대경로
         this.batch.save(this.entry.LOC.INS);  // 절대경로
-
     }
 
     // entry 오토 로드

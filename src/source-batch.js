@@ -90,7 +90,8 @@ class SourceBatch {
                 // src = this.#list[i]._orignal;
                 // auto = src._auto;
                 // 엔트리의 경우
-                if (entryAuto === src._auto && src.location === entryAuto.LOC.SRC) {
+                // if (entryAuto === src._auto && src.location === entryAuto.LOC.SRC) {
+                if (entryAuto === src._auto) {
                     // dir + location(DIS) + subPath
                     savePath = auto.dir + path.sep + entryAuto.LOC.DIS + path.sep + src.subPath;
                     // 하위 오토의 경우
