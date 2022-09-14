@@ -9,5 +9,6 @@ let autoTask = AutoTask.getInstance(__dirname);
 // console.log(autoTask.do_depend)
 
 autoTask.do_install();
+// autoTask.do_reset();
 
 console.log(1)

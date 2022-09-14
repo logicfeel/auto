@@ -11,10 +11,12 @@ class SourceBatch {
     // protected
     _instance = null;
     _filter = [];
+    _batchFile = [];
     // private
     #list = [];
     #autoTask;
     #storage = []; // 저장 위치
+
 
     constructor() {
     }
@@ -130,7 +132,7 @@ class SourceBatch {
     // setData(isRelative) {
     setData() {
         
-        let org, data, arrObj = [], list, change, refSrc, localPath;
+        let org, data, arrObj = [], list, change, refSrc, localDir;
         let dir;
 
         for (let i = 0; i < this.#list.length; i++) {
@@ -151,8 +153,9 @@ class SourceBatch {
                         
                         // 엔트리의 경우
                         if (this.#autoTask.entry === refSrc._auto) {
-                            if (this.isRoot) change = path.sep + refSrc.basePath;           // root 기준 절대경로
-                            else change = path.sep + refSrc.subPath;                        // location 기준 절대경로       
+                            // if (this.isRoot) change = path.sep + refSrc.basePath;           // root 기준 절대경로
+                            // else change = path.sep + refSrc.subPath;                        // location 기준 절대경로       
+                            change = path.sep + refSrc.basePath;
                         
                         // 하위의 경우
                         } else {
@@ -160,8 +163,8 @@ class SourceBatch {
                             if ( refSrc._auto.dir.indexOf(this.#autoTask.entry.dir) < 0) {
                                 throw new Error(' 절대경로를 사용할려면 하위오토는 앤트리 오토의 하위에 있어야 합니다. fail...');
                             }
-                            localPath = path.relative(this.#autoTask.entry.dir, refSrc._auto.dir);
-                            change = path.sep + localPath + path.sep + refSrc.basePath;
+                            localDir = path.relative(this.#autoTask.entry.dir, refSrc._auto.dir);
+                            change = path.sep + localDir + path.sep + refSrc.basePath;
                             // if (this.isRoot) change = path.sep + refSrc.basePath;           // root 기준 절대경로
                             // else change = path.sep + refSrc.subPath;                        // location 기준 절대경로       
 
@@ -189,20 +192,21 @@ class SourceBatch {
                                 throw new Error(' 절대경로를 사용할려면 하위오토는 앤트리 오토의 하위에 있어야 합니다. fail...');
                             }
                             
-                            localPath = path.relative(this.#autoTask.entry.dir, refSrc._target.dir);
-                            if (this.isRoot) {
-                                if (localPath.length === 0) change = path.sep + refSrc._target.basePath;
-                                else change = path.sep + localPath + path.sep + refSrc._target.basePath;    
-                            } else {
-                                if (localPath.length === 0) change = path.sep + refSrc._target.subPath;
-                                else change = path.sep + localPath + path.sep + refSrc._target.subPath;                                    
+                            localDir = path.relative(this.#autoTask.entry.dir, refSrc._target.dir);
+                            if (localDir.length > 0) {
+                                // if (this.isRoot) {
+                                //     change = path.sep + localDir + path.sep + refSrc._target.basePath;    
+                                // } else {
+                                //     change = path.sep + localDir + path.sep + refSrc._target.subPath;                                    
+                                // }                                    
+                                change = path.sep + localDir + path.sep + refSrc._target.basePath;    
+                            } else {    // install 의 경우
+                                if (this.isRoot) change = path.sep + refSrc._target.basePath;
+                                else change = path.sep + refSrc._target.subPath;
                             }
-                            
                             // if (this.isRoot) change = path.sep + refSrc._target.basePath;   // root 기준 절대경로
                             // else change = path.sep + refSrc._target.subPath;                // location 기준 절대경로       
-
                         }
-                        
                         // if (this.isRoot) change = path.sep + refSrc._target.basePath;   // root 기준 절대경로
                         // else change = path.sep + refSrc._target.subPath;                // location 기준 절대경로   
                     }
@@ -242,8 +246,11 @@ class SourceBatch {
 
             // fs.writeFile(fullPath, content, 'utf8', function(error){ 
             //     console.log('write :'+ fullPath);
-            // });   
+            // });
+            // 로그저장
+            this.#addBatchFile(fullPath);
         }
+        this.#saveBatchFile();
     }
 
     getBatchList() {
@@ -251,12 +258,33 @@ class SourceBatch {
         let rArr = [];
 
         for (let i = 0; i < this.#list.length; i++) {
-            rArr.push(this.#list[i].basePath);
+            rArr.push(this.#list[i]);
         }
         return rArr;
     }
 
-    clear() {}
+    clear() {
+
+        const batchfile = this.#autoTask.entry.dir +path.sep+ '__BATCH_FILE.json';
+        let fullPath;
+
+        for (let i = 0; i < this._batchFile.length; i++) {
+            fullPath = this._batchFile[i];
+            if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+        }
+        if (fs.existsSync(batchfile)) fs.unlinkSync(batchfile);
+    }
+
+    #saveBatchFile() {
+        // batchFile
+        let data = JSON.stringify(this._batchFile);
+        fs.writeFileSync(this.#autoTask.entry.dir +path.sep+ '__BATCH_FILE.json', data, 'utf8');   
+    }
+
+    #addBatchFile(savePath) {
+        if (this._batchFile.indexOf(savePath) < 0) this._batchFile.push(savePath);
+    }
+    
 
     /**
      * 

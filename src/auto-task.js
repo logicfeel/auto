@@ -1,5 +1,6 @@
-const SourceBatch = require('./source-batch');
+const fs = require('fs');
 const path = require('path');
+const SourceBatch = require('./source-batch');
 
 class AutoTask {
 
@@ -91,6 +92,7 @@ class AutoTask {
         // this.batch.isRoot = true;
         // this.batch.save(this.entry.LOC.DEP, true);        
         // this.batch.defaultPath = 1;      // 기본상대경로
+        this.batch.defaultPath = 2;         // 기본절대경로
         this.batch.save(this.entry.LOC.DEP);        
     }
 
@@ -123,6 +125,36 @@ class AutoTask {
         this.batch.save(this.entry.LOC.INS);  // 절대경로
     }
 
+    do_reset() {
+        
+        let dir, entry, delPath;
+
+        // 로딩
+        this._load();
+        // 배치 파일 삭제
+        this.batch.clear();
+        
+        // 디렉토리 삭제        
+        entry = this.entry;
+        dir = entry.dir;
+
+        delPath = dir +path.sep+ entry.LOC.DIS;
+        if (fs.existsSync(delPath)) fs.rmSync(delPath, { recursive: true });
+        delPath = dir +path.sep+ entry.LOC.DEP;
+        if (fs.existsSync(delPath)) fs.rmSync(delPath, { recursive: true });
+        delPath = dir +path.sep+ entry.LOC.INS;
+        if (fs.existsSync(delPath)) fs.rmSync(delPath, { recursive: true });
+        delPath = dir +path.sep+ entry.LOC.PUB;
+        if (fs.existsSync(delPath)) fs.rmSync(delPath, { recursive: true });
+
+        // 대상 오토 조회
+        let list = this.entry._getAllList(true);
+        for (let i = 0; i < list.length; i++) {
+            delPath = list[i].dir +path.sep+ entry.LOC.DIS;
+            if (fs.existsSync(delPath)) fs.rmSync(delPath, { recursive: true });
+        }
+    }
+
     // entry 오토 로드
     _load() {
         console.log('_load()....');
@@ -132,6 +164,8 @@ class AutoTask {
         const EntryAuto = require(entryFile);
         // 타입 검사해야함
         this.entry = new EntryAuto();
+        
+        this.batch._batchFile = this.entry._file;        
     }
 }
 
