@@ -15,10 +15,10 @@ class Auto extends Automation {
         super(__dirname);
 
         // 오토 가져오기
-        // this.mod.sub('M1', mod1);
+        // this.mod.sub('M1', mod1);    // 동일 위치에 있음
+        this.mod.sub('M1', mod3);       // module 하위에 있음
         // this.mod.sub('M1', mod2);
         // this.mod.super('M1', mod1);
-        this.mod.sub('M1', mod3);
 
         // 인스톨 경로 설정
         // 앤트리 설정 영억

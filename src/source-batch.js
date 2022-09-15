@@ -1,6 +1,8 @@
 const path = require('path');
 const fs = require('fs');
-// const AutoTask = require('./auto-task');
+
+// const {AutoTask} = require('./auto-task');
+const _at = require('./auto-task');
 
 // 배치 관리자
 class SourceBatch {
@@ -10,8 +12,8 @@ class SourceBatch {
     defaultPath = 1;    // (0:자동, 1:상대, 2:절대)
     // protected
     _instance = null;
-    _filter = [];
     _batchFile = [];
+    _filter = [];
     // private
     #list = [];
     #autoTask;
@@ -41,15 +43,18 @@ class SourceBatch {
      * 배치할 소스 추가
      * @param {*} collection SourceCollection 
      */
-    // add(collection, location) {
-    add(collection) {
+    // add(collection) {
+    add(collection, location, isSave) {
+
         let org, tar;        
         // TODO:: 타입 검사
 
         for(let i = 0; i < collection.count; i++) {
-            // tar = new TargetSource(collection[i], location);
             org = collection[i];
-            tar = new TargetSource(org);
+            tar = new TargetSource(org, location);
+            tar.fullPath = 
+            this.setPath()
+            // tar = new TargetSource(org);
             org._target = tar;
             this.#list.push(tar);
         }
@@ -59,13 +64,17 @@ class SourceBatch {
      * 전처리와 후처리 나누어야 함
      */
     // save(location, isRelative = false) {
-    save(location) {
+    // save(location) {
+    save() {
         // 경로 설정
-        this.setPath(location);
-        
+        // this.setPath(location);
+        this.setPath();
+
         // 콘텐츠 수정
         // this.setData(isRelative);
         this.setData();
+
+        // TODO:: 중복제거
 
         // 타겟 저장
         this.saveFile();
@@ -76,17 +85,74 @@ class SourceBatch {
      * 저장할 경로 설정
      * TODO:: 동일 내용의 경우 중복 제거 포함해야 함
      */
-    setPath(location) {
+    // setPath() {
+
+    //     let auto, src, useAuto, entryAuto, alias, savePath;
+    //     let location;
+
+    //     entryAuto = this.#autoTask.entry;
+
+    //     for (let i = 0; i < this.#list.length; i++) {
+            
+    //         src = this.#list[i]._orignal;
+    //         auto = src._auto;
+    //         // this.#list[i].location = location;
+    //         location = this.#list[i].location;
+
+    //         if (location == entryAuto.LOC.DIS) {
+    //             // src = this.#list[i]._orignal;
+    //             // auto = src._auto;
+    //             // 엔트리의 경우
+    //             // if (entryAuto === src._auto && src.location === entryAuto.LOC.SRC) {
+    //             if (entryAuto === src._auto) {
+    //                 // dir + location(DIS) + subPath
+    //                 savePath = auto.dir + path.sep + entryAuto.LOC.DIS + path.sep + src.subPath;
+    //                 // 하위 오토의 경우
+    //             } else {
+    //                 // dir + location(DIS) + 사용처명-별칭 + subPath
+    //                 useAuto = auto._owner;
+    //                 alias = useAuto.name +'-'+ auto.alias;
+    //                 savePath = auto.dir + path.sep + entryAuto.LOC.DIS + path.sep + alias + path.sep + src.subPath;
+    //             }
+    //             this.#list[i].dir = auto.dir;
+    //             this.#list[i].fullPath = savePath;
+            
+    //         } else if (location == entryAuto.LOC.DEP) {
+    //             // src = this.#list[i]._orignal;
+    //             // entryAuto = this.#autoTask.entry;
+    //             // auto = this.#list[i]._orignal._auto;
+    //             alias = auto.alias;
+    //             savePath = entryAuto.dir + path.sep + entryAuto.LOC.DEP + path.sep + alias + path.sep + src.subPath;
+    //             this.#list[i].dir = entryAuto.dir;
+    //             this.#list[i].fullPath = savePath;
+            
+    //         } else if (location == entryAuto.LOC.INS) {
+    //             // TODO:: 컨첸츠 중복 검사 및 제거 알고니즘 추가해야함
+    //             // src = this.#list[i]._orignal;
+    //             // entryAuto = this.#autoTask.entry;
+    //             // auto = this.#list[i]._orignal._auto;               
+
+    //             alias = auto.alias ? auto.name + path.sep + auto.alias : auto.name;
+    //             savePath = entryAuto.dir + path.sep + entryAuto.LOC.INS + path.sep + alias + path.sep + src.subPath;
+    //             this.#list[i].dir = entryAuto.dir;
+    //             this.#list[i].fullPath = savePath;          
+    //         }
+    //     }
+    // }
+    setPath() {
 
         let auto, src, useAuto, entryAuto, alias, savePath;
-
+        let location;
+        // const AutoTask = require('./auto-task');
+        let task = _at.AutoTask.getInstance();
         entryAuto = this.#autoTask.entry;
 
         for (let i = 0; i < this.#list.length; i++) {
             
             src = this.#list[i]._orignal;
             auto = src._auto;
-            this.#list[i].location = location;
+            // this.#list[i].location = location;
+            location = this.#list[i].location;
 
             if (location == entryAuto.LOC.DIS) {
                 // src = this.#list[i]._orignal;
@@ -127,7 +193,7 @@ class SourceBatch {
                 this.#list[i].fullPath = savePath;          
             }
         }
-    }
+    }    
 
     // setData(isRelative) {
     setData() {
@@ -200,6 +266,8 @@ class SourceBatch {
                                 //     change = path.sep + localDir + path.sep + refSrc._target.subPath;                                    
                                 // }                                    
                                 change = path.sep + localDir + path.sep + refSrc._target.basePath;    
+                            
+                            // 'install', 'depend' 의 경우
                             } else {    // install 의 경우
                                 if (this.isRoot) change = path.sep + refSrc._target.basePath;
                                 else change = path.sep + refSrc._target.subPath;
@@ -258,7 +326,12 @@ class SourceBatch {
         let rArr = [];
 
         for (let i = 0; i < this.#list.length; i++) {
-            rArr.push(this.#list[i]);
+            rArr.push(
+                {
+                    ori: this.#list[i]._orignal.fullPath,
+                    tar: this.#list[i].fullPath
+                }
+            );
         }
         return rArr;
     }
@@ -332,12 +405,14 @@ class SourceBatch {
 class TargetSource {
     
     // public
+    savePath = null;
     fullPath = null;
     location = null;
     data = null;
     dir = null;
     // protected
     _orignal = null;
+    _ref = null;
 
     // 프로퍼티
     get name() {
@@ -356,11 +431,15 @@ class TargetSource {
         return path.relative(this.dir, this.fullPath);
     }
 
-    // constructor(org, location) {
-    constructor(org) {
+    // constructor(org) {
+    constructor(org, location) {
         this._orignal = org;
-        // this.location = location;
+        this.location = location;
     }
+
 }
 
-module.exports = SourceBatch;
+// module.exports = SourceBatch;
+exports.SourceBatch = SourceBatch;
+// exports.call = SourceBatch;
+
