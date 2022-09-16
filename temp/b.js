@@ -1,7 +1,7 @@
 // b.js
 console.log('b.js 시작');
-// const a = require('./a').call;
 const a = require('./a');
+// const {A} = require('./a');
 
 
 
@@ -9,13 +9,18 @@ const a = require('./a');
 //     console.log('b.js의 call에서의 a: ', a);
 // }
 
-class call {
+class B {
     constructor() {
-        console.log('b.js의 call에서의 a: ', a);
+        console.log('b.js의 call에서의 a: ', a.A);
+        // console.log('b.js의 call에서의 a: ', A);
     }
 }
 // exports.call = call;
-exports = call;
+exports.B = B;
+// module.exports = {
+//     B: B
+// }
+// exports = call;
 
 
 // exports.call = () => {

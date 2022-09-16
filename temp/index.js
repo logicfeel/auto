@@ -11,7 +11,7 @@ const a = require('./a');
 // let aa = new a.call();
 // let bb = new b.call();
 
-let aa = new a();
-let bb = new b();
+let aa = new a.A();
+let bb = new b.B();
 
 console.log(1)

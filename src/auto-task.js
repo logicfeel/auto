@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 // const SourceBatch = require('./source-batch');
-// const {SourceBatch} = require('./source-batch');
-const _sb = require('./source-batch');
+const { SourceBatch } = require('./source-batch');
+// const a = require('./source-batch');
 
 // CommondJS 와 ES 모듈과 동시에 사용할 수 없다.
 // import fs from 'fs';
@@ -13,13 +13,16 @@ class AutoTask {
 
     // public
     entry = null;
-    batch = _sb.SourceBatch.getInstance(this);
+    batch = null;
+    // batch = a.SourceBatch.getInstance();
     // protected
     static _instance = null;
     // private
     #__dir = null;
 
     constructor() {
+        this.batch = SourceBatch.getInstance();
+        this.batch._task = this;
     }
 
     // static 사용
