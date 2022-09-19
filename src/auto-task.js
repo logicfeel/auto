@@ -1,13 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-// const SourceBatch = require('./source-batch');
 const { SourceBatch } = require('./source-batch');
-// const a = require('./source-batch');
-
-// CommondJS 와 ES 모듈과 동시에 사용할 수 없다.
-// import fs from 'fs';
-// import path from 'path';
-// import SourceBatch from './source-batch';
 
 class AutoTask {
 
@@ -25,19 +18,6 @@ class AutoTask {
         this.batch._task = this;
     }
 
-    // static 사용
-    // static getInstance(dir) {
-    //     // 검사
-    //     if (this._instance === null && typeof dir !== 'string') {
-    //         throw new Error(' start [dir] request fail...');
-    //     }
-    //     if (this._instance === null) {
-    //         this._instance = new this();
-    //         this._instance.#__dir = dir;
-    //     }
-    //     return this._instance;
-    // }
-
     static create(dir) {
         if (typeof dir !== 'string' || dir.length === 0) {
             throw new Error(' start [dir] request fail...');
@@ -52,17 +32,6 @@ class AutoTask {
         }
         return this._instance;
     }
-
-    // 내부에 사용
-    // static getInstance(dir) {
-    //     if (typeof this._instance === 'undefined' && typeof dir === 'string') {
-    //         this._instance = new this();
-    //         this._instance.__dir = dir;
-    //     } else if (this._instance === null && typeof dir !== 'string') {
-    //         throw new Error(' start [dir] request fail...');
-    //     }
-    //     return this._instance;
-    // }
 
     /**
      * 엔트리 오토만 재배치 한다.
@@ -96,10 +65,7 @@ class AutoTask {
         }
 
         // 저장
-        // this.batch.isRoot = true;
-        // this.batch.save(this.entry.LOC.DIS, true);
         this.batch.defaultPath = 2;     // 기본절대경로
-        // this.batch.save(this.entry.LOC.DIS);
         this.batch.save();
     }
 
@@ -134,23 +100,14 @@ class AutoTask {
         for (let i = 0; i < list.length; i++) {
             list[i].resolver.load();
             list[i].resolver.resolve();     // 참조(_ref) 연결됨
-            this.batch.add(list[i].src);    // target 연결됨
+            this.batch.add(list[i].src , this.entry.LOC.DEP, true);    // target 연결됨
         }
 
-        // 구조 예시!!
-        // for (let i = 0; i < list.length; i++) {
-        //     list[i].resolver.load();
-        //     list[i].resolver.resolve();     // 참조(_ref) 연결됨
-        //     this.batch.add(list[i].src, this.entry.LOC.DEP);
-        // }
-
-
         // 저장
-        // this.batch.isRoot = true;
-        // this.batch.save(this.entry.LOC.DEP, true);        
+        // this.batch.isRoot = true;        // 절대경로시 entry 폴더 기준
         // this.batch.defaultPath = 1;      // 기본상대경로
         this.batch.defaultPath = 2;         // 기본절대경로
-        this.batch.save(this.entry.LOC.DEP);            
+        this.batch.save();            
     }
 
     do_install() {
@@ -168,18 +125,15 @@ class AutoTask {
         for (let i = 0; i < list.length; i++) {
             list[i].resolver.load();
             list[i].resolver.resolve();
-            this.batch.add(list[i].src);
-            this.batch.add(list[i].out);
+            this.batch.add(list[i].src, this.entry.LOC.INS, true);
+            this.batch.add(list[i].out, this.entry.LOC.INS, true);
         }
 
         // 저장
-        // this.batch.save(true);
-        // this.batch.install
-        // this.batch.rootDir = this.entry.LOC.INS;
-        this.batch.isRoot = false;  // insall 뒤부터
+        // this.batch.isRoot = false;       // 절대경로시 'install' 폴더
+        // this.batch.defaultPath = 1;      // 기본상대경로
         this.batch.defaultPath = 2;         // 기본절대경로
-        // this.batch.save(this.entry.LOC.DEP, false);  // 절대경로
-        this.batch.save(this.entry.LOC.INS);  // 절대경로
+        this.batch.save();
     }
 
     do_reset() {
