@@ -60,7 +60,6 @@ class AutoTask {
         for (let i = 0; i < list.length; i++) {
             list[i].resolver.load();
             list[i].resolver.resolve();
-            // this.batch.add(list[i].src);
             this.batch.add(list[i].src, this.entry.LOC.DIS, true);
         }
 
@@ -82,31 +81,35 @@ class AutoTask {
          * 확인필요 !!
          */
         let all = this.entry._getAllList();    // 엔트리는 제외
-        let dist = [];
-
-        // 대상 오토 조회
-        let list = this.entry._getDependList();
+        let dep = this.entry._getDependList();
 
         /**
          * - 구조만 불러와도 배치는 할 수 있다.
          */
 
         // 이부분은 정의 역활을 한다.
-        for (let i = 0; i < list.length; i++) {
-            list[i].readSource(true, false);
+        for (let i = 0; i < all.length; i++) {
+            all[i].readSource(true, false);
         }
 
         // 의존성 로딩 및 설정
-        for (let i = 0; i < list.length; i++) {
-            list[i].resolver.load();
-            list[i].resolver.resolve();     // 참조(_ref) 연결됨
-            this.batch.add(list[i].src , this.entry.LOC.DEP, true);    // target 연결됨
+        for (let i = 0; i < all.length; i++) {
+            all[i].resolver.load();
+            all[i].resolver.resolve();
+            
+            // 기타 모듈
+            if (dep.indexOf(all[i]) < 0) {
+                this.batch.add(all[i].src, this.entry.LOC.DIS, true);
+            
+            // 의존성 모듈
+            } else {
+                this.batch.add(all[i].src, this.entry.LOC.DEP, true);
+            }
         }
-
         // 저장
         // this.batch.isRoot = true;        // 절대경로시 entry 폴더 기준
-        // this.batch.defaultPath = 1;      // 기본상대경로
-        this.batch.defaultPath = 2;         // 기본절대경로
+        this.batch.defaultPath = 1;      // 기본상대경로
+        // this.batch.defaultPath = 2;         // 기본절대경로
         this.batch.save();            
     }
 

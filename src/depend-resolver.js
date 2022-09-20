@@ -96,7 +96,11 @@ class DependResolver {
         return objPath;
     }
 
-    // 소스에 대한 참조 목록 가져오기
+    /**
+     * _ref 참조경로에 대한 상대경로와 절대경로를 배열로 리턴
+     * @param {*} org 
+     * @returns 
+     */
     #getReferPath(org) {
         
         let arr = [];
@@ -148,7 +152,13 @@ class DependResolver {
     }
 
 
-
+    /**
+     * 경로키로  내용(data)를 매칭 목록 객체를 얻는다.
+     * 매칭 객체 {idx, key, line, col }
+     * @param {*} pathKey 
+     * @param {*} data 
+     * @returns 
+     */
     #getMatchPath(pathKey, data) {
         
         let reg

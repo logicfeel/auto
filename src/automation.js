@@ -278,6 +278,8 @@ class AutoCollection extends PropertyCollection {
         this.add(alias, auto);
         // 별칭 이름 등록
         this._super.push(alias);
+        // 의존성 등록
+        this._onwer.dep.add(alias, auto.src);
     }
 
     select(selector, obj) {}   

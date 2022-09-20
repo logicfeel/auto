@@ -1,4 +1,4 @@
-@import url("../dep/M1/inc/left.css");
+@import url("../../module/m2/module/m1/dist/mod2-M1/inc/left.css");
 
 p {
     background-color: rgb(176, 230, 173);

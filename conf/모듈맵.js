@@ -42,72 +42,72 @@ var projectA = {
 };
 
 
- /**
+/**
  * 파일 나열, 순차배열, 타입
  */
-  var projectA = {
+var projectA = {
     name: 'Project_A',
     list: [
-       {
-           name: 'PRT',
-           link: 'mod',
-           list: [
-               {
-                   name: 'View',
-                   link: 'mod',
-                   list: [
-                       {
-                           name: 'Control',
-                           link: 'sub',
-                           list: [
-                               {
-                                   name: 'Server',
-                                   link: 'sub',
-                                   list: [
-                                       {
-                                           name: 'DB_PRT',
-                                           type: 'instace', /** 기본타입은 static */
-                                           link: 'sub',
-                                           list: [
-                                               {
-                                                   name: 'DB_STO',
-                                                   link: 'super'
-                                               }
-                                           ]
-                                       },
-                                       {
-                                           name: 'Cmn_Server<NPM_NAME>',    /** NPM 이름 표시 */
-                                           link: 'super',
-                                           ref: ['View']
-                                       }
-                                   ]
-                               },
-                               {
-                                   name: 'Cmn_svc',
-                                   link: 'super',
-                                   list: [
-                                       {
-                                           name: 'Cmn_js',
-                                           link: 'super'
-                                       }
-                                   ]
-                               }
-                           ]
-                       },
-                       {
-                           name: 'Cmn_Server',
-                           link: 'super', 
-                           refer: true, /** REVIEW */
-                       }
-                   ]
-               }
-           ]
-       },
-       {
-          name: 'MEB',
-          link: 'mod',
-      },
-   ]
+        {
+            name: 'PRT',
+            link: 'mod',
+            list: [
+                {
+                    name: 'View',
+                    link: 'mod',
+                    list: [
+                        {
+                            name: 'Control',
+                            link: 'sub',
+                            list: [
+                                {
+                                    name: 'Server',
+                                    link: 'sub',
+                                    list: [
+                                        {
+                                            name: 'DB_PRT',
+                                            type: 'instace', /** 기본타입은 static */
+                                            link: 'sub',
+                                            list: [
+                                                {
+                                                    name: 'DB_STO',
+                                                    link: 'super'
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            name: 'Cmn_Server<NPM_NAME>',    /** NPM 이름 표시 */
+                                            link: 'super',
+                                            ref: ['View']
+                                        }
+                                    ]
+                                },
+                                {
+                                    name: 'Cmn_svc',
+                                    link: 'super',
+                                    list: [
+                                        {
+                                            name: 'Cmn_js',
+                                            link: 'super'
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            name: 'Cmn_Server',
+                            link: 'super', 
+                            refer: true, /** REVIEW */
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            name: 'MEB',
+            link: 'mod',
+        },
+    ]
 };
 
 

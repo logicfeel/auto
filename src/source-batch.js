@@ -98,28 +98,28 @@ class SourceBatch {
 
     #saveFile() {
 
-        let isExists, dirname, fullPath, data;
+        let isExists, dirname, savePath, data;
         const _this = this;
 
         for (let i = 0; i < this.#list.length; i++) {
             
             if (this.#list[i].savePath !== null) {
-                fullPath = this.#list[i].fullPath;
+                savePath = this.#list[i].savePath;
                 data = this.#list[i].data;
-                dirname = path.dirname(fullPath);
+                dirname = path.dirname(savePath);
                 // 디렉토리 만들기
                 isExists = fs.existsSync(dirname);
                 if(!isExists) {
                     fs.mkdirSync(dirname, {recursive: true} );
                 }
                 // TODO:: try 로 예외 처리함
-                fs.writeFileSync(fullPath, data, 'utf8');   
+                fs.writeFileSync(savePath, data, 'utf8');   
     
                 // fs.writeFile(fullPath, content, 'utf8', function(error){ 
                 //     console.log('write :'+ fullPath);
                 // });
                 // 배치 로그 등록
-                this.#addBatchFile(fullPath);    
+                this.#addBatchFile(savePath);    
             }
         }
         // 배치 로그 저장
@@ -134,6 +134,7 @@ class SourceBatch {
 
     #addBatchFile(savePath) {
         if (this._batchFile.indexOf(savePath) < 0) this._batchFile.push(savePath);
+        console.log('SAVE : ' + savePath);
     }
 }
 
@@ -178,7 +179,7 @@ class TargetSource {
      * 소스 내용(data) 설정
      * @param {*} isRoot 절대경로시 location 경로 포함 여부 (install 시점)
      */
-    setData(isRoot) {
+    setData(isRoot = true, defaultPath = 1) {
         
         let org, data, arrObj = [], list, change, refSrc, localDir;
         let dir, entry;
@@ -193,7 +194,7 @@ class TargetSource {
             // 1) 타겟소스가 없을 경우
             if (refSrc._target === null || refSrc._target.fullPath === null) {
                 // 상대경로 (오토기준)
-                if (this.defaultPath === 1) {
+                if (defaultPath === 1) {
                     dir = path.dirname(this.fullPath);
                     change = path.relative(dir, refSrc.fullPath);       
                 } else {
@@ -222,7 +223,7 @@ class TargetSource {
             // 2) 타겟소스가 있을 경우
             } else {
                 // 상대경로 (오토기준)
-                if (this.defaultPath === 1) {
+                if (defaultPath === 1) {
                     dir = path.dirname(this.fullPath);
                     change = path.relative(dir, refSrc._target.fullPath);       
                 } else {

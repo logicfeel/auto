@@ -1,6 +1,6 @@
 @import url("../dep/M2/style.css");
 @import url("../out/bar.css");
 
-p {
-    background-color: rgb(176, 230, 173);
+h2 {
+    background-color: rgb(166, 64, 235);
 }

@@ -1,8 +1,11 @@
 
 // const autoTask = require('../../src/auto-task').getInstance(__dirname);
 
-let AutoTask = require('../../src/auto-task');
-let autoTask = AutoTask.getInstance(__dirname);
+let AutoTask = require('../../src/auto-task').AutoTask;
+// let autoTask = AutoTask.getInstance(__dirname);
+let autoTask = AutoTask.create(__dirname);
+// let AutoTask = require('../../src/auto-task');
+// let autoTask = AutoTask.getInstance(__dirname);
 
 // let a = autoTask.entry;   // 별칭
 // let task = AutoTask.getInstance();

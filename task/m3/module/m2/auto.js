@@ -1,9 +1,9 @@
-const Automation = require('../../src/automation');
-let Mod1 = require('../m1/auto');
+const Automation = require('../../../../src/automation');
+// let Mod1 = require('../../../m1/auto');
 let Mod1_1 = require('./module/m1/auto');
 
-let mod1 = new Mod1();
-let mod2 = new Mod1();
+// let mod1 = new Mod1();
+// let mod2 = new Mod1();
 let mod3 = new Mod1_1();
 
 
@@ -16,10 +16,13 @@ class Auto extends Automation {
 
         // 오토 가져오기
         // this.mod.sub('M1', mod1);    // 동일 위치에 있음
-        this.mod.sub('M1', mod3);       // module 하위에 있음
+        // this.mod.sub('M1', mod3);       // module 하위에 있음
+        this.mod.super('M1', mod3);       // module 하위에 있음
         // this.mod.sub('M1', mod2);
         // this.mod.super('M1', mod1);
-
+        
+        // 하위 인톨맵 오버라이딩
+        // this.addMap(mod3);
         // 인스톨 경로 설정
         // 앤트리 설정 영억
         // this._install.root = this.LOC.INS;  // 기준 상대 경로

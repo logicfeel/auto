@@ -1,4 +1,4 @@
-const Automation = require('../../src/automation');
+const Automation = require('../../../../../../src/automation');
 
 
 class Auto extends Automation {
