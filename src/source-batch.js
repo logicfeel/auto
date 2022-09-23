@@ -44,7 +44,8 @@ class SourceBatch {
             // this.setFullPath(tar, isSave);
             // this.setPath()
             // tar = new TargetSource(org);
-            org._target = tar;      // _target 설정
+            org._setTarget(tar);    // _target 설정
+            // org._target = tar;      
             this.#list.push(tar);
         }
     }

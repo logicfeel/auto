@@ -1,6 +1,6 @@
 const path = require('path');
 
-// 해결자..
+// 의존성 해결자
 class DependResolver {
     
     // protectd
@@ -21,17 +21,16 @@ class DependResolver {
     resolve() {
         
         let arr, src, data, keyword;
-        let indexArr = [];
+        let list = [];
 
         // 내부함수
-        function createRefObj(src, list, alias = null) {
-            let refObj = {
-                src: src,
-                alias: alias,
-                list: list,
-            };
-            return refObj;
-        }
+        // function createRefObj(src, list) {
+        //     let refObj = {
+        //         src: src,
+        //         list: list,
+        //     };
+        //     return refObj;
+        // }
 
         // 원본 소스 조회
         for (let i = 0; i < this._org.length; i++) {
@@ -40,15 +39,16 @@ class DependResolver {
             // 참조 대상 조회
             for (let ii = 0; ii < arr.length; ii++) {
                 // 대상의 상대, 절대 경로
-                indexArr = [];  // 초기화
+                list = [];  // 초기화
                 src = arr[ii].src;
                 for (let iii = 0; iii < arr[ii].path.length; iii++) {
                     keyword = arr[ii].path[iii];    
-                    indexArr = indexArr.concat(this.#getMatchPath(keyword, data));    // 벼열 합침
+                    list = list.concat(this.#getMatchPath(keyword, data));    // 벼열 합침
                 }
                 // 참조가 있으면 등록
-                if (indexArr.length > 0) {
-                    this._org[i].src._ref.push(createRefObj(src, indexArr));
+                if (list.length > 0) {
+                    // this._org[i].src._ref.push(createRefObj(src, indexArr));
+                    this._org[i].src._addReference(src, list);
                 }                
             }
         }
@@ -86,6 +86,13 @@ class DependResolver {
         }
     }
 
+    /**
+     * 원본, 참조 OrignalSource 객체 생성
+     * @param {*} src 
+     * @param {*} location 
+     * @param {*} alias 
+     * @returns {object}
+     */
     #createPath(src, location, alias = '') {
         // 임시 객체
         let objPath = {
@@ -153,7 +160,7 @@ class DependResolver {
 
 
     /**
-     * 경로키로  내용(data)를 매칭 목록 객체를 얻는다.
+     * 경로키로 내용(data)를 매칭 목록 객체를 얻는다.
      * 매칭 객체 {idx, key, line, col }
      * @param {*} pathKey 
      * @param {*} data 

@@ -40,6 +40,26 @@ class OriginalSource {
         this.fullPath = fullPath;
         this.location = location;
     }
+
+    /**
+     * 참조객체 등록
+     * @param {*} src 참조 대상 원본소스
+     * @param {*} list 참조 위치 객체
+     */
+    _addReference(src, list) {
+        this._ref.push({
+            src: src,
+            list: list
+        });
+    }
+
+    /**
+     * 타겟 설정
+     * @param {*} tar 
+     */
+    _setTarget(tar) {
+        this._target = tar;
+    }
 }
 
 class SourceCollection extends PropertyCollection {

@@ -1,0 +1,6 @@
+@import url("../mod2/M2/style.css");
+@import url("bar.css");
+
+h2 {
+    background-color: rgb(166, 64, 235);
+}
