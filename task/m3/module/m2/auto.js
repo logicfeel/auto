@@ -36,7 +36,7 @@ class Auto extends Automation {
         this._install.change = [
             // 순차적으로 처리됨
             {
-                dir: 'mod1/area',           // 디렉토리 변경
+                dir: 'mod1/area',           // 디렉토리 변경, 가상경로만!!
                 rename: ''
             },
             {
@@ -48,12 +48,19 @@ class Auto extends Automation {
                 rename: 'mod2/m2-2.html',
                 absolute: true,             // 절대 경로
                 refer: true,                // 참조대상에서 변경 
-            }
+            },
             // 맨뒤에 map() 콜백 처리됨
+            // 특정확장자를 특정 폴더를 이동할 경우
+            {
+                
+            }
         ];
         this._install.map = [
             function(path) {console.log(2)}
         ];
+        
+        // 가상 경로 설정
+        // this.vir.add('/folder');
 
         // 속성 설정
         // 템플릿 설정
