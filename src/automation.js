@@ -2,16 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const { MetaElement, PropertyCollection, MetaObject } = require('entitybind');
 const { DependResolver } = require('./depend-resolver');
-const { SourceCollection } = require('./original-source');
+const { FileCollection } = require('./base-path');
 
 /**
  * 오토메이션 클래스
  */
 class Automation {
+    
     // public
     mod         = new AutoCollection(this);
-    src         = new SourceCollection(this);
-    out         = new SourceCollection(this);
+    src         = new FileCollection(this);
+    out         = new FileCollection(this);
     dep         = new DependCollection(this);
     resolver    = new DependResolver(this);
     LOC = {     // location
@@ -20,8 +21,10 @@ class Automation {
         DEP: 'dep',
         INS: 'install',
         PUB: 'publish',
-        DIS: 'dist'
+        DIS: 'dist',
+        VIR: 'vir'
     };
+    prop = {};
     // protected
     _owner      = null;
     _install    = null;
@@ -35,13 +38,13 @@ class Automation {
 
     // property
     get dir() {
-        return this.#dir;
+        return this.#_dir;
     }
     get name() {
         return this._package.name;
     }
     get alias() {
-        return this.#alias;
+        return this.#_alias;
     }
     set alias(val) {
         this.#_alias = val;
@@ -192,24 +195,7 @@ class Automation {
         return obj;                      
     }
 
-    /**
-     * 별칭 중복 검사 및 버전 검사
-     * 
-     * @param {*} alias 오토 별칭
-     * @param {*} auto 오토 객체
-     * @return {boolean}
-     */
-    _valid(alias, auto) {
-        // 별칭 중복 검사
-        if (super.indexOfName(alias) > -1) {
-            throw new Error(' 별칭 중복 오류!! ');
-        }
-        /**
-         * TODO::
-         * 엔트리 오토를 기준으로 semmver로 정해진 버전 검사
-         */
-        return true;
-    }
+    
     
     /**
      * 오토를 mod 에 추가한다.
@@ -240,28 +226,45 @@ class Automation {
         this._onwer.dep.add(alias, auto.src);
     }
 
-    select(selector, obj) {}   
-}
+    select(selector, obj) {}
 
-/**
- * 의존성 컬렉션
- */
-class DependCollection extends PropertyCollection {
-    
-    // TODO:: owner 명칭 변경 (오타) !!
-    constructor(onwer) {
-        super(onwer);
+    /**
+     * 별칭 중복 검사 및 버전 검사
+     * 
+     * @param {*} alias 오토 별칭
+     * @param {*} auto 오토 객체
+     * @return {boolean}
+     */
+     _valid(alias, auto) {
+        // 별칭 중복 검사
+        if (super.indexOfName(alias) > -1) {
+            throw new Error(' 별칭 중복 오류!! ');
+        }
+        /**
+         * TODO::
+         * 엔트리 오토를 기준으로 semmver로 정해진 버전 검사
+         */
+        return true;
     }
 }
 
 /**
- * 메타 컬렉션
+ * 의존성컬렉션 클ㅐㅡ
+ */
+class DependCollection extends PropertyCollection {
+    
+    constructor(owner) {
+        super(owner);
+    }
+}
+
+/**
+ * 메타컬렉션 클래스
  */
  class MetaCollection extends PropertyCollection {
     
-    // TODO:: owner 명칭 변경 (오타) !!
-    constructor(onwer) {
-        super(onwer);
+    constructor(owner) {
+        super(owner);
     }
 }
 
