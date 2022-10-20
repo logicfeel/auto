@@ -6,7 +6,7 @@ class Auto extends Automation {
         super(__dirname);
 
         // 오토 가져오기
-        
+        this.vir.add('/aaa/bbb');
 
         // 속성 설정
         this.prop.a = 'a'

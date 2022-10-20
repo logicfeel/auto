@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { MetaElement, PropertyCollection, MetaObject } = require('entitybind');
 const { DependResolver } = require('./depend-resolver');
-const { FileCollection } = require('./base-path');
+const { FileCollection, FolderCollection } = require('./base-path');
 
 /**
  * 오토메이션 클래스
@@ -13,7 +13,9 @@ class Automation {
     mod         = new AutoCollection(this);
     src         = new FileCollection(this);
     out         = new FileCollection(this);
+    vir         = new FolderCollection(this);
     dep         = new DependCollection(this);
+    meta        = new MetaCollection(this);
     resolver    = new DependResolver(this);
     LOC = {     // location
         OUT: 'out',

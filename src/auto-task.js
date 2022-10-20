@@ -132,6 +132,7 @@ class AutoTask {
             list[i].resolver.resolve();
             this.batch.add(list[i].src, this.entry.LOC.INS, true);
             this.batch.add(list[i].out, this.entry.LOC.INS, true);
+            this.batch.add(list[i].vir, this.entry.LOC.INS, true);
         }
 
         // 저장

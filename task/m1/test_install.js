@@ -12,4 +12,6 @@ let autoTask = AutoTask.create(__dirname);
 autoTask.do_install();
 // autoTask.do_reset();
 
+let e = autoTask.entry;
+
 console.log(1)

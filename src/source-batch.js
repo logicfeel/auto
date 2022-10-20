@@ -3,6 +3,7 @@ const fs = require('fs');
 
 // const {AutoTask} = require('./auto-task');
 const a = require('./auto-task');
+const { NonTextFile, TextFile, VirtualFolder } = require('./base-path');
 
 /**
  * 소스배치 클래스
@@ -57,7 +58,10 @@ class SourceBatch {
     save() {
 
         for (let i = 0; i < this.#_list.length; i++) {
-            this.#_list[i].setData(this.isRoot);
+            // TextFile 만 콘텐츠 설정
+            if (this.#_list[i]._orignal instanceof TextFile) {
+                this.#_list[i].setData(this.isRoot);
+            }
         }
 
         // TODO:: 중복제거
@@ -100,28 +104,45 @@ class SourceBatch {
 
     #_saveFile() {
 
-        let isExists, dirname, savePath, data;
+        let isExists, dirname, savePath, data, orignal;
         const _this = this;
-
+        // TODO:: try 로 예외 처리함
         for (let i = 0; i < this.#_list.length; i++) {
             
             if (this.#_list[i].savePath !== null) {
-                savePath = this.#_list[i].savePath;
-                data = this.#_list[i].data;
-                dirname = path.dirname(savePath);
-                // 디렉토리 만들기
-                isExists = fs.existsSync(dirname);
-                if(!isExists) {
-                    fs.mkdirSync(dirname, {recursive: true} );
+                orignal = this.#_list[i]._orignal;
+                // 비텍스트 파일의 경우
+                if (orignal instanceof NonTextFile) {
+                    savePath = this.#_list[i].savePath;
+                    dirname = path.dirname(savePath);
+                    isExists = fs.existsSync(dirname);  // 디렉토리 검사
+                    if(!isExists) {
+                        fs.mkdirSync(dirname, {recursive: true} ); // 디렉토리 만들기
+                    }
+                    // 복사
+                    fs.copyFileSync(orignal.fullPath, savePath)
+                    this.#_addBatchFile(savePath);    
+                
+                // 텍스트 파일의 경우
+                } else if (orignal instanceof TextFile) {
+                    savePath = this.#_list[i].savePath;
+                    data = this.#_list[i].data;
+                    dirname = path.dirname(savePath);   
+                    isExists = fs.existsSync(dirname);  // 디렉토리 검사
+                    if(!isExists) {
+                        fs.mkdirSync(dirname, {recursive: true} );  // 디렉토리 만들기
+                    }
+                    fs.writeFileSync(savePath, data, 'utf8');       
+                    this.#_addBatchFile(savePath);  // 배치 로그 등록
+                
+                // (가상) 폴더의 경우
+                } else if (orignal instanceof VirtualFolder) {
+                    savePath = this.#_list[i].savePath;
+                    isExists = fs.existsSync(savePath);
+                    if(!isExists) {
+                        fs.mkdirSync(savePath, {recursive: true} ); // 디렉토리 만들기
+                    }
                 }
-                // TODO:: try 로 예외 처리함
-                fs.writeFileSync(savePath, data, 'utf8');   
-
-                // fs.writeFile(fullPath, content, 'utf8', function(error){ 
-                //     console.log('write :'+ fullPath);
-                // });
-                // 배치 로그 등록
-                this.#_addBatchFile(savePath);    
             }
         }
         // 배치 로그 저장

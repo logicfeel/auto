@@ -53,7 +53,7 @@ class BasePath {
 /**
  * 가상폴더 클래스
  */
-class VirtualPath extends BasePath {
+class VirtualFolder extends BasePath {
 
     // property
     get name() {
@@ -204,16 +204,24 @@ class TextFile extends NonTextFile {
 /**
  * 메타컬렉션 클래스
  */
- class MetaCollection extends PropertyCollection {
+ class FolderCollection extends PropertyCollection {
     
     constructor(owner) {
         super(owner);
     }
+
+    add(vFolder) {
+        
+        let obj;
+
+        obj = new VirtualFolder(this._onwer, vFolder);
+        super.add(vFolder, obj);
+    }
 }
 
 exports.BasePath = BasePath;
-exports.VirtualPath = VirtualPath;
+exports.VirtualFolder = VirtualFolder;
 exports.NonTextFile = NonTextFile;
 exports.TextFile = TextFile;
 exports.FileCollection = FileCollection;
-exports.MetaCollection = MetaCollection;
+exports.FolderCollection = FolderCollection;

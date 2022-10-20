@@ -5,7 +5,7 @@ class DependResolver {
     // protectd
     _auto = null;
     _list = [];
-    _path = [];
+    _paths = [];
 
     constructor(auto) {
         this._auto = auto;
@@ -24,7 +24,7 @@ class DependResolver {
         // 원본 소스 조회
         for (let i = 0; i < this._list.length; i++) {
             arr = this.#_getPathList(this._list[i]);
-            data = this._list[i].ref.data;
+            data = this._list[i].origin.data;
             // 참조 대상 조회
             for (let ii = 0; ii < arr.length; ii++) {``
                 // 대상의 상대, 절대 경로
@@ -32,11 +32,11 @@ class DependResolver {
                 basePath = arr[ii].basePath;
                 for (let iii = 0; iii < arr[ii].paths.length; iii++) {
                     keyword = arr[ii].paths[iii];    
-                    list = list.concat(this.#_getPathMatch(keyword, data));    // 벼열 합침
+                    list = list.concat(this.#_getMatchList(keyword, data));    // 벼열 합침
                 }
                 // 참조가 있으면 등록
                 if (list.length > 0) {
-                    this._list[i].ref._addDepend(basePath, list);
+                    this._list[i].origin._addDepend(basePath, list);
                 }                
             }
         }
@@ -44,13 +44,24 @@ class DependResolver {
 
     // 해결대상 가져오기
     _readOriginal() {
+        
+        function createObject(basePath, location, alias = '') {
+            let objPath = {
+                origin: basePath,
+                location: location,
+                include: ['*.*'],
+                exclude: [],
+            };    
+            return objPath;
+        }
+
         // src 가져오기
         for (let i = 0; i < this._auto.src.count; i++) {
-            this._list.push(this.#_createObject(this._auto.src[i], 'src'));
+            this._list.push(createObject(this._auto.src[i], 'src'));
         }
         // out 가져오기
         for (let i = 0; i < this._auto.out.count; i++) {
-            this._list.push(this.#_createObject(this._auto.out[i], 'out'));
+            this._list.push(createObject(this._auto.out[i], 'out'));
         }
     }
 
@@ -58,20 +69,34 @@ class DependResolver {
     _readReference() {
 
         let alias = '';
+
+        function createObject(basePath, location, alias = '') {
+            let objPath = {
+                origin: basePath,
+                location: location,
+                alias: alias,
+            };    
+            return objPath;
+        }
+
         // src 가져오기        
         for (let i = 0; i < this._auto.src.count; i++) {
-            this._path.push(this.#_createObject(this._auto.src[i], 'src'));
+            this._paths.push(createObject(this._auto.src[i], 'src'));
         }
         // out 가져오기
         for (let i = 0; i < this._auto.out.count; i++) {
-            this._path.push(this.#_createObject(this._auto.out[i], 'out'));
+            this._paths.push(createObject(this._auto.out[i], 'out'));
         }
         // dep 가져오기
         for (let i = 0; i < this._auto.dep.count; i++) {       
             alias = this._auto.dep.properties[0];   // 별칭 얻기
             for (let ii = 0; ii < this._auto.dep[i].count; ii++) {
-                this._path.push(this.#_createObject(this._auto.dep[i][ii], 'dep', alias));
+                this._paths.push(createObject(this._auto.dep[i][ii], 'dep', alias));
             }
+        }
+        // vir 가져오기
+        for (let i = 0; i < this._auto.vir.count; i++) {
+            this._paths.push(createObject(this._auto.vir[i], 'vir'));
         }
     }
 
@@ -84,7 +109,7 @@ class DependResolver {
      */    
     #_createObject(basePath, location, alias = '') {
         let objPath = {
-            ref: basePath,
+            origin: basePath,
             location: location,
             alias: alias,
         };    
@@ -112,32 +137,32 @@ class DependResolver {
         }
 
         if (obj.location === 'src') {
-            for (let i = 0; i < this._path.length; i++) {
-                basePath = this._path[i].ref;
-                if (['src', 'out'].indexOf(this._path[i].location) > -1) {
+            for (let i = 0; i < this._paths.length; i++) {
+                basePath = this._paths[i].origin;
+                if (['src', 'out'].indexOf(this._paths[i].location) > -1) {
                     // 절대경로 
                     localPath = path.sep + basePath.localPath;
-                    dir = path.dirname(obj.ref.fullPath);
+                    dir = path.dirname(obj.origin.fullPath);
                     // 상대경로 
                     relativePath = path.relative(dir, basePath.fullPath);
                     arr.push(createPathList(basePath, localPath, relativePath));
-                } else if (this._path[i].location === 'dep') {
+                } else if (this._paths[i].location === 'dep') {
                     // 절대경로  (가상경로)
-                    aliasPath = path.sep + this._auto.LOC.DEP + path.sep + this._path[i].alias + path.sep + src.subPath;
-                    dir = path.dirname(obj.ref.fullPath);
+                    aliasPath = path.sep + this._auto.LOC.DEP + path.sep + this._paths[i].alias + path.sep + src.subPath;
+                    dir = path.dirname(obj.origin.fullPath);
                     // 상대경로 
                     relativePath = path.relative(dir, this._auto.dir + path.sep + aliasPath);
                     arr.push(createPathList(basePath, aliasPath, relativePath));
                 }
             }
         } else if (obj.location === 'out') {
-            for (let i = 0; i < this._path.length; i++) {
-                basePath = this._path[i].ref;
-                if (['out'].indexOf(this._path[i].location) > -1) {
+            for (let i = 0; i < this._paths.length; i++) {
+                basePath = this._paths[i].origin;
+                if (['out'].indexOf(this._paths[i].location) > -1) {
                     // 절대경로 
                     localPath = path.sep + basePath.localPath;
                     // 상대경로 
-                    dir = path.dirname(obj.ref.fullPath);
+                    dir = path.dirname(obj.origin.fullPath);
                     relativePath = path.relative(dir, basePath.fullPath);
                     arr.push(createPathList(basePath, localPath, relativePath));
                 }
@@ -153,7 +178,7 @@ class DependResolver {
      * @param {*} data 
      * @returns 
      */
-    #_getPathMatch(strPath, data) {
+    #_getMatchList(strPath, data) {
         
         let reg
         let rArr = [];
