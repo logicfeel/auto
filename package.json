@@ -19,5 +19,8 @@
   "devDependencies": {
     "entitybind": "github:logicfeel/EntityBind",
     "r.x.x-auto": "github:logicfeel/Automation#r.x.x-auto"
-  }  
+  },
+  "dependencies": {
+    "micromatch": "^4.0.5"
+  }
 }

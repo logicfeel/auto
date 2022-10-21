@@ -1,4 +1,5 @@
 const path = require('path');
+const micromatch = require('micromatch');
 
 class DependResolver {
     
@@ -32,7 +33,7 @@ class DependResolver {
                 basePath = arr[ii].basePath;
                 for (let iii = 0; iii < arr[ii].paths.length; iii++) {
                     keyword = arr[ii].paths[iii];    
-                    list = list.concat(this.#_getMatchList(keyword, data));    // 벼열 합침
+                    list = list.concat(this.#_getMatch(keyword, data));    // 벼열 합침
                 }
                 // 참조가 있으면 등록
                 if (list.length > 0) {
@@ -42,11 +43,30 @@ class DependResolver {
         }
     }
 
+    /**
+     * 포함할 경로 설정
+     * @param {*} locPath glob 패턴으로 이용해도됨
+     * @param {*} arr 
+     */
+    setInclude(locPath, arr) {
+
+    }
+    /**
+     * patterns : 패턴
+     * 대상패턴, 포함패턴[*], 제외패턴[*]
+     * src/*.js,  **
+     * 파일에 대한 패턴이 중복되는 이슈가 있다.
+     *  - 경로를 기준으로 대상패턴을 조회한다.
+     *  - 대상에 대한 패턴을 조회하여 적합한 파일을 찾는다.
+     *  - list별 paths를 가져외서 의존성을 해결한다.
+     */
+
     // 해결대상 가져오기
     _readOriginal() {
         
-        function createObject(basePath, location, alias = '') {
-            let objPath = {
+        function createObject(basePath, location, alias = '') {           
+             let objPath = {
+                path: basePath.localPath,
                 origin: basePath,
                 location: location,
                 include: ['*.*'],
@@ -72,6 +92,7 @@ class DependResolver {
 
         function createObject(basePath, location, alias = '') {
             let objPath = {
+                path: basePath.localPath,
                 origin: basePath,
                 location: location,
                 alias: alias,
@@ -99,22 +120,15 @@ class DependResolver {
             this._paths.push(createObject(this._auto.vir[i], 'vir'));
         }
     }
-
-    /**
-     * 원본, 참조 OrignalSource 객체 생성
-     * @param {*} basePath 
-     * @param {*} location 
-     * @param {*} alias 
-     * @returns {object}
-     */    
-    #_createObject(basePath, location, alias = '') {
-        let objPath = {
-            origin: basePath,
-            location: location,
-            alias: alias,
-        };    
-        return objPath;
-    }
+ 
+    // #_createObject(basePath, location, alias = '') {
+    //     let objPath = {
+    //         origin: basePath,
+    //         location: location,
+    //         alias: alias,
+    //     };    
+    //     return objPath;
+    // }
 
     /**
      * _ref 참조경로에 대한 상대경로와 절대경로를 배열로 리턴
@@ -178,7 +192,7 @@ class DependResolver {
      * @param {*} data 
      * @returns 
      */
-    #_getMatchList(strPath, data) {
+    #_getMatch(strPath, data) {
         
         let reg
         let rArr = [];
