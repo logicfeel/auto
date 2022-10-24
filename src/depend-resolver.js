@@ -1,5 +1,5 @@
 const path = require('path');
-const micromatch = require('micromatch');
+const mm = require('micromatch');
 
 class DependResolver {
     
@@ -7,9 +7,12 @@ class DependResolver {
     _auto = null;
     _list = [];
     _paths = [];
+    //private
+    #_patterns = [];
 
     constructor(auto) {
         this._auto = auto;
+        // this.#_patterns.push({target: '**', include: '**'});
     }
 
     load() {
@@ -38,19 +41,98 @@ class DependResolver {
                 // 참조가 있으면 등록
                 if (list.length > 0) {
                     this._list[i].origin._addDepend(basePath, list);
-                }                
+                }
             }
         }
     }
 
     /**
      * 포함할 경로 설정
-     * @param {*} locPath glob 패턴으로 이용해도됨
-     * @param {*} arr 
+     * @param {*} target 대상 원보 glob 패턴
+     * @param {*} include 포함할 패턴
+     * @param {*} exclude 제외할 패ㄴ
      */
-    setInclude(locPath, arr) {
-
+    setPattern(target, include, exclude) {
+        this.#_patterns.push({
+            target: target,
+            include: include,
+            exclude: exclude,
+        });
     }
+
+    getPattern(localPath) {
+        
+        let target = [], include = [], exclude =[];
+        let arr = [];
+
+        if (this._getList(localPath) < 0) {
+            return arr;
+        }
+
+        // 소스에 포함되는 패턴 조회
+        for(let i = 0; i < this.#_patterns.length; i++) {
+            if (mm.isMatch(localPath, this.#_patterns[i].target)) {
+                target.push(this.#_patterns[i].target);
+                include.push(this.#_patterns[i].include);
+                exclude.push(this.#_patterns[i].exclude);
+            }
+        }
+
+        // 전체 적용패턴이 없을 경우 모두 리턴
+        if (target.length === 0) return this._getPaths();
+
+        // include 패턴 적용
+        arr = mm.match(this._getPaths(), include);
+        // exclude 패턴 적용
+        arr = mm.not(arr, exclude);
+
+        return arr;
+    }
+
+    getPathObject(localPath) { 
+        
+        let arr = [];
+        let pattern = this.getPattern(localPath);
+
+        // 대상에 정의된 패턴이 없으면 전체 리턴
+        if (pattern.length === 0) return this._paths;
+        
+        for (let i = 0; i < this._paths.length; i++) {
+            if (pattern.indexOf(this._paths[i].path) > -1 ) arr.push(this._paths[i]);  
+        }
+        return arr;
+    }
+
+    /**
+     * 참조 경로 배열 리턴
+     * @returns 
+     */
+    _getPaths(isObj) {
+        
+        let arr = [];
+
+        for (let i = 0; i < this._paths.length; i++) {
+            arr.push(this._paths[i].path);
+        }
+        return arr;
+    } 
+
+
+    /**
+     * 원본 경로 배열 리턴
+     * @returns 
+     */
+     _getList(isObj) {
+        
+        let arr = [];
+
+        for (let i = 0; i < this._list.length; i++) {
+            arr.push(this._list[i].path);
+        }
+        return arr;
+    } 
+
+
     /**
      * patterns : 패턴
      * 대상패턴, 포함패턴[*], 제외패턴[*]
@@ -140,6 +222,7 @@ class DependResolver {
         let arr = [];
         let relativePath = null;
         let basePath, dir, localPath, aliasPath;
+        let paths = [];
 
         // 내부함수 
         function createPathList(basePath, ...paths) {
@@ -150,19 +233,21 @@ class DependResolver {
             return key;
         }
 
+        paths = this.getPathObject(obj.path);
+
         if (obj.location === 'src') {
-            for (let i = 0; i < this._paths.length; i++) {
-                basePath = this._paths[i].origin;
-                if (['src', 'out'].indexOf(this._paths[i].location) > -1) {
+            for (let i = 0; i < paths.length; i++) {
+                basePath = paths[i].origin;
+                if (['src', 'out'].indexOf(paths[i].location) > -1) {
                     // 절대경로 
                     localPath = path.sep + basePath.localPath;
                     dir = path.dirname(obj.origin.fullPath);
                     // 상대경로 
                     relativePath = path.relative(dir, basePath.fullPath);
                     arr.push(createPathList(basePath, localPath, relativePath));
-                } else if (this._paths[i].location === 'dep') {
+                } else if (paths[i].location === 'dep') {
                     // 절대경로  (가상경로)
-                    aliasPath = path.sep + this._auto.LOC.DEP + path.sep + this._paths[i].alias + path.sep + src.subPath;
+                    aliasPath = path.sep + this._auto.LOC.DEP + path.sep + paths[i].alias + path.sep + src.subPath;
                     dir = path.dirname(obj.origin.fullPath);
                     // 상대경로 
                     relativePath = path.relative(dir, this._auto.dir + path.sep + aliasPath);
@@ -170,9 +255,9 @@ class DependResolver {
                 }
             }
         } else if (obj.location === 'out') {
-            for (let i = 0; i < this._paths.length; i++) {
-                basePath = this._paths[i].origin;
-                if (['out'].indexOf(this._paths[i].location) > -1) {
+            for (let i = 0; i < paths.length; i++) {
+                basePath = paths[i].origin;
+                if (['out'].indexOf(paths[i].location) > -1) {
                     // 절대경로 
                     localPath = path.sep + basePath.localPath;
                     // 상대경로 

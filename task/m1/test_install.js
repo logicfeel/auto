@@ -14,4 +14,12 @@ autoTask.do_install();
 
 let e = autoTask.entry;
 
+
+    // e.resolver._list
+    e.resolver.getPattern('src/inc/left.css')
+    // e.resolver.getPattern('src/m1.html')
+    // e.resolver.getPattern('out/com.css')
+    // e.resolver.getPattern('out/area/top.css')
+
+
 console.log(1)

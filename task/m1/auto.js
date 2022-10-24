@@ -11,6 +11,11 @@ class Auto extends Automation {
         // 속성 설정
         this.prop.a = 'a'
 
+        // 해결자 설정
+        this.resolver.setPattern('src/**', 'src/**');
+        this.resolver.setPattern('src/inc/**', 'out/**', 'out/com*');
+        this.resolver.setPattern('out/*', 'src/**');
+
         // 템플릿 설정
 
         // 메타모델 설정
