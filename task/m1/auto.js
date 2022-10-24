@@ -12,9 +12,18 @@ class Auto extends Automation {
         this.prop.a = 'a'
 
         // 해결자 설정
-        this.resolver.setPattern('src/**', 'src/**');
-        this.resolver.setPattern('src/inc/**', 'out/**', 'out/com*');
-        this.resolver.setPattern('out/*', 'src/**');
+        // this.resolver.setPattern('src/**', 'src/**');
+        // this.resolver.setPattern('src/inc/**', 'out/**', 'out/com*');
+        // this.resolver.setPattern('out/*', 'src/**');
+
+        // 강제 의존성 설정
+        
+        // 콜백 이벤트 설정
+        this.onBatch = (auto) => {
+            // 강제 의존성 설정
+            // this.src['src/inc/left.css'].addDepend('src/m1.html');  // path str 로 추가
+            auto.src['src/inc/left.css'].addDepend(auto.src['src/m1.html']);    // 객체로 추가
+        };
 
         // 템플릿 설정
 

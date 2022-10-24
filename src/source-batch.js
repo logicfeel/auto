@@ -11,7 +11,7 @@ const { NonTextFile, TextFile, VirtualFolder } = require('./base-path');
 class SourceBatch {
     // public
     isRoot = true;
-    defaultPath = 1;    // (0:자동, 1:상대, 2:절대) TODO:: pathType 으로 변경 
+    pathType = 0;    // (0:자동, 1:상대, 2:절대)
     // protected
     static _instance = null;
     _batchFile = [];
@@ -111,20 +111,9 @@ class SourceBatch {
             
             if (this.#_list[i].savePath !== null) {
                 orignal = this.#_list[i]._orignal;
-                // 비텍스트 파일의 경우
-                if (orignal instanceof NonTextFile) {
-                    savePath = this.#_list[i].savePath;
-                    dirname = path.dirname(savePath);
-                    isExists = fs.existsSync(dirname);  // 디렉토리 검사
-                    if(!isExists) {
-                        fs.mkdirSync(dirname, {recursive: true} ); // 디렉토리 만들기
-                    }
-                    // 복사
-                    fs.copyFileSync(orignal.fullPath, savePath)
-                    this.#_addBatchFile(savePath);    
-                
+                 
                 // 텍스트 파일의 경우
-                } else if (orignal instanceof TextFile) {
+                if (orignal instanceof TextFile) {
                     savePath = this.#_list[i].savePath;
                     data = this.#_list[i].data;
                     dirname = path.dirname(savePath);   
@@ -135,6 +124,18 @@ class SourceBatch {
                     fs.writeFileSync(savePath, data, 'utf8');       
                     this.#_addBatchFile(savePath);  // 배치 로그 등록
                 
+                    // 비텍스트 파일의 경우
+                } else if (orignal instanceof NonTextFile) {
+                    savePath = this.#_list[i].savePath;
+                    dirname = path.dirname(savePath);
+                    isExists = fs.existsSync(dirname);  // 디렉토리 검사
+                    if(!isExists) {
+                        fs.mkdirSync(dirname, {recursive: true} ); // 디렉토리 만들기
+                    }
+                    // 복사
+                    fs.copyFileSync(orignal.fullPath, savePath)
+                    this.#_addBatchFile(savePath);   
+
                 // (가상) 폴더의 경우
                 } else if (orignal instanceof VirtualFolder) {
                     savePath = this.#_list[i].savePath;
@@ -204,10 +205,11 @@ class TargetSource {
      * 소스 내용(data) 설정
      * @param {*} isRoot 절대경로시 location 경로 포함 여부 (install 시점)
      */
-    setData(isRoot = true, defaultPath = 1) {
+    setData(isRoot = true, pathType = 1) {
         
         let ori, data, arrObj = [], list, change, refSrc, localDir;
         let dir, entry;
+        let type, absolute, relative;
 
         ori = this._orignal;
         data = ori.data;
@@ -219,17 +221,18 @@ class TargetSource {
             // 1) 타겟소스가 없을 경우
             if (refSrc._target === null || refSrc._target.fullPath === null) {
                 // 상대경로 (오토기준)
-                if (defaultPath === 1) {
+                // if (pathType === 1) {
                     dir = path.dirname(this.fullPath);
-                    change = path.relative(dir, refSrc.fullPath);       
-                } else {
+                    relative = path.relative(dir, refSrc.fullPath);
+
+                // } else {
                     // change = path.sep + refSrc.localPath;
                     
                     // 엔트리의 경우
                     if (entry === refSrc._auto) {
                         // if (this.isRoot) change = path.sep + refSrc.localPath;           // root 기준 절대경로
                         // else change = path.sep + refSrc.subPath;                        // location 기준 절대경로       
-                        change = path.sep + refSrc.localPath;
+                        absolute = path.sep + refSrc.localPath;
                     
                     // 하위의 경우
                     } else {
@@ -238,26 +241,26 @@ class TargetSource {
                             throw new Error(' 절대경로를 사용할려면 하위오토는 앤트리 오토의 하위에 있어야 합니다. fail...');
                         }
                         localDir = path.relative(entry.dir, refSrc._auto.dir);
-                        change = path.sep + localDir + path.sep + refSrc.localPath;
+                        absolute = path.sep + localDir + path.sep + refSrc.localPath;
                         // if (this.isRoot) change = path.sep + refSrc.localPath;           // root 기준 절대경로
                         // else change = path.sep + refSrc.subPath;                        // location 기준 절대경로       
 
                     }
-                }
+                // }
             
             // 2) 타겟소스가 있을 경우
             } else {
                 // 상대경로 (오토기준)
-                if (defaultPath === 1) {
+                // if (pathType === 1) {
                     dir = path.dirname(this.fullPath);
-                    change = path.relative(dir, refSrc._target.fullPath);       
-                } else {
+                    relative = path.relative(dir, refSrc._target.fullPath);       
+                // } else {
                     // change = path.sep + refSrc._target.localPath;
 
                     // 엔트리의 경우
                     if (entry === refSrc._auto) {
-                        if (isRoot) change = path.sep + refSrc._target.localPath;   // root 기준 절대경로
-                        else change = path.sep + refSrc._target.subPath;                // location 기준 절대경로       
+                        if (isRoot) absolute = path.sep + refSrc._target.localPath;   // root 기준 절대경로
+                        else absolute = path.sep + refSrc._target.subPath;                // location 기준 절대경로       
                     
                     // 하위의 경우
                     } else {
@@ -273,24 +276,31 @@ class TargetSource {
                             // } else {
                             //     change = path.sep + localDir + path.sep + refSrc._target.subPath;                                    
                             // }                                    
-                            change = path.sep + localDir + path.sep + refSrc._target.localPath;    
+                            absolute = path.sep + localDir + path.sep + refSrc._target.localPath;    
                         
                         // 'install', 'depend' 의 경우
                         } else {    // install 의 경우
-                            if (isRoot) change = path.sep + refSrc._target.localPath;
-                            else change = path.sep + refSrc._target.subPath;
+                            if (isRoot) absolute = path.sep + refSrc._target.localPath;
+                            else absolute = path.sep + refSrc._target.subPath;
                         }
                         // if (this.isRoot) change = path.sep + refSrc._target.localPath;   // root 기준 절대경로
                         // else change = path.sep + refSrc._target.subPath;                // location 기준 절대경로       
                     }
                     // if (this.isRoot) change = path.sep + refSrc._target.localPath;   // root 기준 절대경로
                     // else change = path.sep + refSrc._target.subPath;                // location 기준 절대경로   
-                }
+                // }
                 
             }
 
             for (let iii = 0; iii < ori._dep[ii].pos.length; iii++) {
                 list = ori._dep[ii].pos[iii];
+                
+                type = this._batch.pathType === 0 ? list.type : this._batch.pathType;
+
+                if (type === 1) change = absolute;
+                else change = relative; // 기본상대경로
+                // else if (type === 2) change = relative;
+
                 arrObj.push({
                     idx: list.idx,
                     txt: list.key,

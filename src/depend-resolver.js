@@ -35,8 +35,8 @@ class DependResolver {
                 list = [];  // 초기화
                 basePath = arr[ii].basePath;
                 for (let iii = 0; iii < arr[ii].paths.length; iii++) {
-                    keyword = arr[ii].paths[iii];    
-                    list = list.concat(this.#_getMatch(keyword, data));    // 벼열 합침
+                    keyword = arr[ii].paths[iii].info;    
+                    list = list.concat(this.#_getMatch(keyword, data, arr[ii].paths[iii].type));    // 벼열 합침
                 }
                 // 참조가 있으면 등록
                 if (list.length > 0) {
@@ -89,7 +89,7 @@ class DependResolver {
         return arr;
     }
 
-    getPathObject(localPath) { 
+    getPatternObj(localPath) { 
         
         let arr = [];
         let pattern = this.getPattern(localPath);
@@ -228,12 +228,12 @@ class DependResolver {
         function createPathList(basePath, ...paths) {
             let key = {
                 basePath: basePath,
-                paths: paths
+                paths: paths,   // {type: 1 절대| 2 상대,info: }
             };
             return key;
         }
 
-        paths = this.getPathObject(obj.path);
+        paths = this.getPatternObj(obj.path);
 
         if (obj.location === 'src') {
             for (let i = 0; i < paths.length; i++) {
@@ -244,14 +244,16 @@ class DependResolver {
                     dir = path.dirname(obj.origin.fullPath);
                     // 상대경로 
                     relativePath = path.relative(dir, basePath.fullPath);
-                    arr.push(createPathList(basePath, localPath, relativePath));
+                    // arr.push(createPathList(basePath, localPath, relativePath));
+                    arr.push(createPathList(basePath, { type: 1, info: localPath }, { type: 2, info: relativePath }));
                 } else if (paths[i].location === 'dep') {
                     // 절대경로  (가상경로)
                     aliasPath = path.sep + this._auto.LOC.DEP + path.sep + paths[i].alias + path.sep + src.subPath;
                     dir = path.dirname(obj.origin.fullPath);
                     // 상대경로 
                     relativePath = path.relative(dir, this._auto.dir + path.sep + aliasPath);
-                    arr.push(createPathList(basePath, aliasPath, relativePath));
+                    // arr.push(createPathList(basePath, aliasPath, relativePath));
+                    arr.push(createPathList(basePath, { type: 1, info: aliasPath }, { type: 2, info: relativePath }));
                 }
             }
         } else if (obj.location === 'out') {
@@ -263,7 +265,8 @@ class DependResolver {
                     // 상대경로 
                     dir = path.dirname(obj.origin.fullPath);
                     relativePath = path.relative(dir, basePath.fullPath);
-                    arr.push(createPathList(basePath, localPath, relativePath));
+                    // arr.push(createPathList(basePath, localPath, relativePath));
+                    arr.push(createPathList(basePath, { type: 1, info: localPath }, { type: 2, info: relativePath }));
                 }
             }
         }
@@ -275,9 +278,10 @@ class DependResolver {
      * 매칭 객체 {idx, key, line, col }
      * @param {*} strPath 
      * @param {*} data 
+     * @param {*} type 절대, 상대 
      * @returns 
      */
-    #_getMatch(strPath, data) {
+    #_getMatch(strPath, data, type = null) {
         
         let reg
         let rArr = [];
@@ -310,6 +314,7 @@ class DependResolver {
                 key: strPath,
                 line: line,
                 col: column,
+                type: type,
             });
 
             // console.log(data)

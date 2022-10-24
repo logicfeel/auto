@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { MetaElement, PropertyCollection, MetaObject } = require('entitybind');
-
+const isBinaryPath = require('is-binary-path');
 /**
  * 의존성 파일시스템
  */
@@ -179,7 +179,11 @@ class TextFile extends NonTextFile {
                 if (fs.statSync(path +'/'+ arr[i]).isFile()) {
                     // 컬렉션에 등록
                     alias = dir + arr[i];
-                    file = new TextFile(_this._onwer, path + sep + arr[i], location);
+                    if (isBinaryPath(path +'/'+ arr[i])) {
+                        file = new NonTextFile(_this._onwer, path + sep + arr[i], location);
+                    } else {
+                        file = new TextFile(_this._onwer, path + sep + arr[i], location);
+                    }
                     _this.add(alias, file);
                 } else if (fs.statSync(path + sep + arr[i]).isDirectory()) {
                     _addPath(path + sep + arr[i], arr[i], dir);

@@ -18,6 +18,7 @@
   "homepage": "https://github.com/logicfeel/auto#readme",
   "devDependencies": {
     "entitybind": "github:logicfeel/EntityBind",
+    "is-binary-path": "^2.1.0",
     "r.x.x-auto": "github:logicfeel/Automation#r.x.x-auto"
   },
   "dependencies": {
