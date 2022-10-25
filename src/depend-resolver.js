@@ -18,6 +18,9 @@ class DependResolver {
     load() {
         this._readOriginal();
         this._readReference();
+
+        // 이벤트 발생
+        this._auto._onLoaded(null, null);
     }
 
     // 의존성 처리
@@ -40,7 +43,7 @@ class DependResolver {
                 }
                 // 참조가 있으면 등록
                 if (list.length > 0) {
-                    this._list[i].origin._addDepend(basePath, list);
+                    this._list[i].origin.addDepend(basePath, list);
                 }
             }
         }
@@ -60,12 +63,18 @@ class DependResolver {
         });
     }
 
+    /**
+     * src, out, vir 경로에 대한 패턴 경로 얻기 : _paths[*]
+     * @param {string} localPath 
+     * @returns {array<string>}
+     */
     getPattern(localPath) {
         
         let target = [], include = [], exclude =[];
-        let arr = [];
+        let arr = [], list;
 
-        if (this._getList(localPath) < 0) {
+        list = this._getList(localPath);
+        if (list.length < 0) {
             return arr;
         }
 
@@ -89,6 +98,11 @@ class DependResolver {
         return arr;
     }
 
+    /**
+     * src, out, vir 경로에 대한 패턴 객체 얻기 : _paths[*]
+     * @param {str} localPath 
+     * @returns {arr{str>}}
+     */
     getPatternObj(localPath) { 
         
         let arr = [];
@@ -105,7 +119,7 @@ class DependResolver {
 
     /**
      * 참조 경로 배열 리턴
-     * @returns 
+     * @returns {array}
      */
     _getPaths(isObj) {
         
@@ -117,10 +131,9 @@ class DependResolver {
         return arr;
     } 
 
-
     /**
      * 원본 경로 배열 리턴
-     * @returns 
+     * @returns {array}
      */
      _getList(isObj) {
         
@@ -228,7 +241,7 @@ class DependResolver {
         function createPathList(basePath, ...paths) {
             let key = {
                 basePath: basePath,
-                paths: paths,   // {type: 1 절대| 2 상대,info: }
+                paths: paths,   // {type: 절대(1), 상대(2), 사용자(3) | info: }
             };
             return key;
         }

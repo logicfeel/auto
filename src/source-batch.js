@@ -1,8 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-
-// const {AutoTask} = require('./auto-task');
-const a = require('./auto-task');
+// const a = require('./auto-task');
 const { NonTextFile, TextFile, VirtualFolder } = require('./base-path');
 
 /**
@@ -43,11 +41,7 @@ class SourceBatch {
         for(let i = 0; i < collection.count; i++) {
             ori = collection[i];
             tar = new TargetSource(ori, location, isSave);
-            // this.setFullPath(tar, isSave);
-            // this.setPath()
-            // tar = new TargetSource(ori);
             ori._setTarget(tar);    // _target 설정
-            // ori._target = tar;      
             this.#_list.push(tar);
         }
     }
@@ -56,6 +50,9 @@ class SourceBatch {
      * 전처리와 후처리 나누어야 함
      */
     save() {
+
+        // 이벤트 발생
+        this._task.entry._onBatch(this._task.entry);
 
         for (let i = 0; i < this.#_list.length; i++) {
             // TextFile 만 콘텐츠 설정
@@ -68,8 +65,15 @@ class SourceBatch {
 
         // 타겟 저장
         this.#_saveFile();
+
+        // 이벤트 발생
+        this._task.entry._onBatched(this._task.entry);
+
     }
 
+    /**
+     * 배치파일저장소 파일 및 배치생성파일 삭제
+     */
     clear() {
 
         const batchfile = this._task.entry.dir +path.sep+ '__BATCH_FILE.json';
@@ -87,6 +91,10 @@ class SourceBatch {
         this.#_list = [];
     }
 
+    /**
+     * 배치파일 목록 얻기
+     * @returns {arr}
+     */
     getBatchList() {
         
         let rArr = [];
@@ -102,6 +110,9 @@ class SourceBatch {
         return rArr;
     }
 
+    /**
+     * 배치파일 저장
+     */
     #_saveFile() {
 
         let isExists, dirname, savePath, data, orignal;
@@ -150,12 +161,19 @@ class SourceBatch {
         this.#_saveBatchFile();
     }
 
+    /**
+     * 배치파일저장소 저장
+     */
     #_saveBatchFile() {
         // batchFile
         let data = JSON.stringify(this._batchFile);
         fs.writeFileSync(this._task.entry.dir +path.sep+ '__BATCH_FILE.json', data, 'utf8');   
     }
 
+    /**
+     * 배치파일저장소에 저장파일 로그 추가
+     * @param {str} savePath 
+     */
     #_addBatchFile(savePath) {
         if (this._batchFile.indexOf(savePath) < 0) this._batchFile.push(savePath);
         console.log('SAVE : ' + savePath);
@@ -205,7 +223,7 @@ class TargetSource {
      * 소스 내용(data) 설정
      * @param {*} isRoot 절대경로시 location 경로 포함 여부 (install 시점)
      */
-    setData(isRoot = true, pathType = 1) {
+    setData(isRoot = true) {
         
         let ori, data, arrObj = [], list, change, refSrc, localDir;
         let dir, entry;
@@ -216,80 +234,51 @@ class TargetSource {
         arrObj = []; // 초기화
         entry = this._batch._task.entry;
 
+        
         for (let ii = 0; ii < ori._dep.length; ii++) {
+
+            // _dep 객체에 pos 가 존재할 경우만 처리 !!
+            if (typeof ori._dep[ii].pos !== 'object') continue;
+
             refSrc = ori._dep[ii].ref;
             // 1) 타겟소스가 없을 경우
             if (refSrc._target === null || refSrc._target.fullPath === null) {
-                // 상대경로 (오토기준)
-                // if (pathType === 1) {
-                    dir = path.dirname(this.fullPath);
-                    relative = path.relative(dir, refSrc.fullPath);
+                
+                dir = path.dirname(this.fullPath);  
+                relative = path.relative(dir, refSrc.fullPath); // 상대경로 (오토기준)
 
-                // } else {
-                    // change = path.sep + refSrc.localPath;
-                    
-                    // 엔트리의 경우
-                    if (entry === refSrc._auto) {
-                        // if (this.isRoot) change = path.sep + refSrc.localPath;           // root 기준 절대경로
-                        // else change = path.sep + refSrc.subPath;                        // location 기준 절대경로       
-                        absolute = path.sep + refSrc.localPath;
-                    
-                    // 하위의 경우
-                    } else {
-                        // 앤트리 하위 여부 검사
-                        if ( refSrc._auto.dir.indexOf(entry.dir) < 0) {
-                            throw new Error(' 절대경로를 사용할려면 하위오토는 앤트리 오토의 하위에 있어야 합니다. fail...');
-                        }
-                        localDir = path.relative(entry.dir, refSrc._auto.dir);
-                        absolute = path.sep + localDir + path.sep + refSrc.localPath;
-                        // if (this.isRoot) change = path.sep + refSrc.localPath;           // root 기준 절대경로
-                        // else change = path.sep + refSrc.subPath;                        // location 기준 절대경로       
-
+                if (entry === refSrc._auto) {
+                    absolute = path.sep + refSrc.localPath;
+                } else {    // 하위의 경우
+                    if ( refSrc._auto.dir.indexOf(entry.dir) < 0) { // 앤트리 하위 여부 검사
+                        throw new Error(' 절대경로를 사용할려면 하위오토는 앤트리 오토의 하위에 있어야 합니다. fail...');
                     }
-                // }
+                    localDir = path.relative(entry.dir, refSrc._auto.dir);
+                    absolute = path.sep + localDir + path.sep + refSrc.localPath;
+                }
             
             // 2) 타겟소스가 있을 경우
             } else {
-                // 상대경로 (오토기준)
-                // if (pathType === 1) {
-                    dir = path.dirname(this.fullPath);
-                    relative = path.relative(dir, refSrc._target.fullPath);       
-                // } else {
-                    // change = path.sep + refSrc._target.localPath;
-
-                    // 엔트리의 경우
-                    if (entry === refSrc._auto) {
-                        if (isRoot) absolute = path.sep + refSrc._target.localPath;   // root 기준 절대경로
-                        else absolute = path.sep + refSrc._target.subPath;                // location 기준 절대경로       
-                    
-                    // 하위의 경우
-                    } else {
-                        // 앤트리 하위 여부 검사
-                        if ( refSrc._target.dir.indexOf(entry.dir) < 0) {
-                            throw new Error(' 절대경로를 사용할려면 하위오토는 앤트리 오토의 하위에 있어야 합니다. fail...');
-                        }
-                        
-                        localDir = path.relative(entry.dir, refSrc._target.dir);
-                        if (localDir.length > 0) {
-                            // if (this.isRoot) {
-                            //     change = path.sep + localDir + path.sep + refSrc._target.localPath;    
-                            // } else {
-                            //     change = path.sep + localDir + path.sep + refSrc._target.subPath;                                    
-                            // }                                    
-                            absolute = path.sep + localDir + path.sep + refSrc._target.localPath;    
-                        
-                        // 'install', 'depend' 의 경우
-                        } else {    // install 의 경우
-                            if (isRoot) absolute = path.sep + refSrc._target.localPath;
-                            else absolute = path.sep + refSrc._target.subPath;
-                        }
-                        // if (this.isRoot) change = path.sep + refSrc._target.localPath;   // root 기준 절대경로
-                        // else change = path.sep + refSrc._target.subPath;                // location 기준 절대경로       
-                    }
-                    // if (this.isRoot) change = path.sep + refSrc._target.localPath;   // root 기준 절대경로
-                    // else change = path.sep + refSrc._target.subPath;                // location 기준 절대경로   
-                // }
                 
+                dir = path.dirname(this.fullPath);
+                relative = path.relative(dir, refSrc._target.fullPath);       
+               
+                if (entry === refSrc._auto) {   // 엔트리의 경우
+                    if (isRoot) absolute = path.sep + refSrc._target.localPath;     // root 기준 절대경로
+                    else absolute = path.sep + refSrc._target.subPath;              // location 기준 절대경로       
+                } else {                        // 엔트리 외(하위)의 경우
+                    // 앤트리 하위 여부 검사
+                    if ( refSrc._target.dir.indexOf(entry.dir) < 0) {
+                        throw new Error(' 절대경로를 사용할려면 하위오토는 앤트리 오토의 하위에 있어야 합니다. fail...');
+                    }
+                    localDir = path.relative(entry.dir, refSrc._target.dir);
+                    if (localDir.length > 0) {
+                        absolute = path.sep + localDir + path.sep + refSrc._target.localPath;    
+                    } else {    // 'install', 'depend' 의 경우
+                        if (isRoot) absolute = path.sep + refSrc._target.localPath;
+                        else absolute = path.sep + refSrc._target.subPath;
+                    }
+                }             
             }
 
             for (let iii = 0; iii < ori._dep[ii].pos.length; iii++) {
@@ -323,24 +312,15 @@ class TargetSource {
         // const AutoTask = require('./auto-task');
         entry = this._batch._task.entry;
 
-        // for (let i = 0; i < this.#_list.length; i++) {
-            
         src = this._orignal;
         auto = src._auto;
-        // this.#_list[i].location = location;
         location = this.location;
 
         if (location == entry.LOC.DIS) {
-            // src = this.#_list[i]._orignal;
-            // auto = src._auto;
-            // 엔트리의 경우
-            // if (entryAuto === src._auto && src.location === entryAuto.LOC.SRC) {
             if (entry === src._auto) {
-                // dir + location(DIS) + subPath
                 savePath = auto.dir + path.sep + entry.LOC.DIS + path.sep + src.subPath;
-                // 하위 오토의 경우
-            } else {
-                // dir + location(DIS) + 사용처명-별칭 + subPath
+                
+            } else {    // 하위 오토의 경우
                 useAuto = auto._owner;
                 alias = useAuto.name +'-'+ auto.alias;
                 savePath = auto.dir + path.sep + entry.LOC.DIS + path.sep + alias + path.sep + src.subPath;
@@ -349,9 +329,6 @@ class TargetSource {
             this.fullPath = savePath;
         
         } else if (location == entry.LOC.DEP) {
-            // src = this.#_list[i]._orignal;
-            // entryAuto = this.#autoTask.entry;
-            // auto = this.#_list[i]._orignal._auto;
             alias = auto.alias;
             savePath = entry.dir + path.sep + entry.LOC.DEP + path.sep + alias + path.sep + src.subPath;
             this.dir = entry.dir;
@@ -359,20 +336,13 @@ class TargetSource {
         
         } else if (location == entry.LOC.INS) {
             // TODO:: 컨첸츠 중복 검사 및 제거 알고니즘 추가해야함
-            // src = this.#_list[i]._orignal;
-            // entryAuto = this.#autoTask.entry;
-            // auto = this.#_list[i]._orignal._auto;               
-
             alias = auto.alias ? auto.name + path.sep + auto.alias : auto.name;
             savePath = entry.dir + path.sep + entry.LOC.INS + path.sep + alias + path.sep + src.subPath;
             this.dir = entry.dir;
             this.fullPath = savePath;          
         }
-        // }
-
         if (isSave) this.savePath = this.fullPath;
     }    
-
 
     /**
      * 파일내용(data) 을 배열에 맞게 교체한다.
@@ -381,11 +351,11 @@ class TargetSource {
      * @returns 
      */
     #_replaceData(data, arrObj) {
-        // replace 
-        var obj
+        // replace
+        var obj;
         var base_idx = 0, idx = 0;
         var ori_data = data;
-        var ori_prev = '', ori_next = ''
+        var ori_prev = '', ori_next = '';
 
         // 배열 정렬
         arrObj.sort(function (a,b) {
@@ -397,16 +367,16 @@ class TargetSource {
         for(var i = 0; i < arrObj.length; i++) {
             obj = arrObj[i];
             // rep 문자열검사
-            // txt 문자열 1 이상
+            // txt 문자열 1 이상 
             // idx > 
             if (typeof obj.idx !== 'number' || typeof obj.txt !== 'string') {
                 console.warn('객체아님');
                 continue;
             }
-            idx = obj.idx + base_idx;                           // 시작 인텍스
-            if (ori_data.substr(idx, obj.txt.length) === obj.txt) {  // 검사
-                ori_prev = ori_data.slice(0, idx);                   // 앞 문자열
-                ori_next = ori_data.slice(idx + obj.txt.length);     // 뒤 문자열
+            idx = obj.idx + base_idx;                                   // 시작 인텍스
+            if (ori_data.substr(idx, obj.txt.length) === obj.txt) {     // 검사
+                ori_prev = ori_data.slice(0, idx);                      // 앞 문자열
+                ori_next = ori_data.slice(idx + obj.txt.length);        // 뒤 문자열
                 ori_data = ori_prev + obj.rep + ori_next;
                 base_idx = base_idx + obj.rep.length - obj.txt.length;
             } else {

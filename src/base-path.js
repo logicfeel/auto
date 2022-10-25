@@ -119,7 +119,7 @@ class NonTextFile extends BasePath {
      * @param {*} src 참조 대상 원본소스
      * @param {*} list 참조 위치 객체
      */
-     _addDepend(ref, pos) {
+     addDepend(ref, pos) {
         this._dep.push({
             ref: ref,
             pos: pos
@@ -178,7 +178,7 @@ class TextFile extends NonTextFile {
                 // 대상 파일의 필터  TODO::
                 if (fs.statSync(path +'/'+ arr[i]).isFile()) {
                     // 컬렉션에 등록
-                    alias = dir + arr[i];
+                    alias = dir === '' ? arr[i] : dir + sep + arr[i];
                     if (isBinaryPath(path +'/'+ arr[i])) {
                         file = new NonTextFile(_this._onwer, path + sep + arr[i], location);
                     } else {

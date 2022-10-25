@@ -6,7 +6,7 @@ class Auto extends Automation {
         super(__dirname);
 
         // 오토 가져오기
-        this.vir.add('/aaa/bbb');
+        this.vir.add('aaa/bbb');
 
         // 속성 설정
         this.prop.a = 'a'
@@ -19,10 +19,17 @@ class Auto extends Automation {
         // 강제 의존성 설정
         
         // 콜백 이벤트 설정
-        this.onBatch = (auto) => {
+        this.onLoaded = (auto) => {
             // 강제 의존성 설정
-            // this.src['src/inc/left.css'].addDepend('src/m1.html');  // path str 로 추가
-            auto.src['src/inc/left.css'].addDepend(auto.src['src/m1.html']);    // 객체로 추가
+            auto.src['inc/left.css'].addDepend(auto.src['m1.html']);    // 객체로 추가
+            // 확장
+            auto.setDepend('src/inc/left.css', 'm1.html');
+        };
+        this.onBatch = function (entry) {
+            console.log('onBatch 이벤트 처리');
+        };
+        this.onBatched = function (entry) {
+            console.log('onBatched 이벤트 처리');
         };
 
         // 템플릿 설정

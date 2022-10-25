@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { MetaElement, PropertyCollection, MetaObject } = require('entitybind');
+const { MetaElement, PropertyCollection, MetaObject, Observer } = require('entitybind');
 const { DependResolver } = require('./depend-resolver');
 const { FileCollection, FolderCollection } = require('./base-path');
 
@@ -37,6 +37,7 @@ class Automation {
     // private
     #_dir      = [];
     #_alias    = null;
+    #_event    = new Observer(this, this);
 
     // property
     get dir() {
@@ -50,6 +51,16 @@ class Automation {
     }
     set alias(val) {
         this.#_alias = val;
+    }
+    // event
+    set onLoaded(fun) {
+        this.#_event.subscribe(fun, 'loaded');  // 소스 로딩후
+    }
+    set onBatch(fun) {
+        this.#_event.subscribe(fun, 'batch');
+    }
+    set onBatched(fun) {
+        this.#_event.subscribe(fun, 'batched');
     }
 
     /**
@@ -102,6 +113,24 @@ class Automation {
             this.out.addLocation(this.LOC.OUT);
             if (isOut === true) this.out.fillData();
         }
+    }
+
+    /**
+     * 오토의 기본경로 설정
+     * @param {string} dir auto 경로 : __dirname 기본으로 사용함
+     */
+    setDir(dir) {
+        // TODO::
+    }
+
+    /**
+     * 강제 의존성 설정
+     * @param {string | array} oriPath 원본 경로
+     * @param {string | array} depPath 의존 경로
+     * @param {object} pos 
+     */
+    setDepend(oriPath, depPath, pos) {
+        // TODO::
     }
 
     /**
@@ -166,8 +195,18 @@ class Automation {
         }
         return list;
     }
-}
 
+    // 이벤트 호출
+    _onLoaded() {
+        this.#_event.publish('loaded', this);
+    }
+    _onBatch(entry) {
+        this.#_event.publish('batch', entry);
+    }
+    _onBatched(entry) {
+        this.#_event.publish('batched', entry); 
+    }
+}
 
 /**
  * 오토컬렉션 클래스
