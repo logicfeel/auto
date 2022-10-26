@@ -1,3 +1,31 @@
 {
-    "install": "속성입"
+    "merge": [    // order 1 : 중요도가 높음
+        {
+            "glob": "",
+            "path": ""
+        },
+    ],
+    "rename": [   // order 2
+        {
+            "glob": "",   // glob 에서 복수 선택시 오류!!
+            "path": ""
+        },
+        {
+            "glob": "",
+            "dir": ""
+        },
+    ],
+    "except": [   // order 3 : 중요도 낮음 (필수요소가 아님)
+        "**/*.jpg", 
+        { 
+            "glob": ""
+        },
+    ],
+    "setup": [    // order 0
+        {
+            "glob": "",
+            "isStatic": true,
+
+        }
+    ]
 }

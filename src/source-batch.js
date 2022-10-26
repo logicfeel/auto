@@ -389,5 +389,29 @@ class TargetSource {
     }
 }
 
+class InstallMap {
+    
+    // protected
+    _parent = null;
+    _child = [];
+    _setup = [];
+    _merge = [];
+    _rename = [];
+    _except = [];
+    
+    constructor(auto, json) {
+
+    }
+
+    add(target) {
+
+    }
+    
+    execute() {
+
+    }
+}
+
 exports.SourceBatch = SourceBatch;
 exports.TargetSource = TargetSource;
+exports.InstallMap = InstallMap;
