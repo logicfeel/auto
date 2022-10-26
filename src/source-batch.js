@@ -31,6 +31,8 @@ class SourceBatch {
     /**
      * 배치할 소스 추가
      * @param {*} collection SourceCollection 
+     * @param {*} location 배치 위치 
+     * @param {*} isSave 저장 유무
      */
     // add(collection) {
     add(collection, location, isSave) {
