@@ -1,0 +1,6 @@
+@import url("/install/mod2/M2-1/style.css");
+@import url("/install/mod1/bar.css");
+
+h2 {
+    background-color: rgb(166, 64, 235);
+}

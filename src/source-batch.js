@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
-// const a = require('./auto-task');
+const mm = require('micromatch');
+const at = require('./auto-task');
 const { NonTextFile, TextFile, VirtualFolder } = require('./base-path');
 
 /**
@@ -15,8 +16,9 @@ class SourceBatch {
     _batchFile = [];
     _filter = [];
     _task = null;
+    _map = [];
     // private
-    #_list = [];
+    _list = [];
 
     constructor() {
     }
@@ -44,7 +46,7 @@ class SourceBatch {
             ori = collection[i];
             tar = new TargetSource(ori, location, isSave);
             ori._setTarget(tar);    // _target 설정
-            this.#_list.push(tar);
+            this._list.push(tar);
         }
     }
 
@@ -53,17 +55,26 @@ class SourceBatch {
      */
     save() {
 
+        let autos;
+
         // 이벤트 발생
         this._task.entry._onBatch(this._task.entry);
 
-        for (let i = 0; i < this.#_list.length; i++) {
+        for (let i = 0; i < this._list.length; i++) {
             // TextFile 만 콘텐츠 설정
-            if (this.#_list[i]._orignal instanceof TextFile) {
-                this.#_list[i].setData(this.isRoot);
+            if (this._list[i]._original instanceof TextFile) {
+                this._list[i].setData(this.isRoot);
             }
         }
 
         // TODO:: 중복제거
+        
+        // install map 처리
+        autos = this._task.entry._getAllList(true);
+        for (let i = 0; i < autos.length; i++) {
+            // 맨 하위부터 처리한다.
+            autos[i].install.execute();
+        }
 
         // 타겟 저장
         this.#_saveFile();
@@ -90,7 +101,7 @@ class SourceBatch {
         // 속성 초기화
         this.isRoot = true;
         this._batchFile = [];
-        this.#_list = [];
+        this._list = [];
     }
 
     /**
@@ -101,11 +112,11 @@ class SourceBatch {
         
         let rArr = [];
 
-        for (let i = 0; i < this.#_list.length; i++) {
+        for (let i = 0; i < this._list.length; i++) {
             rArr.push(
                 {
-                    ori: this.#_list[i]._orignal.fullPath,
-                    tar: this.#_list[i].fullPath
+                    ori: this._list[i]._original.fullPath,
+                    tar: this._list[i].fullPath
                 }
             );
         }
@@ -120,15 +131,15 @@ class SourceBatch {
         let isExists, dirname, savePath, data, orignal;
         const _this = this;
         // TODO:: try 로 예외 처리함
-        for (let i = 0; i < this.#_list.length; i++) {
+        for (let i = 0; i < this._list.length; i++) {
             
-            if (this.#_list[i].savePath !== null) {
-                orignal = this.#_list[i]._orignal;
+            if (this._list[i].savePath !== null) {
+                orignal = this._list[i]._original;
                  
                 // 텍스트 파일의 경우
                 if (orignal instanceof TextFile) {
-                    savePath = this.#_list[i].savePath;
-                    data = this.#_list[i].data;
+                    savePath = this._list[i].savePath;
+                    data = this._list[i].data;
                     dirname = path.dirname(savePath);   
                     isExists = fs.existsSync(dirname);  // 디렉토리 검사
                     if(!isExists) {
@@ -139,7 +150,7 @@ class SourceBatch {
                 
                     // 비텍스트 파일의 경우
                 } else if (orignal instanceof NonTextFile) {
-                    savePath = this.#_list[i].savePath;
+                    savePath = this._list[i].savePath;
                     dirname = path.dirname(savePath);
                     isExists = fs.existsSync(dirname);  // 디렉토리 검사
                     if(!isExists) {
@@ -151,7 +162,7 @@ class SourceBatch {
 
                 // (가상) 폴더의 경우
                 } else if (orignal instanceof VirtualFolder) {
-                    savePath = this.#_list[i].savePath;
+                    savePath = this._list[i].savePath;
                     isExists = fs.existsSync(savePath);
                     if(!isExists) {
                         fs.mkdirSync(savePath, {recursive: true} ); // 디렉토리 만들기
@@ -194,7 +205,7 @@ class TargetSource {
     dir         = null;
     data        = null;
     // protected
-    _orignal    = null;
+    _original    = null;
     _owner      = null;
     _batch      = SourceBatch.getInstance();
 
@@ -216,9 +227,14 @@ class TargetSource {
     }
 
     constructor(ori, location, isSave) {
-        this._orignal = ori;
+        
+        let entry = this._batch._task.entry;
+        let auto  = ori._auto;
+
+        this._original = ori;
         this.location = location;
         this.#_initPath(isSave);
+        if (location === entry.LOC.INS) auto.install.add(this);
     }
 
     /**
@@ -231,7 +247,7 @@ class TargetSource {
         let dir, entry;
         let type, absolute, relative;
 
-        ori = this._orignal;
+        ori = this._original;
         data = ori.data;
         arrObj = []; // 초기화
         entry = this._batch._task.entry;
@@ -314,7 +330,7 @@ class TargetSource {
         // const AutoTask = require('./auto-task');
         entry = this._batch._task.entry;
 
-        src = this._orignal;
+        src = this._original;
         auto = src._auto;
         location = this.location;
 
@@ -389,6 +405,9 @@ class TargetSource {
     }
 }
 
+/**
+ * 인스톨맵 클래스
+ */
 class InstallMap {
     
     // protected
@@ -398,17 +417,150 @@ class InstallMap {
     _merge = [];
     _rename = [];
     _except = [];
-    
-    constructor(auto, json) {
+    _list = [];
+    _auto = null;
+    _task = at.AutoTask.getInstance();
+    // _entry = _task.entry;
+    // TODO:: /install 상위 제거후 리턴해야함
+    // propertys
+    get targetPaths() {
+        
+        let arr = [];
 
+        for (let i = 0; i < this._child.length; i++) {
+            arr = arr.concat(this._child[i].targetPaths);
+        }
+        for (let i = 0; i < this._list.length; i++) {
+            arr.push(this._list[i].savePath);        
+        }
+        return arr;
+    }
+    get targetObjs() {
+        
+        let arr = [];
+
+        for (let i = 0; i < this._child.length; i++) {
+            arr = arr.concat(this._child[i].targetObjs);
+        }
+        for (let i = 0; i < this._list.length; i++) {
+            arr.push(this._list[i]);        
+        }
+        return arr;
+    }
+
+    constructor(auto, json) {
+        this._auto = auto;
+        // 소유자기 있으면
+        if (auto._onwer && auto._onwer.install instanceof InstallMap) {
+            this._parent = auto._onwer.install;     // 부모 InstallMap 연결
+            auto._onwer.install._child.push(this);  // 자식 InstallMap 등록
+        }
+        if (json) this.#_load(json);
     }
 
     add(target) {
-
+        this._list.push(target);
     }
     
     execute() {
+        if (this._rename.length > 0) this.#_rename();
+    }
 
+    #_load(json) {
+
+        let obj;
+
+        // setup obj
+        if (json.setup && Array.isArray(json.setup)) {
+            for (let i = 0; i < json.setup.length; i++) {
+                if (typeof json.setup[i] === 'object' && typeof json.setup[i].glob === 'string') {
+                    this._setup.push(json.setup[i]);
+                }
+            }
+        }
+        // merge obj
+        if (json.merge && Array.isArray(json.merge)) {
+            for (let i = 0; i < json.merge.length; i++) {
+                if (typeof json.merge[i] === 'object' && typeof json.merge[i].glob === 'string' && typeof json.merge[i].path === 'string') {
+                    this._merge.push(json.merge[i]);
+                }
+            }
+        }
+        // rename obj
+        if (json.rename && Array.isArray(json.rename)) {
+            for (let i = 0; i < json.rename.length; i++) {
+                if (typeof json.rename[i] === 'object' && typeof json.rename[i].glob === 'string' && (typeof json.rename[i].path === 'string' || typeof json.rename[i].dir === 'string')) {
+                    this._rename.push(json.rename[i]);
+                }
+            }
+        }
+        // except obj
+        if (json.except && Array.isArray(json.except)) {
+            for (let i = 0; i < json.except.length; i++) {
+                if (typeof json.except[i] === 'string') this._except.push(json.except[i]);
+            }
+        }
+    }
+
+    #_rename() {
+        
+        let arr = [], obj, tars = [], filename, dir;
+        let entry = this._task.entry;
+
+        for (let i = 0; i < this._rename.length; i++) {
+            obj = this._rename[i];
+            // 동시에 존재시 경고 후 처리 무시
+            if (typeof obj.path === 'string' && typeof obj.dir === 'string') {
+                console.warn('install.rename 객체에 path, dir 동시에 존재합니다. 하나만 사용하세요.');
+                continue;
+            }
+            
+            if (typeof obj.glob === 'string' && obj.glob.length > 0 && (obj.path || obj.dir)) {
+                arr = mm.match(this.targetPaths, obj.glob);
+            }
+            
+            if (arr.length > 0) {
+                tars = this._getTarget(arr);
+                
+                // glob, path 처리
+                if (typeof obj.path === 'string' && obj.path.length > 0) {
+                    if (arr.length !== 1) {
+                        console.warn('install.rename 객체에 path 는 glob 하나마 매칭되어야 합니다.' + arr);
+                        continue;                    
+                    }
+                    // static 검사
+                    if (tars[0]._original.isStatic === true) {
+                        console.warn('static 파일은 이름은 변경할 수 없습니다.' + tars[0]._original.fullPath);
+                        continue;                    
+                    }
+                    // 경로 조립
+                    tars[0].savePath = entry.dir + path.sep + entry.LOC.INS + path.sep + obj.path;
+
+                // glob, dir 처리
+                } else if (typeof obj.dir === 'string' && obj.dir.length > 0) {
+
+                    for (let i = 0; i < tars.length; i++) {
+                        // static 검사
+                        if (tars[i]._original.isStatic === true) {
+                            console.warn('static 파일은 이름은 변경할 수 없습니다.' + tars[i]._original.fullPath);
+                            continue;                    
+                        }
+                        filename = path.basename(tars[i].savePath);
+                        tars[i].savePath =  entry.dir + path.sep + entry.LOC.INS + path.sep + obj.dir + path.sep + filename;
+                    }
+                }
+            }
+        }
+    }
+
+    _getTarget(paths) {
+        
+        let arr = [];
+        
+        for (let i = 0; i < this.targetObjs.length; i++) {
+            if(paths.indexOf(this.targetObjs[i].savePath) > -1) arr.push(this.targetObjs[i]);
+        }
+        return arr;
     }
 }
 

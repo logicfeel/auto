@@ -3,6 +3,7 @@ const path = require('path');
 const { MetaElement, PropertyCollection, MetaObject, Observer } = require('entitybind');
 const { DependResolver } = require('./depend-resolver');
 const { FileCollection, FolderCollection } = require('./base-path');
+const { InstallMap } = require('./source-batch');
 
 /**
  * 오토메이션 클래스
@@ -17,6 +18,7 @@ class Automation {
     dep         = new DependCollection(this);
     meta        = new MetaCollection(this);
     resolver    = new DependResolver(this);
+    install     = null;
     LOC = {     // location
         OUT: 'out',
         SRC: 'src',
@@ -97,6 +99,7 @@ class Automation {
         } else {
             this._package = require(packagePath);
         }
+        this.install = new InstallMap(this, this._install);
     }
 
     /**
@@ -135,66 +138,65 @@ class Automation {
 
     /**
      * 오토모듈이 의존하는 sub, super(상위 super 포함)의 목록
-     * @param {boolean} isSelf 자신 포함 여부
+     * 최하위(Leaf)에서 호출처까지 순차인 목록
+     * @param {boolean} isSelf 최상위 호출처(오토) 포함 여부
      * @returns {arrary}
      */
     _getDependList(isSelf) {
         
-        let list = [];
-        let prop, auto;
+        let list = [], prop, auto;
         
-        if (isSelf) list.push(this);    // 자신포함
-
         // sub 가져오기
-        for (let i = 0; i < this.mod._sub.length; i++) {
-            prop = this.mod._sub[i];
-            auto = this.mod[prop];
-            list.push(auto);
+        for (let i = 0; i < this.dep.count; i++) {
+            auto = this.dep[i]._onwer;
+            prop = this.dep.propertyOf(i);
+            if (this.mod._super.indexOf(prop) < 0) list.push(auto); // sub 가져오기
+            else list = list.concat(this._getSuperList());  // super 가져오기
         }
-        // super 가져오기
-        list = list.concat(this._getSuperList());
+
+        if (isSelf === null || isSelf === true) list.push(this);    // 자신포함
         return list;
     }
 
     /**
      * 오토모듈이 의존하는 super(상위 super 포함)의 목록
-     * @param {boolean} isSelf 자신 포함 여부
+     * 최하위(Leaf)에서 호출처까지 순차인 목록
+     * @param {boolean} isSelf 최상위 호출처(오토) 포함 여부
      * @returns {arrary}
      */
-    _getSuperList(isSelf) {
+    _getSuperList(isSelf = null) {
 
-        let list = [];
-        let prop, auto;
-
-        if (isSelf) list.push(this);    // 자신포함
+        let list = [], prop, auto;
 
         for (let i = 0; i < this.mod._super.length; i++) {
+            list = list.concat(auto._getSuperList());
             prop = this.mod._super[i];
             auto = this.mod[prop];
             list.push(auto);
-            list = list.concat(auto._getSuperList());
         }
+        if (isSelf === null || isSelf === true) list.push(this);    // 자신포함
         return list;
     }
 
     /**
-     * 전체 오토모듈 목록
-     * @param {boolean} isSelf 자신 포함 여부
+     * 전체 오토 목록 
+     * 최하위(Leaf)에서 호출처까지 순차인 목록
+     * @param {boolean} isSelf 최상위 호출처(오토) 포함 여부
      * @returns {arrary}
      */
-    _getAllList(isSelf) {
-        let list = [];
-        let prop, auto;
-        
-        if (isSelf) list.push(this);    // 자신포함
-        
+    _getAllList(isSelf = null) {
+
+        let list = [], auto;
+               
         for (let i = 0; i < this.mod.count; i++) {
             auto = this.mod[i];
-            list.push(auto);
-            list = list.concat(auto._getAllList());
+            if (auto.mod.count > 0) list = list.concat(auto._getAllList());
+            else list.push(auto);
         }
+        if (isSelf === null || isSelf === true) list.push(this);    // 자신포함
         return list;
     }
+
 
     // 이벤트 호출
     _onLoaded() {

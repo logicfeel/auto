@@ -1,31 +1,31 @@
 {
-    "merge": [    // order 1 : 중요도가 높음
+    "merge": [
         {
             "glob": "",
             "path": ""
-        },
+        }
     ],
-    "rename": [   // order 2
+    "rename": [
         {
-            "glob": "",   // glob 에서 복수 선택시 오류!!
-            "path": ""
+            "glob": "**/mod1/102-3.webp",
+            "path": "mod1/101-수정.webp"
         },
         {
             "glob": "",
             "dir": ""
-        },
+        }
     ],
-    "except": [   // order 3 : 중요도 낮음 (필수요소가 아님)
-        "**/*.jpg", 
-        { 
-            "glob": ""
-        },
+    "except": [
+        "**/*.jpg"
     ],
-    "setup": [    // order 0
+    "setup": [
         {
             "glob": "",
-            "isStatic": true,
+            "isStatic": true
 
         }
-    ]
+    ],
+    "global": {
+
+    }
 }

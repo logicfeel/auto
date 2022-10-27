@@ -1,5 +1,10 @@
 const {Automation} = require('../../src/automation');
+let Mod2 = require('./module/m2-1/auto');
+// let Mod1_1 = require('./module/m1/auto');
 
+let mod1 = new Mod2();
+// let mod2 = new Mod1();
+// let mod3 = new Mod1_1();
 
 class Auto extends Automation {
     constructor() {
@@ -7,6 +12,14 @@ class Auto extends Automation {
 
         // 오토 가져오기
         this.vir.add('aaa/bbb');
+        // 오토 가져오기
+        // this.mod.super('M2', mod1);    // 동일 위치에 있음
+        this.mod.sub('M2-1', mod1);       // 동일 위치에 있음
+        // this.mod.add('M2', mod1);       // 동일 위치에 있음        
+
+        // this.mod.sub('M2', mod3);       // module 하위에 있음
+        // this.mod.sub('M1', mod2);
+        // this.mod.super('M1', mod1);
 
         // 속성 설정
         this.prop.a = 'a'
@@ -21,9 +34,9 @@ class Auto extends Automation {
         // 콜백 이벤트 설정
         this.onLoaded = (auto) => {
             // 강제 의존성 설정
-            auto.src['inc/left.css'].addDepend(auto.src['m1.html']);    // 객체로 추가
+            auto.src['m3.html'].addDepend(auto.src['102-3.webp']);    // 객체로 추가
             // 확장
-            auto.setDepend('src/inc/left.css', 'm1.html');
+            auto.setDepend('src/m3.html', '/out/bar.css');
         };
         this.onBatch = function (entry) {
             console.log('onBatch 이벤트 처리');

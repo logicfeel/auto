@@ -11,6 +11,11 @@ let autoTask = AutoTask.create(__dirname);
 
 autoTask.do_dist();
 // autoTask.do_reset();
+
+
+let e = autoTask.entry;
+
+// autoTask.do_reset();
 // console.log(autoTask.batch.getBatchList());
 
 console.log(1)

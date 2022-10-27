@@ -13,13 +13,11 @@ autoTask.do_install();
 // autoTask.do_reset();
 
 let e = autoTask.entry;
-
-
+let t = autoTask;
     // e.resolver._list
     // e.resolver.getPattern('src/inc/left.css')
     // e.resolver.getPattern('src/m1.html')
     // e.resolver.getPattern('out/com.css')
     // e.resolver.getPattern('out/area/top.css')
-
 
 console.log(1)

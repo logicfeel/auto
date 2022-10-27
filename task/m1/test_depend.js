@@ -8,8 +8,10 @@ let autoTask = AutoTask.create(__dirname);
 // let a = autoTask.entry;   // 별칭
 // let task = AutoTask.getInstance();
 // console.log(autoTask.do_depend)
+let e = autoTask.entry;
+
 
 autoTask.do_depend();
-//autoTask.do_reset();
+// autoTask.do_reset();
 
 console.log(1)
