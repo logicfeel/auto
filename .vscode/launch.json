@@ -4,6 +4,7 @@
     // 자세한 내용을 보려면 https://go.microsoft.com/fwlink/?linkid=830387을(를) 방문하세요.
     "version": "0.2.0",
     "configurations": [
+
         {
             "type": "node",
             "request": "launch",
@@ -25,8 +26,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "task/m2/test_dist.js 실행",
-            "program": "${workspaceFolder}/task/m2/test_dist.js",
+            "name": "task/m1/test_dist.js 실행",
+            "program": "${workspaceFolder}/task/m1/test_dist.js",
             "skipFiles": [
                 "<node_internals>/**"
             ]
@@ -34,8 +35,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "task/m2/test_depend.js 실행",
-            "program": "${workspaceFolder}/task/m2/test_depend.js",
+            "name": "task/m1/test_depend.js 실행",
+            "program": "${workspaceFolder}/task/m1/test_depend.js",
             "skipFiles": [
                 "<node_internals>/**"
             ]
@@ -43,8 +44,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "task/m2/test_install.js 실행",
-            "program": "${workspaceFolder}/task/m2/test_install.js",
+            "name": "task/m1/test_install.js 실행",
+            "program": "${workspaceFolder}/task/m1/test_install.js",
             "skipFiles": [
                 "<node_internals>/**"
             ]

@@ -13,15 +13,23 @@
         {
             "glob": "**/*.css",
             "dir": "css"
+        },
+        {
+            "glob": "**/*.html",
+            "dir": "web"
+        },
+        {
+            "glob": "mod1/aaa/bbb",
+            "dir": "vir/aaa"
         }
     ],
     "except": [
-        "**/*.jpg"
+        "**/.*"
     ],
     "setup": [
         {
-            "glob": "",
-            "isStatic": true
+            "glob": "**/board.css",
+            "refedType": 1
 
         }
     ],

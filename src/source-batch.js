@@ -64,6 +64,7 @@ class SourceBatch {
         autos = this._task.entry._getAllList(true);
         for (let i = 0; i < autos.length; i++) {
             // 맨 하위부터 처리한다.
+            autos[i].install.init();
             autos[i].install.execute();
         }
         
@@ -252,6 +253,8 @@ class TargetSource {
     // dir         = null;
     data        = null;
     isSave      = null; // 저장유무
+    referType   = 0;
+    refedType   = 0;
     // protected
     _original    = null;
     _owner      = null;
@@ -379,8 +382,26 @@ class TargetSource {
             for (let iii = 0; iii < ori._dep[ii].pos.length; iii++) {
                 list = ori._dep[ii].pos[iii];
                 
-                type = this._batch.pathType === 0 ? list.type : this._batch.pathType;
-
+                // 경로 설정
+                if (this._batch.pathType === 0 ) {
+                    // type = this.pathType === 0 ? list.type : this.pathType;
+                    if (this.referType === 0) {
+                        if (ori._dep[ii].ref._target.refedType === 0) {
+                            // pos 에서 파싱된 타입 설정
+                            type = list.type;
+                        } else {
+                            // 참조된 대상을 타입 설정
+                            type = ori._dep[ii].ref._target.refedType;
+                        }
+                    } else {
+                        // 대상 파일의 참조 타입 설정
+                        type = this.referType;
+                    }
+                } else {
+                    // 전체 경로 타입 설정
+                    type = this._batch.pathType;    
+                }
+                
                 if (type === 1) change = absolute;
                 else change = relative; // 기본상대경로
                 // else if (type === 2) change = relative;
@@ -585,10 +606,10 @@ class InstallMap {
     constructor(auto, json) {
         this._auto = auto;
         // 소유자기 있으면
-        if (auto._onwer && auto._onwer.install instanceof InstallMap) {
-            this._parent = auto._onwer.install;     // 부모 InstallMap 연결
-            auto._onwer.install._child.push(this);  // 자식 InstallMap 등록
-        }
+        // if (auto._owner && auto._owner.install instanceof InstallMap) {
+        //     this._parent = auto._onwer.install;     // 부모 InstallMap 연결
+        //     auto._owner.install._child.push(this);  // 자식 InstallMap 등록
+        // }
         if (json) this.#_load(json);
     }
 
@@ -596,8 +617,22 @@ class InstallMap {
         this._list.push(target);
     }
     
+    init() {
+
+        const auto = this._auto;
+
+        if (auto._owner && auto._owner.install instanceof InstallMap) {
+            this._parent = auto._owner.install;     // 부모 InstallMap 연결
+            auto._owner.install._child.push(this);  // 자식 InstallMap 등록
+        }
+    }
+
     execute() {
-        if (this._rename.length > 0) this.#_rename();
+        
+        if (this._setup.length > 0) this.#execSetup();
+        if (this._rename.length > 0) this.#execRename();
+        if (this._merge.length > 0) this.#execMerge();
+        if (this._except.length > 0) this.#execExcept();
     }
 
     #_load(json) {
@@ -615,7 +650,7 @@ class InstallMap {
         // merge obj
         if (json.merge && Array.isArray(json.merge)) {
             for (let i = 0; i < json.merge.length; i++) {
-                if (typeof json.merge[i] === 'object' && typeof json.merge[i].paths === 'string' && typeof json.merge[i].path === 'string') {
+                if (typeof json.merge[i] === 'object' && Array.isArray(json.merge[i].paths) && typeof json.merge[i].path === 'string') {
                     this._merge.push(json.merge[i]);
                 }
             }
@@ -636,7 +671,68 @@ class InstallMap {
         }
     }
 
-    #_rename() {
+
+
+    #execSetup() {
+
+        let obj, tars = [], arr = [];
+
+        for (let i = 0; i < this._setup.length; i++) {
+            
+            obj = this._setup[i];
+            
+            if (typeof obj.glob === 'string' && obj.glob.length > 0) {
+                arr = mm.match(this.targets.map((obj) => { return obj.subPath }), obj.glob);
+            }
+            if (arr.length > 0) {
+                tars = this.targets.filter((obj) => { return arr.indexOf(obj.subPath) > -1 })
+                
+                if (obj.isSave && typeof obj.isSave === 'boolean') {
+                    tars.map( (o) => { o.isSave =  obj.isSave; });
+                }
+
+                if (obj.referType && typeof obj.referType === 'number') {
+                    tars.map( (o) => { o.referType =  obj.referType; });
+                }
+
+                if (obj.refedType && typeof obj.refedType === 'number') {
+                    tars.map( (o) => { o.refedType =  obj.refedType; });
+                }
+            }
+        }
+    }
+
+    #execMerge() {
+
+        let obj, arr = [];
+
+        for (let i = 0; i < this._merge.length; i++) {
+            
+            obj = this._merge[i];
+
+            if (typeof obj.glob === 'string' && obj.glob.length > 0) {
+                arr = mm.match(this.targets.map((obj) => { return obj.subPath }), obj.glob);
+            }
+            if (arr.length > 0) {
+                tars = this.targets.filter((obj) => { return arr.indexOf(obj.subPath) > -1 })
+                
+                for (let ii = 0; ii < obj.paths.length; ii++) {
+                    
+                    /**
+                     * - paths 파일 검사 : 폴더 제외
+                     * - path 단일 검사
+                     * - path 타겟 조회 : 원본임
+                     *  - path += paths data 추가
+                     *  - paths 의 _owner 설정 => 참조하는 곳 구조 수정해야함
+                     *  - isSave = false 처리
+                     */
+
+                }
+            }
+        }
+    }
+
+    #execRename() {
         
         let arr = [], obj, tars = [], filename, dir;
         let entry = this._task.entry;
@@ -650,14 +746,14 @@ class InstallMap {
             }
             
             if (typeof obj.glob === 'string' && obj.glob.length > 0 && (obj.path || obj.dir)) {
-                arr = mm.match(this.targets.map((obj) => { return obj.subPath }), obj.glob);
+                arr = mm.match(this.targets.map((o) => { return o.subPath }), obj.glob);
                 // arr = mm.match( this.targetPaths, obj.glob);
             }
             
             if (arr.length > 0) {
                 
                 // tars = this._getTarget(arr);
-                tars = this.targets.filter((obj) => { return arr.indexOf(obj.subPath) > -1 })
+                tars = this.targets.filter((o) => { return arr.indexOf(o.subPath) > -1 })
                 
                 // glob, path 처리
                 if (typeof obj.path === 'string' && obj.path.length > 0) {
@@ -683,24 +779,33 @@ class InstallMap {
                             console.warn('static 파일은 이름은 변경할 수 없습니다.' + tars[i]._original.fullPath);
                             continue;                    
                         }
-                        filename = path.basename(tars[i].fullPath);
-                        tars[i].subPath = obj.dir + path.sep + filename;    // TODO:: filename 불필요 제거요망
-                        // tars[i].fullPath =  entry.dir + path.sep + entry.LOC.INS + path.sep + obj.dir + path.sep + filename;
+                        if (tars[i]._original instanceof VirtualFolder) {
+                            tars[i].subPath = obj.dir;
+                        } else if (tars[i]._original instanceof NonTextFile) {
+                            tars[i].subPath = obj.dir + path.sep + tars[i].name;
+                        }
                     }
                 }
             }
         }
     }
 
-    // _getTarget(paths) {
-        
-    //     let arr = [];
-        
-    //     for (let i = 0; i < this.targetObjs.length; i++) {
-    //         if(paths.indexOf(this.targetObjs[i].fullPath) > -1) arr.push(this.targetObjs[i]);
-    //     }
-    //     return arr;
-    // }
+    #execExcept() {
+
+        let str, tars = [], arr = [];
+
+        for (let i = 0; i < this._except.length; i++) {
+            str = this._except[i];
+            if (typeof str === 'string' && str.length  > 0) {
+                arr = mm.match(this.targets.map((obj) => { return obj.subPath }), str);
+
+                if (arr.length > 0) {
+                    tars = this.targets.filter((obj) => { return arr.indexOf(obj.subPath) > -1 })
+                    tars.map( (o) => { o.isSave = false; });
+                }
+            }
+        }
+    }
 }
 
 exports.SourceBatch = SourceBatch;

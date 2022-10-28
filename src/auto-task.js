@@ -136,8 +136,8 @@ class AutoTask {
         }
 
         // 저장
-        // this.batch.isRoot = false;       // 절대경로시 'install' 폴더
-        this.batch.pathType = 1;      // 기본상대경로
+        this.batch.isRoot = false;       // 절대경로시 'install' 폴더
+        // this.batch.pathType = 1;      // 전체절대경로
         // this.batch.pathType = 2;         // 기본절대경로
         this.batch.save();
     }
