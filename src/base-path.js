@@ -8,8 +8,8 @@ const isBinaryPath = require('is-binary-path');
 class BasePath {
     
     //public
-    location = null;
-    fullPath = '';
+    // location = null;
+    // fullPath = '';
     /**
      * null : 이름변경 O, 내용변경 O
      * true : 이름변경 X, 내용변경 X
@@ -19,8 +19,13 @@ class BasePath {
     // protected
     _auto = null;
     _target = null;
+    // private
+    #location = null;
 
     // property
+    get location() {
+        return this.#location;
+    }
     get name() {
         throw new Error(' name 프로퍼티를 정의해야 합니다.');
     }
@@ -38,7 +43,7 @@ class BasePath {
     }
     constructor(auto, location) {
         this._auto = auto;
-        this.location = location;
+        this.#location = location;
     }
 
     /**
@@ -55,7 +60,13 @@ class BasePath {
  */
 class VirtualFolder extends BasePath {
 
+    // private
+    #fullPath = null;
+
     // property
+    get fullPath() {
+        return this.#fullPath;
+    }
     get name() {
         return null;
     }
@@ -76,7 +87,8 @@ class VirtualFolder extends BasePath {
         super(auto, 'vir');
         
         // 필수 검사 필요!!
-        this.fullPath = localPath;
+        this.#fullPath = localPath;
+
     }
 
 }
@@ -90,8 +102,13 @@ class NonTextFile extends BasePath {
 
     // protected
     _dep = [];
+    // private
+    #fullPath = null;
 
     // property
+    get fullPath() {
+        return this.#fullPath;
+    }
     get name() {
         return path.basename(this.fullPath);
     }
@@ -111,7 +128,7 @@ class NonTextFile extends BasePath {
     constructor(auto, fullPath, location) {
         super(auto, location);
 
-        this.fullPath = fullPath;
+        this.#fullPath = fullPath;
     }
 
     /**

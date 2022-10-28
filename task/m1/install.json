@@ -1,18 +1,18 @@
 {
     "merge": [
         {
-            "glob": "",
+            "paths": [],
             "path": ""
         }
     ],
     "rename": [
         {
-            "glob": "**/mod1/102-3.webp",
-            "path": "mod1/101-수정.webp"
+            "glob": "mod1/102-3.webp",
+            "path": "mod1/101-수정33.webp"
         },
         {
-            "glob": "",
-            "dir": ""
+            "glob": "**/*.css",
+            "dir": "css"
         }
     ],
     "except": [

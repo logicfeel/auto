@@ -20,4 +20,5 @@ let t = autoTask;
     // e.resolver.getPattern('out/com.css')
     // e.resolver.getPattern('out/area/top.css')
 
+
 console.log(1)
