@@ -23,7 +23,7 @@ class SourceBatch {
     constructor() {
     }
 
-    static getInstance() {
+    static getInstance() {  // TODO:: 제거 검토
         if (this._instance === null) {
             this._instance = new this();
         }
@@ -357,7 +357,7 @@ class TargetSource {
     }
 
     /**
-     * fullPath, savePath, dir 속성을 설정한다.
+     * fullPath, dir 속성을 설정한다.
      */
      #initPath() {
 
