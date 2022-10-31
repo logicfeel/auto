@@ -13,7 +13,7 @@ class AutoTask {
     // protected
     static _instance = null;
     // private
-    #__dir = null;
+    #dir = null;
 
     constructor() {
         this.batch = SourceBatch.getInstance();
@@ -25,7 +25,7 @@ class AutoTask {
             throw new Error(' start [dir] request fail...');
         }
         this._instance = new this();
-        this._instance.#__dir = dir;
+        this._instance.#dir = dir;
         return this._instance;
     }
     static getInstance() {
@@ -176,7 +176,7 @@ class AutoTask {
     _load() {
         console.log('_load()....');
         // 현재 폴더의 auto.js 파일 로딩
-        let entryFile  = this.#__dir + '/auto.js'
+        let entryFile  = this.#dir + '/auto.js'
         // 다양한 조건에 예외조건을 수용해야함
         const EntryAuto = require(entryFile);
         // 타입 검사해야함

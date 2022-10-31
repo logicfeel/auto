@@ -69,7 +69,7 @@ class SourceBatch {
         }
         
         for (let i = 0; i < this._list.length; i++) {
-            // TextFile 만 콘텐츠 설정
+            // TextFile 일 경우 콘텐츠 설정
             if (this._list[i]._original instanceof TextFile) {
                 this._list[i].setData(this.isRoot);
             }
@@ -78,7 +78,7 @@ class SourceBatch {
         // TODO:: 중복제거        
 
         // 타겟 저장
-        this.#_saveFile();
+        this.#saveFile();
 
         // 이벤트 발생
         this._task.entry._onBatched(this._task.entry);
@@ -127,7 +127,7 @@ class SourceBatch {
     /**
      * 배치파일 저장
      */
-     #_saveFile() {
+     #saveFile() {
 
         let isExists, dirname, fullPath, data, orignal;
         const _this = this;
@@ -147,7 +147,7 @@ class SourceBatch {
                         fs.mkdirSync(dirname, {recursive: true} );  // 디렉토리 만들기
                     }
                     fs.writeFileSync(fullPath, data, 'utf8');       
-                    this.#_addBatchFile(fullPath);  // 배치 로그 등록
+                    this.#addBatchFile(fullPath);  // 배치 로그 등록
                 
                     // 비텍스트 파일의 경우
                 } else if (orignal instanceof NonTextFile) {
@@ -159,7 +159,7 @@ class SourceBatch {
                     }
                     // 복사
                     fs.copyFileSync(orignal.fullPath, fullPath)
-                    this.#_addBatchFile(fullPath);   
+                    this.#addBatchFile(fullPath);   
 
                 // (가상) 폴더의 경우
                 } else if (orignal instanceof VirtualFolder) {
@@ -172,60 +172,13 @@ class SourceBatch {
             }
         }
         // 배치 로그 저장
-        this.#_saveBatchFile();
+        this.#saveBatchFile();
     }
-    // #_saveFile() {
-
-    //     let isExists, dirname, savePath, data, orignal;
-    //     const _this = this;
-    //     // TODO:: try 로 예외 처리함
-    //     for (let i = 0; i < this._list.length; i++) {
-            
-    //         if (this._list[i].savePath !== null) {
-    //             orignal = this._list[i]._original;
-                 
-    //             // 텍스트 파일의 경우
-    //             if (orignal instanceof TextFile) {
-    //                 savePath = this._list[i].savePath;
-    //                 data = this._list[i].data;
-    //                 dirname = path.dirname(savePath);   
-    //                 isExists = fs.existsSync(dirname);  // 디렉토리 검사
-    //                 if(!isExists) {
-    //                     fs.mkdirSync(dirname, {recursive: true} );  // 디렉토리 만들기
-    //                 }
-    //                 fs.writeFileSync(savePath, data, 'utf8');       
-    //                 this.#_addBatchFile(savePath);  // 배치 로그 등록
-                
-    //                 // 비텍스트 파일의 경우
-    //             } else if (orignal instanceof NonTextFile) {
-    //                 savePath = this._list[i].savePath;
-    //                 dirname = path.dirname(savePath);
-    //                 isExists = fs.existsSync(dirname);  // 디렉토리 검사
-    //                 if(!isExists) {
-    //                     fs.mkdirSync(dirname, {recursive: true} ); // 디렉토리 만들기
-    //                 }
-    //                 // 복사
-    //                 fs.copyFileSync(orignal.fullPath, savePath)
-    //                 this.#_addBatchFile(savePath);   
-
-    //             // (가상) 폴더의 경우
-    //             } else if (orignal instanceof VirtualFolder) {
-    //                 savePath = this._list[i].savePath;
-    //                 isExists = fs.existsSync(savePath);
-    //                 if(!isExists) {
-    //                     fs.mkdirSync(savePath, {recursive: true} ); // 디렉토리 만들기
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     // 배치 로그 저장
-    //     this.#_saveBatchFile();
-    // }
 
     /**
      * 배치파일저장소 저장
      */
-    #_saveBatchFile() {
+    #saveBatchFile() {
         // batchFile
         let data = JSON.stringify(this._batchFile);
         fs.writeFileSync(this._task.entry.dir +path.sep+ '__BATCH_FILE.json', data, 'utf8');   
@@ -235,7 +188,7 @@ class SourceBatch {
      * 배치파일저장소에 저장파일 로그 추가
      * @param {str} savePath 
      */
-    #_addBatchFile(savePath) {
+    #addBatchFile(savePath) {
         if (this._batchFile.indexOf(savePath) < 0) this._batchFile.push(savePath);
         console.log('SAVE : ' + savePath);
     }
@@ -247,14 +200,10 @@ class SourceBatch {
 class TargetSource {
         
     // public
-    // savePath    = null; // TODO:: 제거대상
-    // fullPath    = null;
-    // location    = null;
-    // dir         = null;
-    data        = null;
     isSave      = null; // 저장유무
     referType   = 0;
     refedType   = 0;
+    data        = null;
     // protected
     _original    = null;
     _owner      = null;
@@ -303,19 +252,9 @@ class TargetSource {
         this.#location = location;
         this.isSave = isSave;
 
-        this.#_initPath();
+        this.#initPath();
         if (location === entry.LOC.INS) auto.install.add(this);
     }
-    // constructor(ori, location, isSave) {
-        
-    //     let entry = this._batch._task.entry;
-    //     let auto  = ori._auto;
-
-    //     this._original = ori;
-    //     this.#location = location;
-    //     this.#_initPath(isSave);
-    //     if (location === entry.LOC.INS) auto.install.add(this);
-    // }
 
     /**
      * 소스 내용(data) 설정
@@ -419,9 +358,8 @@ class TargetSource {
 
     /**
      * fullPath, savePath, dir 속성을 설정한다.
-     * @param {boolean} isSave 
      */
-     #_initPath() {
+     #initPath() {
 
         let auto, src, useAuto, entry, alias, fullPath;
         let location;
@@ -459,48 +397,7 @@ class TargetSource {
             this.#fullPath = fullPath;          
         }
     }    
-    // #_initPath(isSave) {
 
-    //     let auto, src, useAuto, entry, alias, savePath;
-    //     let location;
-    //     // const AutoTask = require('./auto-task');
-    //     entry = this._batch._task.entry;
-        
-
-    //     src = this._original;
-    //     auto = src._auto;
-    //     location = this.location;
-
-    //     this.isSave = isSave;
-
-    //     if (location == entry.LOC.DIS) {
-    //         if (entry === src._auto) {
-    //             savePath = auto.dir + path.sep + entry.LOC.DIS + path.sep + src.subPath;
-                
-    //         } else {    // 하위 오토의 경우
-    //             useAuto = auto._owner;
-    //             alias = useAuto.name +'-'+ auto.alias;
-    //             savePath = auto.dir + path.sep + entry.LOC.DIS + path.sep + alias + path.sep + src.subPath;
-    //         }
-    //         this.#dir = auto.dir;
-    //         this.fullPath = savePath;
-        
-    //     } else if (location == entry.LOC.DEP) {
-    //         alias = auto.alias;
-    //         savePath = entry.dir + path.sep + entry.LOC.DEP + path.sep + alias + path.sep + src.subPath;
-    //         this.#dir = entry.dir;
-    //         this.fullPath = savePath;
-        
-    //     } else if (location == entry.LOC.INS) {
-    //         // TODO:: 컨첸츠 중복 검사 및 제거 알고니즘 추가해야함
-    //         alias = auto.alias ? auto.name + path.sep + auto.alias : auto.name;
-    //         savePath = entry.dir + path.sep + entry.LOC.INS + path.sep + alias + path.sep + src.subPath;
-    //         this.#dir = entry.dir;
-    //         this.fullPath = savePath;          
-    //     }
-    //     if (isSave) this.savePath = this.fullPath;
-    // }    
-    
     /**
      * 파일내용(data) 을 배열에 맞게 교체한다.
      * @param {*} data 
@@ -550,6 +447,8 @@ class TargetSource {
 class InstallMap {
     
     // protected
+    _auto = null;
+    _task = at.AutoTask.getInstance();
     _parent = null;
     _child = [];
     _setup = [];
@@ -557,27 +456,7 @@ class InstallMap {
     _rename = [];
     _except = [];
     _list = [];
-    _auto = null;
-    _task = at.AutoTask.getInstance();
-    // _entry = _task.entry;
-    // TODO:: /install 상위 제거후 리턴해야함
-    // propertys
-    // get targetPaths() {
-        
-    //     let arr = [];
-    //     let entry = this._task.entry;
-    //     let fullPath;
 
-    //     for (let i = 0; i < this._child.length; i++) {
-    //         arr = arr.concat(this._child[i].targetPaths);
-    //     }
-    //     for (let i = 0; i < this._list.length; i++) {
-    //         // savePath = path.relative(entry.dir + path.sep + entry.LOC.INS, this._list[i].savePath);
-    //         // arr.push(savePath);
-    //         arr.push(this._list[i].fullPath);
-    //     }
-    //     return arr;
-    // }
     get targets() {
         
         let arr = [];
@@ -590,27 +469,10 @@ class InstallMap {
         }
         return arr;
     }    
-    // get targetObjs() {
-        
-    //     let arr = [];
-
-    //     for (let i = 0; i < this._child.length; i++) {
-    //         arr = arr.concat(this._child[i].targetObjs);
-    //     }
-    //     for (let i = 0; i < this._list.length; i++) {
-    //         arr.push(this._list[i]);        
-    //     }
-    //     return arr;
-    // }
 
     constructor(auto, json) {
         this._auto = auto;
-        // 소유자기 있으면
-        // if (auto._owner && auto._owner.install instanceof InstallMap) {
-        //     this._parent = auto._onwer.install;     // 부모 InstallMap 연결
-        //     auto._owner.install._child.push(this);  // 자식 InstallMap 등록
-        // }
-        if (json) this.#_load(json);
+        if (json) this.#load(json);
     }
 
     add(target) {
@@ -635,7 +497,7 @@ class InstallMap {
         if (this._except.length > 0) this.#execExcept();
     }
 
-    #_load(json) {
+    #load(json) {
 
         let obj;
 

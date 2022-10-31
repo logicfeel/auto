@@ -37,32 +37,32 @@ class Automation {
     _resolve    = null;
     _file       = [];
     // private
-    #_dir      = [];
-    #_alias    = null;
-    #_event    = new Observer(this, this);
+    #dir      = [];
+    #alias    = null;
+    #event    = new Observer(this, this);
 
     // property
     get dir() {
-        return this.#_dir;
+        return this.#dir;
     }
     get name() {
         return this._package.name;
     }
     get alias() {
-        return this.#_alias;
+        return this.#alias;
     }
     set alias(val) {
-        this.#_alias = val;
+        this.#alias = val;
     }
     // event
     set onLoaded(fun) {
-        this.#_event.subscribe(fun, 'loaded');  // 소스 로딩후
+        this.#event.subscribe(fun, 'loaded');  // 소스 로딩후
     }
     set onBatch(fun) {
-        this.#_event.subscribe(fun, 'batch');
+        this.#event.subscribe(fun, 'batch');
     }
     set onBatched(fun) {
-        this.#_event.subscribe(fun, 'batched');
+        this.#event.subscribe(fun, 'batched');
     }
 
     /**
@@ -78,14 +78,14 @@ class Automation {
         let packagePath;
         let filePath;
 
-        this.#_dir = dir;
+        this.#dir = dir;
 
         // *.json 로딩
-        installPath = this.#_dir + path.sep + 'install.json';
-        resolvePath = this.#_dir + path.sep + 'resolve.json';
-        autoPath    = this.#_dir + path.sep + 'auto.json';
-        packagePath = this.#_dir + path.sep + 'package.json';
-        filePath    = this.#_dir + path.sep + '__BATCH_FILE.json';
+        installPath = this.#dir + path.sep + 'install.json';
+        resolvePath = this.#dir + path.sep + 'resolve.json';
+        autoPath    = this.#dir + path.sep + 'auto.json';
+        packagePath = this.#dir + path.sep + 'package.json';
+        filePath    = this.#dir + path.sep + '__BATCH_FILE.json';
 
         // 선택 파일검사
         if (fs.existsSync(installPath)) this._install = require(installPath);
@@ -200,13 +200,13 @@ class Automation {
 
     // 이벤트 호출
     _onLoaded() {
-        this.#_event.publish('loaded', this);
+        this.#event.publish('loaded', this);
     }
     _onBatch(entry) {
-        this.#_event.publish('batch', entry);
+        this.#event.publish('batch', entry);
     }
     _onBatched(entry) {
-        this.#_event.publish('batched', entry); 
+        this.#event.publish('batched', entry); 
     }
 }
 
