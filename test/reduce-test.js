@@ -2,7 +2,8 @@
 
 
 
-let array = [{"A": 1}, {"A": 1}, {"A": 3}]
+let array = [{"A": 1, "B":1}, {"A": 1, "B":2}, {"A": 3, "B":3}, {"A": 4, "B":2}, {"A": 1, "B":3},]
+
 
 let initialValue = 0;
 
@@ -68,7 +69,32 @@ let initialValue = 0;
 
 // console.log(arr2)
  
-let r = array.filter(x1 => array.some(x2 => x1.A == x2.A ));
+// let r = array.filter(x1 => array.some(x2 => x1.A == x2.A ));
+
+// let r = array.filter(x1 => {
+//     return array.some((x2, i, arr) => {
+//         return x1 !== arr[i] && x1.A == x2.A
+//     })
+//     // return rr;
+// });
+
+let rtn = [];
+
+array.forEach( (c, i, a) => {
+    if (array.some((cc, ii, aa) => {
+        return i !== ii && c.A == cc.A && !rtn.find(ccc => {
+            // let rrr = 
+            return ccc.A === c.A;
+        })
+    })) rtn.push(c);
+    // console.log(1)
+})
+
+// let kkk = rtn.find(ccc => {
+//     let rrr = ccc.A === c.A
+//     return rrr;
+// })
+
 
 
 console.log(0)
