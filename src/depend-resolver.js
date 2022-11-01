@@ -8,11 +8,11 @@ class DependResolver {
     _list = [];
     _paths = [];
     //private
-    #_patterns = [];
+    #patterns = [];
 
     constructor(auto) {
         this._auto = auto;
-        // this.#_patterns.push({target: '**', include: '**'});
+        // this.#patterns.push({target: '**', include: '**'});
     }
 
     load() {
@@ -30,7 +30,7 @@ class DependResolver {
         let list = [];
         // 원본 소스 조회
         for (let i = 0; i < this._list.length; i++) {
-            arr = this.#_getPathList(this._list[i]);
+            arr = this.#getPathList(this._list[i]);
             data = this._list[i].origin.data;
             // 참조 대상 조회
             for (let ii = 0; ii < arr.length; ii++) {``
@@ -39,7 +39,7 @@ class DependResolver {
                 basePath = arr[ii].basePath;
                 for (let iii = 0; iii < arr[ii].paths.length; iii++) {
                     keyword = arr[ii].paths[iii].info;    
-                    list = list.concat(this.#_getMatch(keyword, data, arr[ii].paths[iii].type));    // 벼열 합침
+                    list = list.concat(this.#getMatch(keyword, data, arr[ii].paths[iii].type));    // 벼열 합침
                 }
                 // 참조가 있으면 등록
                 if (list.length > 0) {
@@ -56,7 +56,7 @@ class DependResolver {
      * @param {*} exclude 제외할 패ㄴ
      */
     setPattern(target, include, exclude) {
-        this.#_patterns.push({
+        this.#patterns.push({
             target: target,
             include: include,
             exclude: exclude,
@@ -79,11 +79,11 @@ class DependResolver {
         }
 
         // 소스에 포함되는 패턴 조회
-        for(let i = 0; i < this.#_patterns.length; i++) {
-            if (mm.isMatch(localPath, this.#_patterns[i].target)) {
-                target.push(this.#_patterns[i].target);
-                include.push(this.#_patterns[i].include);
-                exclude.push(this.#_patterns[i].exclude);
+        for(let i = 0; i < this.#patterns.length; i++) {
+            if (mm.isMatch(localPath, this.#patterns[i].target)) {
+                target.push(this.#patterns[i].target);
+                include.push(this.#patterns[i].include);
+                exclude.push(this.#patterns[i].exclude);
             }
         }
 
@@ -216,21 +216,12 @@ class DependResolver {
         }
     }
  
-    // #_createObject(basePath, location, alias = '') {
-    //     let objPath = {
-    //         origin: basePath,
-    //         location: location,
-    //         alias: alias,
-    //     };    
-    //     return objPath;
-    // }
-
     /**
      * _ref 참조경로에 대한 상대경로와 절대경로를 배열로 리턴
      * @param {*} obj 
      * @returns 
      */
-    #_getPathList(obj) {
+    #getPathList(obj) {
         // 
         let arr = [];
         let relativePath = null;
@@ -294,7 +285,7 @@ class DependResolver {
      * @param {*} type 절대, 상대 
      * @returns 
      */
-    #_getMatch(strPath, data, type = null) {
+    #getMatch(strPath, data, type = null) {
         
         let reg
         let rArr = [];
