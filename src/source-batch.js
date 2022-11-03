@@ -10,7 +10,7 @@ const { NonTextFile, TextFile, VirtualFolder, BasePath } = require('./base-path'
 class SourceBatch {
     // public
     pathType = 0;       // (0:자동, 1:상대, 2:절대)
-    dupType = 0;        // (0:하위참조, 1:중복제거, 2:중복허용)
+    dupType = 1;        // (0:하위참조, 1:중복제거, 2:중복허용)
     isRoot = true;
     // protected
     static _instance = null;
@@ -64,20 +64,23 @@ class SourceBatch {
         // install map 처리
         autos = this._task.entry._getAllList(true);
         
-        // 중복제거 처리
-        this.deduplication();
-
-        // 맨 하위부터 처리한다.
-        for (let i = 0; i < autos.length; i++) {
-            // 초기화 : parent, child
-            autos[i].install.init();
-            
+        if (this._task.cursor === 'INSTALL') {
             // 중복제거 처리
-            // autos[i].install.deduplication(this.dupType);
+            this.deduplication(this.dupType);
 
-            // 인스톨 설정 처리
-            autos[i].install.execute();
+            // 맨 하위부터 처리한다.
+            for (let i = 0; i < autos.length; i++) {
+                // 초기화 : parent, child
+                autos[i].install.init();
+                
+                // 중복제거 처리
+                // autos[i].install.deduplication(this.dupType);
+
+                // 인스톨 설정 처리
+                autos[i].install.execute();
+            }
         }
+
         
         for (let i = 0; i < this._list.length; i++) {
             // TextFile 일 경우 콘텐츠 설정
@@ -136,29 +139,75 @@ class SourceBatch {
     }
 
     /**
-     * 
-     * @param {number} depType 비교 깊이 
+     * dupType
+     * @param {number} depType 0 자동, 1 전체중복제거, 2 전체중복허용
+     * 방법1. for 중복 오토를 찾은 후, for 대상타겟 갯수만큼, 비교해서 같으면 합침 [추천]
+     * 방법2. for 유일한 파일 목록을 추출후, for 중복되는 타겟를 찾음
      */
-    deduplication(depType = 0 ) {
+    deduplication(depType) {
         // TODO:: isStatic 처리는 어디서??
         
-        /**
-         * 방법1. for 유일한 파일 목록을 추출후, for 중복되는 타겟를 찾음
-         * 방법2. for 중복 오토를 찾은 후, for 대상타겟 갯수만큼, 비교해서 같으면 합침 [추천]
-         * 
-         */
         const all = this._task.entry._getAllList(true);
-        const dupAuto = [];
+        let list = [];
+        let dupAuto = [];
 
+        if (depType === 1) {
+            list = all;
+        } else if (depType === 0) {
+            all.forEach( v, i => { 
+                if (v.install.isOverlap === false) list.push(v);
+            });
+        } else return;
+
+        // 중복 auto 조회
+        list.forEach((v, i) => {
+            if (list.some((vv, ii) => {
+                // REVIEW:: name 을 타입으로 변경 검토,  auto.equal() 메소드 검토
+                return i !== ii && v.name === vv.name && dupAuto.find( vvv => {
+                    return vvv.name === v.name;
+                });
+            })) dupAuto.push(v);    // 중복된 auto 삽입
+        });
+
+        /**
+         * for auto
+         *  소스 초기화
+         *  for 중복된 list 조회
+         *      소스 없을 경우
+         *  
+         */
+        // dupAuto.forEach(v, i = {
+        //     // v.
+        // });
+
+        console.log(1)
         
+    }
 
-
-
-        // 중복 파일 찾기 (TextFile, NonTextFile)
-        for (let i = 0; i < this._list.length; i++) {
-
+    validPath(fullPath) {
+        for(let i = 0; i < this._list.length; i++)  {
+            if (this._list[i].fullPath === fullPath) return false;
         }
+        return true;
+    }
+
+    newSubPath(tar) {
         
+        let filename = tar.name;
+        let obj;
+        let newName, subDir, subPath, fullPath;
+        let delimiter = '_'; 
+        if (this.validPath(tar.fullPath)) {
+            return tar.subPath; // 같은 이름 리턴
+        } else {
+            obj = path.parse(filename);
+            for(let i = 1; i < 100; i++)  { // 100개로 제한
+                newName = obj.name + delimiter + i + obj.ext;
+                subPath = tar.subDir + path.sep + newName;
+                fullPath = tar.dir + path.sep + tar.location + path.sep + subPath;
+                if (this.validPath(fullPath)) return subPath; 
+            }
+        }
     }
 
     /**

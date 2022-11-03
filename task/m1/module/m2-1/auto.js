@@ -6,6 +6,7 @@ let Mod1_1 = require('../m2-2/auto');
 // let mod1 = new Mod1();
 // let mod2 = new Mod1();
 let mod3 = new Mod1_1();
+let mod3_1 = new Mod1_1();
 
 
 class Auto extends Automation {
@@ -19,6 +20,7 @@ class Auto extends Automation {
         // this.mod.sub('M1', mod1);    // 동일 위치에 있음
         // this.mod.sub('M1', mod3);       // module 하위에 있음
         this.mod.super('M2-2', mod3);       // module 하위에 있음
+        this.mod.super('M2-2_1', mod3_1);       // module 하위에 있음
         // this.mod.sub('M1', mod2);
         // this.mod.super('M1', mod1);
         

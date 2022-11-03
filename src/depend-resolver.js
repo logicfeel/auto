@@ -205,7 +205,7 @@ class DependResolver {
         }
         // dep 가져오기
         for (let i = 0; i < this._auto.dep.count; i++) {       
-            alias = this._auto.dep.properties[0];   // 별칭 얻기
+            alias = this._auto.dep.properties[i];   // 별칭 얻기
             for (let ii = 0; ii < this._auto.dep[i].count; ii++) {
                 this._paths.push(createObject(this._auto.dep[i][ii], 'dep', alias));
             }

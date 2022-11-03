@@ -9,6 +9,7 @@ class AutoTask {
     // public
     entry = null;
     batch = null;
+    cursor = '';
     // batch = a.SourceBatch.getInstance();
     // protected
     static _instance = null;
@@ -40,13 +41,14 @@ class AutoTask {
      * 파일 변경 감시수 자동 업데이트에 활용함
      */
     do_update() {
-
+        this.cursor = 'UPDATE';
     }
     
     /**
      * 강제로 전체를 오토를 dist 한다.
      */
     do_dist() {
+        this.cursor = 'DIST';
         
         // 로딩
         this._load();
@@ -75,6 +77,8 @@ class AutoTask {
      * 처리 모듈 : 제외 모듈의 포함이 안되면서, /dist 폴더가 없는 경우
      */
     do_depend() { 
+        this.cursor = 'DEPEND';
+
         // 로딩
         this._load();
 
@@ -116,6 +120,7 @@ class AutoTask {
     }
 
     do_install() {
+        this.cursor = 'INSTALL';
         // 로딩
         this._load();
 
@@ -146,6 +151,7 @@ class AutoTask {
         
         let dir, entry, delPath;
 
+        this.cursor = 'RESET';
         // 로딩
         this._load();
         // 배치 파일 삭제

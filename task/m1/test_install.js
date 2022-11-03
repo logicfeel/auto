@@ -19,4 +19,7 @@ let t = autoTask;
     // e.resolver.getPattern('src/m1.html')
     // e.resolver.getPattern('out/com.css')
     // e.resolver.getPattern('out/area/top.css')
+
+    // t.batch.validPath('/Users/logic/PJ-Git/auto#v02/task/m1/install/mod1/bar.css')
+var d  = t.batch.newSubPath(t.batch._list[0]);
 console.log(1)

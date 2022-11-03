@@ -11,6 +11,14 @@
             "path": "mod1/101-수정33.webp"
         },
         {
+            "glob": "**/*.css",
+            "dir": "css"
+        },
+        {
+            "glob": "**/*.html",
+            "dir": "web"
+        },
+        {
             "glob": "mod1/aaa/bbb",
             "dir": "vir/aaa"
         }

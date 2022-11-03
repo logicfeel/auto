@@ -3,6 +3,8 @@ let Mod2 = require('./module/m2-1/auto');
 // let Mod1_1 = require('./module/m1/auto');
 
 let mod1 = new Mod2();
+
+// let mod2 = new Mod2();  // 중복테스트
 // let mod2 = new Mod1();
 // let mod3 = new Mod1_1();
 
@@ -15,6 +17,7 @@ class Auto extends Automation {
         // 오토 가져오기
         // this.mod.super('M2', mod1);    // 동일 위치에 있음
         this.mod.sub('M2-1', mod1);       // 동일 위치에 있음
+        // this.mod.sub('M2-12', mod2);
         // this.mod.add('M2', mod1);       // 동일 위치에 있음        
 
         // this.mod.sub('M2', mod3);       // module 하위에 있음
