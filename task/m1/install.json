@@ -1,23 +1,7 @@
 {
-    "merge": [
-        {
-            "paths": [],
-            "path": ""
-        }
-    ],
-    "rename": [
-        {
-            "glob": "mod1/102-3.webp",
-            "path": "mod1/101-수정33.webp"
-        },
-        {
-            "glob": "mod1/aaa/bbb",
-            "dir": "vir/aaa"
-        }
-    ],
-    "except": [
-        "**/.*"
-    ],
+    "global": {
+
+    },
     "setup": [
         {
             "glob": "**/board.css",
@@ -25,7 +9,31 @@
 
         }
     ],
-    "global": {
-
-    }
+    "rename": [
+        {
+            "glob": "mod1/102-3.webp",
+            "path": "mod1/100.webp"
+        },
+        {
+            "glob": "mod1/aaa/bbb",
+            "dir": "vir/aaa"
+        },
+        {
+            "glob": "**/*.css",
+            "dir": "css"
+        },
+        {
+            "glob": "**/*.html",
+            "dir": "web"
+        }
+    ],
+    "merge": [
+        {
+            "paths": ["css/bar.css", "css/com.css"],
+            "path": "css/merge.css"
+        }
+    ],
+    "except": [
+        "**/.*"
+    ]
 }

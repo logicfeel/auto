@@ -64,7 +64,7 @@ class AutoTask {
         for (let i = 0; i < list.length; i++) {
             list[i].resolver.load();
             list[i].resolver.resolve();
-            this.batch.add(list[i].src, this.entry.LOC.DIS, true);
+            this.batch.addCollection(list[i].src, this.entry.LOC.DIS, true);
         }
 
         // 저장
@@ -105,11 +105,11 @@ class AutoTask {
             
             // 기타 모듈
             if (dep.indexOf(all[i]) < 0) {
-                this.batch.add(all[i].src, this.entry.LOC.DIS, true);
+                this.batch.addCollection(all[i].src, this.entry.LOC.DIS);
             
             // 의존성 모듈
             } else {
-                this.batch.add(all[i].src, this.entry.LOC.DEP, true);
+                this.batch.addCollection(all[i].src, this.entry.LOC.DEP);
             }
         }
         // 저장
@@ -135,9 +135,9 @@ class AutoTask {
         for (let i = 0; i < list.length; i++) {
             list[i].resolver.load();
             list[i].resolver.resolve();
-            this.batch.add(list[i].src, this.entry.LOC.INS, true);
-            this.batch.add(list[i].out, this.entry.LOC.INS, true);
-            this.batch.add(list[i].vir, this.entry.LOC.INS, true);
+            this.batch.addCollection(list[i].src, this.entry.LOC.INS);
+            this.batch.addCollection(list[i].out, this.entry.LOC.INS);
+            this.batch.addCollection(list[i].vir, this.entry.LOC.INS);
         }
 
         // 저장

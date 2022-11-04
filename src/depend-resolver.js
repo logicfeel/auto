@@ -39,7 +39,8 @@ class DependResolver {
                 basePath = arr[ii].basePath;
                 for (let iii = 0; iii < arr[ii].paths.length; iii++) {
                     keyword = arr[ii].paths[iii].info;    
-                    list = list.concat(this.#getMatch(keyword, data, arr[ii].paths[iii].type));    // 벼열 합침
+                    // list = list.concat(this.#getMatch(keyword, data, arr[ii].paths[iii].type));    // 벼열 합침
+                    list = list.concat(this.#getMatch(keyword, data, arr[ii].paths[iii].type, this._list[i].origin.name));    // REVIEW:: 디버깅시 
                 }
                 // 참조가 있으면 등록
                 if (list.length > 0) {
@@ -283,9 +284,10 @@ class DependResolver {
      * @param {*} strPath 
      * @param {*} data 
      * @param {*} type 절대, 상대 
+     * @param {*} filename? 파일명 로그용 
      * @returns 
      */
-    #getMatch(strPath, data, type = null) {
+    #getMatch(strPath, data, type = null, filename) {
         
         let reg
         let rArr = [];
@@ -322,7 +324,7 @@ class DependResolver {
             });
 
             // console.log(data)
-            console.log(`index:${index} ${line}:line column:${column} key:${strPath}`)
+            console.log(`${filename} index:${index} ${line}:line column:${column} key:${strPath}`)
         }
         return rArr;
     }

@@ -3,6 +3,7 @@ const fs = require('fs');
 const mm = require('micromatch');
 const at = require('./auto-task');
 const { NonTextFile, TextFile, VirtualFolder, BasePath } = require('./base-path');
+const { deprecate } = require('util');
 
 /**
  * 소스배치 클래스
@@ -11,6 +12,7 @@ class SourceBatch {
     // public
     pathType = 0;       // (0:자동, 1:상대, 2:절대)
     dupType = 1;        // (0:하위참조, 1:중복제거, 2:중복허용)
+    isAlias = false;    // 설치시 별칭 포함 여부
     isRoot = true;
     // protected
     static _instance = null;
@@ -38,17 +40,20 @@ class SourceBatch {
      * @param {*} isSave 저장 유무
      */
     // add(collection) {
-    add(collection, location, isSave) {
+    addCollection(collection, location) {
 
         let ori, tar;        
         // TODO:: 타입 검사
-
         for(let i = 0; i < collection.count; i++) {
             ori = collection[i];
-            tar = new TargetSource(location, ori, isSave);
+            tar = new TargetSource(location, ori);
             ori._setTarget(tar);    // _target 설정
             this._list.push(tar);
         }
+    }
+    
+    add(tar) {
+        if (tar instanceof TargetSource) this._list.push(tar);
     }
 
     /**
@@ -66,16 +71,16 @@ class SourceBatch {
         
         if (this._task.cursor === 'INSTALL') {
             // 중복제거 처리
-            this.deduplication(this.dupType);
+            this.#deduplication(this.dupType);
+            
+            // 단일오토 별칭 경로 제거
+            if (this.isAlias === false) this.#removeAlias();
 
             // 맨 하위부터 처리한다.
             for (let i = 0; i < autos.length; i++) {
                 // 초기화 : parent, child
                 autos[i].install.init();
                 
-                // 중복제거 처리
-                // autos[i].install.deduplication(this.dupType);
-
                 // 인스톨 설정 처리
                 autos[i].install.execute();
             }
@@ -138,51 +143,7 @@ class SourceBatch {
         return rArr;
     }
 
-    /**
-     * dupType
-     * @param {number} depType 0 자동, 1 전체중복제거, 2 전체중복허용
-     * 방법1. for 중복 오토를 찾은 후, for 대상타겟 갯수만큼, 비교해서 같으면 합침 [추천]
-     * 방법2. for 유일한 파일 목록을 추출후, for 중복되는 타겟를 찾음
-     */
-    deduplication(depType) {
-        // TODO:: isStatic 처리는 어디서??
-        
-        const all = this._task.entry._getAllList(true);
-        let list = [];
-        let dupAuto = [];
-
-        if (depType === 1) {
-            list = all;
-        } else if (depType === 0) {
-            all.forEach( v, i => { 
-                if (v.install.isOverlap === false) list.push(v);
-            });
-        } else return;
-
-        // 중복 auto 조회
-        list.forEach((v, i) => {
-            if (list.some((vv, ii) => {
-                // REVIEW:: name 을 타입으로 변경 검토,  auto.equal() 메소드 검토
-                return i !== ii && v.name === vv.name && dupAuto.find( vvv => {
-                    return vvv.name === v.name;
-                });
-            })) dupAuto.push(v);    // 중복된 auto 삽입
-        });
-
-        /**
-         * for auto
-         *  소스 초기화
-         *  for 중복된 list 조회
-         *      소스 없을 경우
-         *  
-         */
-        // dupAuto.forEach(v, i = {
-        //     // v.
-        // });
-
-        console.log(1)
-        
-    }
+    
 
     validPath(fullPath) {
         for(let i = 0; i < this._list.length; i++)  {
@@ -191,23 +152,19 @@ class SourceBatch {
         return true;
     }
 
-    newSubPath(tar) {
+    newFileName(fullPath) {
         
-        let filename = tar.name;
-        let obj;
-        let newName, subDir, subPath, fullPath;
+        let obj, filename;
         let delimiter = '_'; 
-        if (this.validPath(tar.fullPath)) {
-            return tar.subPath; // 같은 이름 리턴
-        } else {
-            obj = path.parse(filename);
-            for(let i = 1; i < 100; i++)  { // 100개로 제한
-                newName = obj.name + delimiter + i + obj.ext;
-                subPath = tar.subDir + path.sep + newName;
-                fullPath = tar.dir + path.sep + tar.location + path.sep + subPath;
-                if (this.validPath(fullPath)) return subPath; 
-            }
+
+        obj = path.parse(fullPath);
+
+        for(let i = 1; i < 100; i++)  { // 100개로 제한
+            filename = obj.name + delimiter + i + obj.ext;
+            if (this.validPath(obj.dir + path.sep + filename)) return filename;
         }
+        console.warn('[실패 newFileName()] ' + fullPath );
+        return obj.name;    // 원래 이름 리턴
     }
 
     /**
@@ -278,6 +235,107 @@ class SourceBatch {
         if (this._batchFile.indexOf(savePath) < 0) this._batchFile.push(savePath);
         console.log('SAVE : ' + savePath);
     }
+
+    /**
+     * 중복된 타겟소스를 제거후 별칭 경로를 제거한다.
+     * @param {number} depType 0 자동, 1 전체중복제거, 2 전체중복허용
+     * 방법1. for 중복 오토를 찾은 후, for 대상타겟 갯수만큼, 비교해서 같으면 합침 [추천]
+     * 방법2. for 유일한 파일 목록을 추출후, for 중복되는 타겟를 찾음
+     */
+     #deduplication(depType) {
+        // TODO:: isStatic 처리는 어디서??
+        
+        const all = this._task.entry._getAllList(true);
+        let list = [];
+        let dupAuto = [];
+        let dupTar;
+        let newTar;
+        let _this = this;
+        // let arrTarget = [];
+
+        if (depType === 1) {
+            list = all;
+        } else if (depType === 0) {
+            all.forEach( v, i => { 
+                if (v.install.isOverlap === false) list.push(v);
+            });
+        } else return;
+
+        // 중복 auto 조회
+        list.forEach((v, i) => {
+            if (list.some((vv, ii) => {
+                return i !== ii && v instanceof vv.constructor && !dupAuto.find( vvv => {
+                    return vvv.name === v.name; // REVIEW:: 인스턴스타입으로 변경 필요 검토 ??
+                });
+            })) dupAuto.push(v);    // 중복된 auto 삽입
+        });
+
+        dupAuto.forEach(auto => {
+            this._list.forEach(tar => {
+                // 대상 찾기
+                if (tar._original._auto === auto) {
+                    dupTar = [];    // 초기화
+                    this._list.forEach(dup => {
+                        // 대상과 원본경로가 같은 소스 찾기
+                        if (tar !== dup && dup._original.fullPath === tar._original.fullPath) {
+                            // 텍스트가 아니거나 텍스트이면서 data 가 같은 경우 
+                            if (tar.type !== 30 || (tar.type === 30 && tar.data === dup.data)) {
+                                dupTar.push(dup);
+                            }
+                        }
+                    });
+
+                    // 중복이 있는 경우
+                    if (dupTar.length > 0) {
+                        newTar = tar.clone();
+                        newTar.subPath = auto.name + path.sep + tar._original.subPath;    // set 에 설정
+                        _this.add(newTar);
+                        // 부모 변경
+                        tar.owner = newTar;
+                        tar.isSave = false;
+                        dupTar.forEach(val => { 
+                            val.owner = newTar;
+                            val.isSave = false;
+                        });
+                    }
+                }
+            });
+        });
+    }
+
+    #removeAlias() {
+        
+        const all = this._task.entry._getAllList(false); // entry 는 별칭이 없으므로
+        let dupAuto = [], singleAuto = [];
+        let sigleTar = [];
+        
+        // 중복 오토 조회
+        all.forEach((v, i) => {
+            if (all.some((vv, ii) => {
+                return i !== ii && v instanceof vv.constructor && !dupAuto.find( vvv => {
+                    return vvv.name === v.name;
+                });
+            })) dupAuto.push(v);        // 중복된 auto 삽입
+        });
+        
+        // 단일 오토 조회
+        all.forEach( v => {
+            if (dupAuto.some( vv => {
+                return !(v instanceof vv.constructor);
+            })) singleAuto.push(v);    // 단일 auto 삽입
+        });
+
+        singleAuto.forEach(auto => {
+            this._list.forEach(tar => {
+                // 대상 찾기
+                if (tar._original._auto === auto) {
+                    tar.subPath  = auto.name + path.sep + tar._original.subPath;
+                }
+            });
+        });
+
+        console.log(1)
+    }
 }
 
 /**
@@ -286,7 +344,7 @@ class SourceBatch {
 class TargetSource {
         
     // public
-    isSave      = null;     // 저장유무, 활성화 상태
+    isSave      = true;     // 저장유무, 활성화 상태
     isExcept    = false;    // save 시점에 제외 여부
     referType   = 0;        // 참조하는 타입
     refedType   = 0;        // 참조되어지는 타입
@@ -305,13 +363,21 @@ class TargetSource {
 
     // property
     get fullPath() {
-        return this.#fullPath;
+        // return this.#fullPath;
+        return this._owner === null ? this.#fullPath : this._owner.fullPath;
     }
     get dir() {
-        return this.#dir;
+        // return this.#dir;
+        return this._owner === null ? this.#dir : this._owner.dir;
+    }
+    set dir(val) {
+        // this.#dir = val;
+        if (this._owner === null) this.#dir = val;
+        else this._owner.dir = val;
     }
     get location() {
-        return this.#location;
+        // return this.#location;
+        return this._owner === null ? this.#location : this._owner.location;
     }
     get name() {
         return path.basename(this.fullPath);
@@ -323,7 +389,9 @@ class TargetSource {
         return path.relative(this.dir + path.sep + this.location, this.fullPath);
     }
     set subPath(val) {
-        this.#fullPath = this.dir + path.sep + this.location + path.sep + val;
+        // this.#fullPath = this.dir + path.sep + this.location + path.sep + val;
+        if (this._owner === null) this.#fullPath = this.#dir + path.sep + this.#location + path.sep + val;
+        else this._owner.subPath = val;
     }
     get localDir() {
         return path.dirname(this.localPath);
@@ -335,23 +403,29 @@ class TargetSource {
         this._owner = val;      // 소유자
         val._owned.push(this);  // 사용된곳 설정
     }
+    get owner() {
+        return this._owner;
+    }
 
-    constructor(location, ori, isSave) {
+    /**
+     * 
+     * @param {*} location 
+     * @param {*} ori?  선택사항 
+     */
+    constructor(location, ori) {
         
         let entry = this._batch._task.entry;
         let auto  = null;
 
+        this.#location = location;
+        
         if (ori instanceof BasePath) {
             this._original = ori;    
             auto = ori._auto;
             this.#setType(ori);
+            this.#initPath();
+            if (location === entry.LOC.INS) auto.install.add(this);
         }
-        
-        this.#location = location;
-        this.isSave = isSave;
-
-        this.#initPath();
-        if (location === entry.LOC.INS) auto.install.add(this);
     }
 
     /**
@@ -456,7 +530,7 @@ class TargetSource {
 
     clone() {
         
-        let obj = new TargetSource(this.location, this._original, this.isSave);
+        let obj = new TargetSource(this.location, this._original);
         
         obj.isSave      = this.isSave;
         obj.isExcept    = this.isExcept;
@@ -701,40 +775,14 @@ class InstallMap {
         }
     }
 
-    #execMerge() {
-
-        let obj, arr = [];
-
-        for (let i = 0; i < this._merge.length; i++) {
-            
-            obj = this._merge[i];
-
-            if (typeof obj.glob === 'string' && obj.glob.length > 0) {
-                arr = mm.match(this.targets.map((obj) => { return obj.subPath }), obj.glob);
-            }
-            if (arr.length > 0) {
-                tars = this.targets.filter((obj) => { return arr.indexOf(obj.subPath) > -1 })
-                
-                for (let ii = 0; ii < obj.paths.length; ii++) {
-                    
-                    /**
-                     * - paths 파일 검사 : 폴더 제외
-                     * - path 단일 검사
-                     * - path 타겟 조회 : 원본임
-                     *  - path += paths data 추가
-                     *  - paths 의 _owner 설정 => 참조하는 곳 구조 수정해야함
-                     *  - isSave = false 처리
-                     */
-
-                }
-            }
-        }
-    }
+    
 
     #execRename() {
         
-        let arr = [], obj, tars = [], filename, dir;
+        let arr = [], obj, tars = [];
         let entry = this._task.entry;
+        const batch = this._task.batch;
+        let fullPath, subPath;
 
         for (let i = 0; i < this._rename.length; i++) {
             obj = this._rename[i];
@@ -765,9 +813,14 @@ class InstallMap {
                         console.warn('static 파일은 이름은 변경할 수 없습니다.' + tars[0]._original.fullPath);
                         continue;                    
                     }
-                    // 경로 조립
-                    // tars[0].fullPath = entry.dir + path.sep + entry.LOC.INS + path.sep + obj.path;
-                    tars[0].subPath = obj.path;
+                    subPath = obj.path;
+                    fullPath = tars[0].dir + path.sep + tars[0].location + path.sep + subPath;
+                    // 중복검사
+                    if (!batch.validPath(fullPath)) {
+                        subPath = path.dirname(subPath) + path.sep + batch.newFileName(fullPath);
+                        console.warn('[중복파일 이름재정의] ' + fullPath + ' >> ' + subPath)
+                    }
+                    tars[0].subPath = subPath;
 
                 // glob, dir 처리
                 } else if (typeof obj.dir === 'string' && obj.dir.length > 0) {
@@ -780,11 +833,61 @@ class InstallMap {
                         }
                         if (tars[i].type === 10) {      // VirtualFolder
                             tars[i].subPath = obj.dir;
-                        } else if (tars[i].type === 20 ||  tars[i].type === 30) {   // (Non)TextFile
-                            tars[i].subPath = obj.dir + path.sep + tars[i].name;
+                        } else if (tars[i].type === 20 ||  tars[i].type === 30) {   // TextFile & NonTextFile
+                            
+                            subPath = obj.dir + path.sep + tars[i].name;
+                            fullPath = tars[i].dir + path.sep + tars[i].location + path.sep + subPath;
+                            // 중복검사
+                            if (!batch.validPath(fullPath)) {
+                                subPath = path.dirname(subPath) + path.sep + batch.newFileName(fullPath);
+                                console.warn('[중복파일 이름재정의] ' + fullPath + ' >> ' + subPath)
+                            }
+                            tars[i].subPath = subPath;
                         }
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * 파일 머지는 특수한 경우이다. 타겟소스의 타입이 텍스트의 경우만 유효하다.
+     */
+    #execMerge() {
+
+        let obj, arr = [], tars, newTar;
+        const entry = this._task.entry;
+        const batch = this._task.batch;
+
+        for (let i = 0; i < this._merge.length; i++) {
+            
+            obj = this._merge[i];
+
+            if (typeof Array.isArray(obj.paths) && obj.paths.length > 0 && typeof obj.path === 'string' && obj.path.length > 0) {
+                obj.paths.forEach(v => {
+                    if (typeof v === 'string' && v.length > 0) arr.push(v);
+                });
+            }
+            if (arr.length > 0) {
+
+                tars = this.targets.filter((obj) => { return arr.indexOf(obj.subPath) > -1 })
+                
+                if (tars.length > 0) {
+                    newTar = new TargetSource(entry.LOC.INS, null);
+                    newTar.dir = entry.dir;
+                    newTar.type = 30;
+                    newTar.subPath = obj.path;
+                    newTar.data  = '';
+
+                    tars.forEach(v => {
+                        if (v.type === 30) {
+                            newTar.data += v._original.data + '\n';
+                            v.owner = newTar;
+                            v.isSave = false;    
+                        }
+                    });
+                    batch.add(newTar);
+                }                
             }
         }
     }
@@ -800,7 +903,7 @@ class InstallMap {
 
                 if (arr.length > 0) {
                     tars = this.targets.filter((obj) => { return arr.indexOf(obj.subPath) > -1 })
-                    tars.map( (o) => { o.isExcept = false; });
+                    tars.map( (o) => { o.isExcept = true; });
                 }
             }
         }
