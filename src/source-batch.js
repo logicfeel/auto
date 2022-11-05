@@ -10,7 +10,7 @@ const { deprecate } = require('util');
  */
 class SourceBatch {
     // public
-    pathType = 0;       // (0:자동, 1:상대, 2:절대)
+    pathType = 0;       // (0:자동, 1:절대, 2:상대)
     dupType = 1;        // (0:하위참조, 1:중복제거, 2:중복허용)
     isAlias = false;    // 설치시 별칭 포함 여부
     isRoot = true;

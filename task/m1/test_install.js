@@ -14,6 +14,7 @@ let t = autoTask;
 
 // t.batch.isAlias = true;
 // t.batch.dupType = 2;
+t.batch.pathType = 2;
 
 autoTask.do_reset();
 autoTask.do_install();
