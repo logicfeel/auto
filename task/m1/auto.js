@@ -4,7 +4,7 @@ let Mod2 = require('./module/m2-1/auto');
 
 let mod1 = new Mod2();
 
-// let mod2 = new Mod2();  // 중복테스트
+let mod2 = new Mod2();  // 중복테스트
 // let mod2 = new Mod1();
 // let mod3 = new Mod1_1();
 

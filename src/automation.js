@@ -208,6 +208,39 @@ class Automation {
     _onBatched(entry) {
         this.#event.publish('batched', entry); 
     }
+
+    // 폴더에 
+    #loadDir() {
+        
+        let installPath;
+        let resolvePath;
+        let autoPath;
+        let packagePath;
+        let filePath;
+
+        this.#dir = dir;
+
+        // *.json 로딩
+        installPath = this.#dir + path.sep + 'install.json';
+        resolvePath = this.#dir + path.sep + 'resolve.json';
+        autoPath    = this.#dir + path.sep + 'auto.json';
+        packagePath = this.#dir + path.sep + 'package.json';
+        filePath    = this.#dir + path.sep + '__BATCH_FILE.json';
+
+        // 선택 파일검사
+        if (fs.existsSync(installPath)) this._install = require(installPath);
+        if (fs.existsSync(resolvePath)) this._resolve = require(resolvePath);
+        if (fs.existsSync(autoPath)) this._auto = require(autoPath);
+        if (fs.existsSync(filePath)) this._file = require(filePath);
+        
+        // 필수 파일검사
+        if (!fs.existsSync(packagePath)) {
+            throw new Error('package.json file fail...');
+        } else {
+            this._package = require(packagePath);
+        }
+        this.install = new InstallMap(this, this._install);
+    }
 }
 
 /**

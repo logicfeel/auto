@@ -37,6 +37,13 @@ class AutoTask {
     }
 
     /**
+     * 상속한 모듈을 복제한다.
+     */
+    do_clone() {
+
+    }
+
+    /**
      * 엔트리 오토만 재배치 한다.
      * 파일 변경 감시수 자동 업데이트에 활용함
      */
@@ -180,7 +187,7 @@ class AutoTask {
 
     // entry 오토 로드
     _load() {
-        console.log('_load()....');
+        console.log('_load()....');b
         // 현재 폴더의 auto.js 파일 로딩
         let entryFile  = this.#dir + '/auto.js'
         // 다양한 조건에 예외조건을 수용해야함
