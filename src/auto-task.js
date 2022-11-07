@@ -69,7 +69,7 @@ class AutoTask {
 
         // 의존성 로딩 및 설정
         for (let i = 0; i < list.length; i++) {
-            list[i].resolver.load();
+            list[i].resolver.read();
             list[i].resolver.resolve();
             this.batch.addCollection(list[i].src, this.entry.LOC.DIS, true);
         }
@@ -107,7 +107,7 @@ class AutoTask {
 
         // 의존성 로딩 및 설정
         for (let i = 0; i < all.length; i++) {
-            all[i].resolver.load();
+            all[i].resolver.read();
             all[i].resolver.resolve();
             
             // 기타 모듈
@@ -140,7 +140,7 @@ class AutoTask {
 
         // 의존성 로딩 및 설정
         for (let i = 0; i < list.length; i++) {
-            list[i].resolver.load();
+            list[i].resolver.read();
             list[i].resolver.resolve();
             this.batch.addCollection(list[i].src, this.entry.LOC.INS);
             this.batch.addCollection(list[i].out, this.entry.LOC.INS);
@@ -187,7 +187,7 @@ class AutoTask {
 
     // entry 오토 로드
     _load() {
-        console.log('_load()....');b
+        console.log('_load()....');
         // 현재 폴더의 auto.js 파일 로딩
         let entryFile  = this.#dir + '/auto.js'
         // 다양한 조건에 예외조건을 수용해야함

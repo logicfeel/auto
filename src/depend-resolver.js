@@ -10,12 +10,13 @@ class DependResolver {
     //private
     #patterns = [];
 
-    constructor(auto) {
+    constructor(auto, json) {
         this._auto = auto;
+        if (json) this.#load(json);
         // this.#patterns.push({target: '**', include: '**'});
     }
 
-    load() {
+    read() {
         this._readOriginal();
         this._readReference();
 
@@ -33,7 +34,7 @@ class DependResolver {
             arr = this.#getPathList(this._list[i]);
             data = this._list[i].origin.data;
             // 참조 대상 조회
-            for (let ii = 0; ii < arr.length; ii++) {``
+            for (let ii = 0; ii < arr.length; ii++) {
                 // 대상의 상대, 절대 경로
                 list = [];  // 초기화
                 basePath = arr[ii].basePath;
@@ -217,6 +218,18 @@ class DependResolver {
         }
     }
  
+    #load(json) {
+     
+        let obj;
+
+        if (json && Array.isArray(json.pattern)) {
+            for (let i = 0; i < json.pattern.length; i++) {
+                obj = json.pattern[i];
+                if (obj.target && (obj.include || obj.exclude)) this.#patterns.push(obj);
+            }
+        }
+    }
+
     /**
      * _ref 참조경로에 대한 상대경로와 절대경로를 배열로 리턴
      * @param {*} obj 

@@ -17,8 +17,11 @@ class Automation {
     vir         = new FolderCollection(this);
     dep         = new DependCollection(this);
     meta        = new MetaCollection(this);
-    resolver    = new DependResolver(this);
+    
+    // resolver    = new DependResolver(this);
+    resolver    = null;
     install     = null;
+    prop        = {};
     LOC = {     // location
         OUT: 'out',
         SRC: 'src',
@@ -28,25 +31,36 @@ class Automation {
         DIS: 'dist',
         VIR: 'vir'
     };
-    prop = {};
     // protected
     _owner      = null;
-    _install    = null;
-    _auto       = null;
-    _package    = null;
-    _resolve    = null;
+    // _install    = null;     // 삭제대상
+    // _auto       = null;     // 삭제대상
+    // _package    = null;     // 삭제대상
+    // _resolve    = null;     // 삭제대상
     _file       = [];
     // private
-    #dir      = [];
-    #alias    = null;
-    #event    = new Observer(this, this);
+    #name       = null;
+    #dir        = [];
+    #alias      = null;
+    #event      = new Observer(this, this);
 
     // property
     get dir() {
+        let size = this.#dir.length;
+        if (size === 0) throw new Error(' start [dir] request fail...');
+        return this.#dir[size - 1];
+    }
+    set dir(val) {
+        this.#dir.push(val);
+        // package, prop, install, resolver.json 로딩
+        // setter별 처리
+        this.#loadDir(val);
+    }
+    get dirs() {
         return this.#dir;
     }
     get name() {
-        return this._package.name;
+        return this.#name;
     }
     get alias() {
         return this.#alias;
@@ -69,37 +83,40 @@ class Automation {
      * 생성자 
      * @param {*} dir auth 의 위치 : __dirname 지정
      */
-     constructor(dir) {
-        console.log('Automation load..');
+    //  constructor(dir) {
+    //     console.log('Automation load..');
 
-        let installPath;
-        let resolvePath;
-        let autoPath;
-        let packagePath;
-        let filePath;
+    //     let installPath;
+    //     let resolvePath;
+    //     let autoPath;
+    //     let packagePath;
+    //     let filePath;
 
-        this.#dir = dir;
+    //     this.#dir = dir;
 
-        // *.json 로딩
-        installPath = this.#dir + path.sep + 'install.json';
-        resolvePath = this.#dir + path.sep + 'resolve.json';
-        autoPath    = this.#dir + path.sep + 'auto.json';
-        packagePath = this.#dir + path.sep + 'package.json';
-        filePath    = this.#dir + path.sep + '__BATCH_FILE.json';
+    //     // *.json 로딩
+    //     installPath = this.#dir + path.sep + 'install.json';
+    //     resolvePath = this.#dir + path.sep + 'resolve.json';
+    //     autoPath    = this.#dir + path.sep + 'auto.json';
+    //     packagePath = this.#dir + path.sep + 'package.json';
+    //     filePath    = this.#dir + path.sep + '__BATCH_FILE.json';
 
-        // 선택 파일검사
-        if (fs.existsSync(installPath)) this._install = require(installPath);
-        if (fs.existsSync(resolvePath)) this._resolve = require(resolvePath);
-        if (fs.existsSync(autoPath)) this._auto = require(autoPath);
-        if (fs.existsSync(filePath)) this._file = require(filePath);
+    //     // 선택 파일검사
+    //     if (fs.existsSync(installPath)) this._install = require(installPath);
+    //     if (fs.existsSync(resolvePath)) this._resolve = require(resolvePath);
+    //     if (fs.existsSync(autoPath)) this._auto = require(autoPath);
+    //     if (fs.existsSync(filePath)) this._file = require(filePath);
         
-        // 필수 파일검사
-        if (!fs.existsSync(packagePath)) {
-            throw new Error('package.json file fail...');
-        } else {
-            this._package = require(packagePath);
-        }
-        this.install = new InstallMap(this, this._install);
+    //     // 필수 파일검사
+    //     if (!fs.existsSync(packagePath)) {
+    //         throw new Error('package.json file fail...');
+    //     } else {
+    //         this._package = require(packagePath);
+    //     }
+    //     this.install = new InstallMap(this, this._install);
+    // }
+    constructor() {
+        console.log('Automation load..');
     }
 
     /**
@@ -116,14 +133,6 @@ class Automation {
             this.out.addLocation(this.LOC.OUT);
             if (isOut === true) this.out.fillData();
         }
-    }
-
-    /**
-     * 오토의 기본경로 설정
-     * @param {string} dir auto 경로 : __dirname 기본으로 사용함
-     */
-    setDir(dir) {
-        // TODO::
     }
 
     /**
@@ -210,36 +219,46 @@ class Automation {
     }
 
     // 폴더에 
-    #loadDir() {
+    #loadDir(dir) {
         
+        let packagePath;
         let installPath;
         let resolvePath;
-        let autoPath;
-        let packagePath;
+        let propPath;
         let filePath;
-
-        this.#dir = dir;
+        let _package, _install, _resolver, _prop;
 
         // *.json 로딩
-        installPath = this.#dir + path.sep + 'install.json';
-        resolvePath = this.#dir + path.sep + 'resolve.json';
-        autoPath    = this.#dir + path.sep + 'auto.json';
-        packagePath = this.#dir + path.sep + 'package.json';
-        filePath    = this.#dir + path.sep + '__BATCH_FILE.json';
-
-        // 선택 파일검사
-        if (fs.existsSync(installPath)) this._install = require(installPath);
-        if (fs.existsSync(resolvePath)) this._resolve = require(resolvePath);
-        if (fs.existsSync(autoPath)) this._auto = require(autoPath);
-        if (fs.existsSync(filePath)) this._file = require(filePath);
+        packagePath = dir + path.sep + 'package.json';
+        installPath = dir + path.sep + 'install.json';
+        resolvePath = dir + path.sep + 'resolver.json';
+        propPath    = dir + path.sep + 'prop.json';
         
-        // 필수 파일검사
+        // TODO:: 위치 찾아야함
+        // 엔트리에서 로딩해야함
+        // filePath    = dir + path.sep + '__BATCH_FILE.json';
+        // if (fs.existsSync(filePath)) this._file = require(filePath);
+
+        // 필수 파일 검사
         if (!fs.existsSync(packagePath)) {
             throw new Error('package.json file fail...');
         } else {
-            this._package = require(packagePath);
+            _package = require(packagePath);
+            this.#name = _package.name;     // auto.name 설정
         }
-        this.install = new InstallMap(this, this._install);
+
+        // 선택 파일 검사
+        /**
+         * 파일이 존재하면 새로 만들어고(덮어씀), 파일이 없으면 기존 객체 사용
+         */
+        if (fs.existsSync(installPath)) _install = require(installPath);
+        if (this.install === null || _install) this.install = new InstallMap(this, _install);
+
+        if (fs.existsSync(resolvePath)) _resolver = require(resolvePath);
+        if (this.resolver === null || _resolver) this.resolver = new DependResolver(this, _resolver);
+
+        if (fs.existsSync(propPath)) _prop = require(propPath);
+        if (_prop) this.prop = _prop;
     }
 }
 

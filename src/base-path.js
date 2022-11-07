@@ -174,17 +174,59 @@ class TextFile extends NonTextFile {
      * @param {*} location 
      * @param {*} opt 
      */
-     addLocation(location, opt) {
+    //  addLocation(location, opt) {
+
+    //     const _this = this;
+    //     const dir = this._onwer.dir +'/'+ location
+    //     const sep = path.sep;
+
+
+    //     // 내부 함수
+    //     function _addPath(path, dir = '') {
+
+    //         let arr, file, alias;
+    
+    //         arr = fs.readdirSync(path);
+    
+    //         for (let i = 0; i < arr.length; i++) {
+                
+    //             // REVIEW:: 비동기 성능이슈 있음
+                
+    //             // 대상 파일의 필터  TODO::
+    //             if (fs.statSync(path +'/'+ arr[i]).isFile()) {
+    //                 // 컬렉션에 등록
+    //                 alias = dir === '' ? arr[i] : dir + sep + arr[i];
+    //                 if (isBinaryPath(path +'/'+ arr[i])) {
+    //                     file = new NonTextFile(_this._onwer, path + sep + arr[i], location);
+    //                 } else {
+    //                     file = new TextFile(_this._onwer, path + sep + arr[i], location);
+    //                 }
+    //                 _this.add(alias, file);
+    //             } else if (fs.statSync(path + sep + arr[i]).isDirectory()) {
+    //                 _addPath(path + sep + arr[i], arr[i], dir);
+    //             }
+    //         }
+    //     }
+    //     // 폴더가 있는경우만
+    //     if (fs.existsSync(dir)) _addPath(dir);
+    // }
+
+    addLocation(location, opt) {
 
         const _this = this;
-        const dir = this._onwer.dir +'/'+ location
         const sep = path.sep;
+        const dirs = this._onwer.dirs;
+        let dir = '';
 
+        for (let i = 0; i < dirs.length; i++) {
+            dir = dirs[i] +'/'+ location;
+            if (fs.existsSync(dir)) _addPath(dir);
+        }
 
         // 내부 함수
         function _addPath(path, dir = '') {
 
-            let arr, file, alias;
+            let arr, file, alias, idx;
     
             arr = fs.readdirSync(path);
     
@@ -201,15 +243,21 @@ class TextFile extends NonTextFile {
                     } else {
                         file = new TextFile(_this._onwer, path + sep + arr[i], location);
                     }
-                    _this.add(alias, file);
+                    
+                    idx = _this.indexOfName(alias);  // 중복이름 검사
+                    if (idx > -1) _this[idx] = file;  // 내용 교체
+                    else _this.add(alias, file);
+                    
                 } else if (fs.statSync(path + sep + arr[i]).isDirectory()) {
                     _addPath(path + sep + arr[i], arr[i], dir);
                 }
             }
         }
         // 폴더가 있는경우만
-        if (fs.existsSync(dir)) _addPath(dir);
+        // if (fs.existsSync(dir)) _addPath(dir);
     }
+
+
 
     fillData() {
         

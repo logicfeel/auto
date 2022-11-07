@@ -5,9 +5,7 @@ let AutoTask = require('../../src/auto-task').AutoTask;
 // let autoTask = AutoTask.getInstance(__dirname);
 let autoTask = AutoTask.create(__dirname);
 
-let e = autoTask.entry;
 let t = autoTask;
-
 // let a = autoTask.entry;   // 별칭
 // let task = AutoTask.getInstance();
 // console.log(autoTask.do_depend)
@@ -19,6 +17,7 @@ t.batch.pathType = 2;
 autoTask.do_reset();
 autoTask.do_install();
 
+let e = autoTask.entry;
 
     // e.resolver._list
     // e.resolver.getPattern('src/inc/left.css')

@@ -1,10 +1,14 @@
 const {Automation} = require('../../src/automation');
 let Mod2 = require('./module/m2-1/auto');
+let Mod3 = require('./module/m3-2/auto').Automation;
 // let Mod1_1 = require('./module/m1/auto');
 
 let mod1 = new Mod2();
 
 let mod2 = new Mod2();  // 중복테스트
+
+let mod3 = new Mod3();  // 중복테스트
+
 // let mod2 = new Mod1();
 // let mod3 = new Mod1_1();
 
@@ -12,11 +16,15 @@ class Auto extends Automation {
     constructor() {
         super(__dirname);
 
+        this.dir = __dirname;
+
         // 오토 가져오기
         this.vir.add('aaa/bbb');
         // 오토 가져오기
         // this.mod.super('M2', mod1);    // 동일 위치에 있음
         this.mod.sub('M2-1', mod1);       // 동일 위치에 있음
+        this.mod.sub('M3-2', mod3);       // 상속 테스트
+
         // this.mod.sub('M2-12', mod2);
         // this.mod.add('M2', mod1);       // 동일 위치에 있음        
 

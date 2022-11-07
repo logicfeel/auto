@@ -1,0 +1,17 @@
+{
+    "pattern": [
+        {
+            "target": "src/**",
+            "include": "src/**"
+        },
+        {
+            "target": "src/inc/**",
+            "include": "out/**",
+            "exclude": "out/com*"
+        },
+        {
+            "target": "out/*",
+            "include": "src/**"
+        }
+    ]
+}

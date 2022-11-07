@@ -1,4 +1,4 @@
-const {Automation} = require('../../../../src/automation');
+const {Automation} = require('../m3-1/auto');
 
 
 class Auto extends Automation {
@@ -11,7 +11,7 @@ class Auto extends Automation {
         
 
         // 속성 설정
-        this.a = 'a'
+        this.a = 'b'
 
         // 템플릿 설정
 
@@ -21,4 +21,4 @@ class Auto extends Automation {
     }
 }
 
-module.exports = Auto;
+exports.Automation = Auto;

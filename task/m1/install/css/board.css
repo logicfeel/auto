@@ -1,5 +1,5 @@
 @import url("style.css");
-@import url("merge.css");
+@import url("../out/bar.css");
 
 h2 {
     background-color: rgb(166, 64, 235);

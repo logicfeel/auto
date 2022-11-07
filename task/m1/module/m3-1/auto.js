@@ -21,4 +21,4 @@ class Auto extends Automation {
     }
 }
 
-module.exports = Auto;
+exports.Automation = Auto;
