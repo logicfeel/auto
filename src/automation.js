@@ -11,12 +11,19 @@ const { InstallMap } = require('./source-batch');
 class Automation {
     
     // public
-    mod         = new AutoCollection(this);
-    src         = new FileCollection(this);
-    out         = new FileCollection(this);
-    vir         = new FolderCollection(this);
-    dep         = new DependCollection(this);
-    meta        = new MetaCollection(this);
+    // mod         = new AutoCollection(this);
+    // src         = new FileCollection(this);
+    // out         = new FileCollection(this);
+    // vir         = new FolderCollection(this);
+    // dep         = new DependCollection(this);
+    // meta        = new MetaCollection(this);
+    mod         = null;
+    src         = null;
+    out         = null;
+    vir         = null;
+    dep         = null;
+    meta         = null;
+    
     
     // resolver    = new DependResolver(this);
     resolver    = null;
@@ -117,6 +124,12 @@ class Automation {
     // }
     constructor() {
         console.log('Automation load..');
+        this.mod         = new AutoCollection(this);
+        this.src         = new FileCollection(this);
+        this.out         = new FileCollection(this);
+        this.vir         = new FolderCollection(this);
+        this.dep         = new DependCollection(this);
+        this.meta        = new MetaCollection(this);
     }
 
     /**
@@ -270,10 +283,12 @@ class Automation {
     // protected
     _super = [];
     _sub = [];
+    _auto = null;
 
     // TODO:: _W.Collection 에서 owner 명칭 변경 (오타) !!
     constructor(owner) {
         super(owner);
+        this._auto = owner;
     }
 
     getObject(p_context) {
@@ -299,10 +314,16 @@ class Automation {
      */
     add(alias, auto) {
         if (this._valid(alias, auto)) {
-            auto._owner = this._onwer;   // TODO:: 명칭 바꿔야함
+            // auto._owner = this._onwer;   // TODO:: 명칭 바꿔야함
+
+            auto._owner = this._auto;   // TODO:: 명칭 바꿔야함
             auto.alias = alias;
             super.add(alias, auto);
-        } 
+            
+            // this[alias]._owner = this._auto;
+            // this[alias].alias = alias;
+
+        }
     }
     
     sub(alias, auto) {

@@ -82,8 +82,17 @@ class SourceBatch {
                 autos[i].install.init();
                 
                 // 인스톨 설정 처리
+                // autos[i].install.execute();
+            }
+
+            for (let i = 0; i < autos.length; i++) {
+                // 초기화 : parent, child
+                // autos[i].install.init();
+                
+                // 인스톨 설정 처리
                 autos[i].install.execute();
             }
+
         }
 
         
@@ -459,10 +468,10 @@ class TargetSource {
                 if (entry === refSrc._auto) {
                     absolute = path.sep + refSrc.localPath;
                 } else {    // 하위의 경우
-                    if ( refSrc._auto.dir.indexOf(entry.dir) < 0) { // 앤트리 하위 여부 검사
+                    if ( refSrc.dir.indexOf(entry.dir) < 0) { // 앤트리 하위 여부 검사
                         throw new Error(' 절대경로를 사용할려면 하위오토는 앤트리 오토의 하위에 있어야 합니다. fail...');
                     }
-                    localDir = path.relative(entry.dir, refSrc._auto.dir);
+                    localDir = path.relative(entry.dir, refSrc.dir);
                     absolute = path.sep + localDir + path.sep + refSrc.localPath;
                 }
             

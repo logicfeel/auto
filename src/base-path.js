@@ -20,11 +20,15 @@ class BasePath {
     _auto = null;
     _target = null;
     // private
-    #location = null;
+    #location   = null;
+    #dir        = null;
 
     // property
     get location() {
         return this.#location;
+    }
+    get dir() {
+        return this.#dir;
     }
     get name() {
         throw new Error(' name 프로퍼티를 정의해야 합니다.');
@@ -41,9 +45,10 @@ class BasePath {
     get localPath() {
         throw new Error(' localPath 프로퍼티를 정의해야 합니다.');
     }
-    constructor(auto, location) {
+    constructor(auto, location, dir) {
         this._auto = auto;
         this.#location = location;
+        this.#dir = dir;
     }
 
     /**
@@ -83,12 +88,11 @@ class VirtualFolder extends BasePath {
         return this.fullPath;
     }
 
-    constructor(auto, localPath) {
-        super(auto, 'vir');
+    constructor(auto, localPath, dir) {
+        super(auto, 'vir', dir);
         
         // 필수 검사 필요!!
         this.#fullPath = localPath;
-
     }
 
 }
@@ -116,17 +120,17 @@ class NonTextFile extends BasePath {
         return path.dirname(this.subPath);
     }
     get subPath() {
-        return path.relative(this._auto.dir + path.sep + this.location, this.fullPath);
+        return path.relative(this.dir + path.sep + this.location, this.fullPath);
     }
     get localDir() {
         return path.dirname(this.localPath);
     }
     get localPath() {
-        return path.relative(this._auto.dir, this.fullPath);
+        return path.relative(this.dir, this.fullPath);
     }
 
-    constructor(auto, fullPath, location) {
-        super(auto, location);
+    constructor(auto, fullPath, location, dir) {
+        super(auto, location, dir);
 
         this.#fullPath = fullPath;
     }
@@ -154,10 +158,9 @@ class TextFile extends NonTextFile {
 
     // property
 
-    constructor(auto, fullPath, location) {
-        super(auto, fullPath, location);
+    constructor(auto, fullPath, location, dir) {
+        super(auto, fullPath, location, dir);
     }
-
 }
 
 /**
@@ -216,15 +219,10 @@ class TextFile extends NonTextFile {
         const _this = this;
         const sep = path.sep;
         const dirs = this._onwer.dirs;
-        let dir = '';
-
-        for (let i = 0; i < dirs.length; i++) {
-            dir = dirs[i] +'/'+ location;
-            if (fs.existsSync(dir)) _addPath(dir);
-        }
+        let dir = '', bDir = '';
 
         // 내부 함수
-        function _addPath(path, dir = '') {
+        function _addPath(path, dir = '', baseDir) {
 
             let arr, file, alias, idx;
     
@@ -239,9 +237,9 @@ class TextFile extends NonTextFile {
                     // 컬렉션에 등록
                     alias = dir === '' ? arr[i] : dir + sep + arr[i];
                     if (isBinaryPath(path +'/'+ arr[i])) {
-                        file = new NonTextFile(_this._onwer, path + sep + arr[i], location);
+                        file = new NonTextFile(_this._onwer, path + sep + arr[i], location, baseDir);
                     } else {
-                        file = new TextFile(_this._onwer, path + sep + arr[i], location);
+                        file = new TextFile(_this._onwer, path + sep + arr[i], location, baseDir);
                     }
                     
                     idx = _this.indexOfName(alias);  // 중복이름 검사
@@ -249,9 +247,15 @@ class TextFile extends NonTextFile {
                     else _this.add(alias, file);
                     
                 } else if (fs.statSync(path + sep + arr[i]).isDirectory()) {
-                    _addPath(path + sep + arr[i], arr[i], dir);
+                    _addPath(path + sep + arr[i], dir, baseDir);
                 }
             }
+        }
+
+        for (let i = 0; i < dirs.length; i++) {
+            dir = dirs[i] + path.sep + location;
+            bDir = dirs[i];
+            if (fs.existsSync(dir)) _addPath(dir, '', bDir);
         }
         // 폴더가 있는경우만
         // if (fs.existsSync(dir)) _addPath(dir);
@@ -283,7 +287,7 @@ class TextFile extends NonTextFile {
         
         let obj;
 
-        obj = new VirtualFolder(this._onwer, vFolder);
+        obj = new VirtualFolder(this._onwer, vFolder, this._onwer.dir);
         super.add(vFolder, obj);
     }
 }

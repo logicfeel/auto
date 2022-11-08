@@ -21,8 +21,12 @@ class Auto extends Automation {
         // 오토 가져오기
         // this.mod.sub('M1', mod1);    // 동일 위치에 있음
         // this.mod.sub('M1', mod3);       // module 하위에 있음
-        this.mod.super('M2-2', mod3);       // module 하위에 있음
-        this.mod.super('M2-2_1', mod3_1);       // module 하위에 있음
+
+        // this.mod.super('M2-2', mod3);       // module 하위에 있음
+        // this.mod.super('M2-2_1', mod3_1);       // module 하위에 있음
+        this.mod.sub('M2-2', mod3);       // module 하위에 있음
+        this.mod.sub('M2-2_1', mod3_1);       // module 하위에 있음
+
         // this.mod.sub('M1', mod2);
         // this.mod.super('M1', mod1);
         
