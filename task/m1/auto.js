@@ -1,14 +1,17 @@
 const {Automation} = require('../../src/automation');
 let Mod2 = require('./module/m2-1/auto');
-let Mod3 = require('./module/m3-2/auto').Automation;
+let Mod3 = require('./module/m3-2/auto');
 // let Mod1_1 = require('./module/m1/auto');
 
 let mod1 = new Mod2();
 
-let mod2 = new Mod2();  // 중복테스트
+// let mod2 = new Mod2();  // 중복테스트
 
-let mod3 = new Mod3();  // 중복테스트
+let mod3 = new Mod3();  // 상속테스트
 
+// mod2.vvv = 10;
+
+// console.log(mod1 === mod2)
 // let mod2 = new Mod1();
 // let mod3 = new Mod1_1();
 

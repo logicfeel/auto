@@ -3,7 +3,6 @@ const fs = require('fs');
 const mm = require('micromatch');
 const at = require('./auto-task');
 const { NonTextFile, TextFile, VirtualFolder, BasePath } = require('./base-path');
-const { deprecate } = require('util');
 
 /**
  * 소스배치 클래스

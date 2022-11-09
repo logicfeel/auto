@@ -269,7 +269,7 @@ class DependResolver {
                     aliasPath = path.sep + this._auto.LOC.DEP + path.sep + paths[i].alias + path.sep + basePath.subPath;
                     dir = path.dirname(obj.origin.fullPath);
                     // 상대경로 
-                    relativePath = path.relative(dir, this.dir + path.sep + aliasPath);
+                    relativePath = path.relative(dir, this._auto.dir + path.sep + aliasPath);
                     // arr.push(createPathList(basePath, aliasPath, relativePath));
                     arr.push(createPathList(basePath, { type: 1, info: aliasPath }, { type: 2, info: relativePath }));
                 }
@@ -337,7 +337,7 @@ class DependResolver {
             });
 
             // console.log(data)
-            console.log(`${filename} index:${index} ${line}:line column:${column} key:${strPath}`)
+            console.log(`${filename} :: idx:${index} line:${line} column:${column} key:${strPath}`)
         }
         return rArr;
     }
