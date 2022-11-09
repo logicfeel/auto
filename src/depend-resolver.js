@@ -68,13 +68,13 @@ class DependResolver {
             for (let i = 0; i < entry.src.count; i++) {
                 elem = entry.src[i];
                 name = entry.src.propertyOf(i);
-                obj[name] = { depend: {} };
+                obj[name] = {};
                 elem._dep.forEach(v => {
                     locaPath = v.ref.localPath;
-                    obj[name].depend[locaPath] = [];
+                    obj[name][locaPath] = [];
                     if (v.pos) {
                         v.pos.forEach(vv => {
-                            obj[name].depend[locaPath].push({
+                            obj[name][locaPath].push({
                                 idx: vv.idx,
                                 line: vv.line,
                                 key: vv.key
