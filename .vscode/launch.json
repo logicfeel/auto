@@ -26,15 +26,6 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "task/m1/test_dist.js 실행",
-            "program": "${workspaceFolder}/task/m1/test_dist.js",
-            "skipFiles": [
-                "<node_internals>/**"
-            ]
-        },
-        {
-            "type": "node",
-            "request": "launch",
             "name": "task/m1/test_depend.js 실행",
             "program": "${workspaceFolder}/task/m1/test_depend.js",
             "skipFiles": [

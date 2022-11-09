@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const { MetaElement, PropertyCollection, MetaObject } = require('entitybind');
 const isBinaryPath = require('is-binary-path');
+const { MetaElement, PropertyCollection, MetaObject } = require('entitybind');
 /**
  * 의존성 파일시스템
  */

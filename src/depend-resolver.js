@@ -1,5 +1,7 @@
+const fs = require('fs');
 const path = require('path');
 const mm = require('micromatch');
+const at = require('./auto-task');
 
 class DependResolver {
     
@@ -7,6 +9,8 @@ class DependResolver {
     _auto = null;
     _list = [];
     _paths = [];
+    _task = at.AutoTask.getInstance();
+    // _entry = this._task.entry;
     //private
     #patterns = [];
 
@@ -49,6 +53,43 @@ class DependResolver {
                 }
             }
         }
+
+        // relation 파일 저장
+        const entry = this._task.entry;
+
+        if (this._auto === entry && entry.isRelation === true) {
+            
+            // 함수로 노출 #saveRelation()
+            let obj = {}, elem, name, locaPath;
+            
+            for (let i = 0; i < entry.out.count; i++) {
+                
+            }
+            for (let i = 0; i < entry.src.count; i++) {
+                elem = entry.src[i];
+                name = entry.src.propertyOf(i);
+                obj[name] = { depend: {} };
+                elem._dep.forEach(v => {
+                    locaPath = v.ref.localPath;
+                    obj[name].depend[locaPath] = [];
+                    if (v.pos) {
+                        v.pos.forEach(vv => {
+                            obj[name].depend[locaPath].push({
+                                idx: vv.idx,
+                                line: vv.line,
+                                key: vv.key
+                            });
+                        });
+                    }
+                });
+            }
+            // console.log('obj =>' + obj);
+            
+            console.log('RELATION.json 파일 저장');
+            let data = JSON.stringify(obj, null, '\t');
+            fs.writeFileSync(entry.dir + path.sep + 'RELATION.json', data, 'utf8'); 
+        }
+        
     }
 
     /**

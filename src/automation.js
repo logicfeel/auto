@@ -38,6 +38,7 @@ class Automation {
         DIS: 'dist',
         VIR: 'vir'
     };
+    isRelation = true;
     // protected
     _owner      = null;
     // _install    = null;     // 삭제대상

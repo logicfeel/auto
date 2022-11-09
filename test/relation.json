@@ -1,0 +1,50 @@
+{
+	"src/abc.html": {
+		"depend": {
+			"src/refer.css": [
+				{
+					"idx": 1,
+					"line": 10,
+					"key": "..src/refer.css"
+				},
+				{
+					"idx": 5,
+					"line": 20,
+					"key": "/src/refer.css"
+				}
+			],
+			"src/refer2-1.css": [
+				{
+					"idx": 24,
+					"line": 20,
+					"key": "..src/refer.css"
+				}
+			],
+			"src/refer4.css": null
+		}
+	},
+	"src/abc2.html": {
+		"dep": {
+			"src/refer.css": [
+				{
+					"idx": 1,
+					"line": 10,
+					"key": "..src/refer.css"
+				},
+				{
+					"idx": 5,
+					"line": 20,
+					"key": "/src/refer.css"
+				}
+			],
+			"src/refer2-1.css": [
+				{
+					"idx": 24,
+					"line": 20,
+					"key": "..src/refer.css"
+				}
+			],
+			"src/refer4.css": null
+		}
+	}
+}

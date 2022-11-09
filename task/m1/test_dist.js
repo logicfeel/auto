@@ -9,8 +9,8 @@ let autoTask = AutoTask.create(__dirname);
 // let task = AutoTask.getInstance();
 // console.log(autoTask.do_depend)
 
+autoTask.do_reset();
 autoTask.do_dist();
-// autoTask.do_reset();
 
 
 let e = autoTask.entry;

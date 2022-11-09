@@ -231,7 +231,7 @@ class SourceBatch {
      */
     #saveBatchFile() {
         // batchFile
-        let data = JSON.stringify(this._batchFile);
+        let data = JSON.stringify(this._batchFile, null, '\t');
         fs.writeFileSync(this._task.entry.dir +path.sep+ '__BATCH_FILE.json', data, 'utf8');   
     }
 
@@ -589,7 +589,6 @@ class TargetSource {
             this.#fullPath = fullPath;
         
         } else if (location == entry.LOC.INS) {
-            // TODO:: 컨첸츠 중복 검사 및 제거 알고니즘 추가해야함
             alias = auto.alias ? auto.name + path.sep + auto.alias : auto.name;
             fullPath = entry.dir + path.sep + entry.LOC.INS + path.sep + alias + path.sep + src.subPath;
             this.#dir = entry.dir;
