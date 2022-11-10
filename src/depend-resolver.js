@@ -67,12 +67,20 @@ class DependResolver {
             }
             for (let i = 0; i < entry.src.count; i++) {
                 elem = entry.src[i];
-                name = entry.src.propertyOf(i);
+                // name = entry.src.propertyOf(i);
+                name = entry.src[i].localPath;
                 obj[name] = {};
                 elem._dep.forEach(v => {
                     locaPath = v.ref.localPath;
                     obj[name][locaPath] = [];
                     if (v.pos) {
+                        // 정렬
+                        v.pos.sort(function (a,b) {
+                            if (a.idx > b.idx) return 1;
+                            if (a.idx === b.idx) return 0;
+                            if (a.idx < b.idx) return -1;
+                        });
+                        // 샆입
                         v.pos.forEach(vv => {
                             obj[name][locaPath].push({
                                 idx: vv.idx,
