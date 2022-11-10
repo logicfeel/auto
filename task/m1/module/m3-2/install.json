@@ -1,0 +1,28 @@
+{
+	"isOverlap": false,
+	"setup": [
+		{
+			"glob": "**/board.css",
+			"refedType": 1
+		}
+	],
+	"merge": [
+		{
+			"paths": [
+				"css/board_m.css",
+				"css/com.css"
+			],
+			"path": "css/merge.css"
+		}
+	],
+	"rename": [
+		{
+			"glob": "**/*.html",
+			"dir": "web"
+		}
+	],
+	"except": [
+		"**/.*",
+		"KKK"
+	]
+}

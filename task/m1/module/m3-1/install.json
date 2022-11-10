@@ -11,18 +11,6 @@
     ],
     "rename": [
         {
-            "glob": "mod1/102-3.webp",
-            "path": "mod1/100.webp"
-        },
-        {
-            "glob": "mod1/aaa/bbb",
-            "dir": "vir/aaa"
-        },
-        {
-            "glob": "**/*.css",
-            "dir": "css"
-        },
-        {
             "glob": "**/*.html",
             "dir": "web"
         }

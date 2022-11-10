@@ -1,0 +1,21 @@
+
+// const autoTask = require('../../src/auto-task').getInstance(__dirname);
+
+let AutoTask = require('../../src/auto-task').AutoTask;
+// let autoTask = AutoTask.getInstance(__dirname);
+let autoTask = AutoTask.create(__dirname);
+
+let t = autoTask;
+// let a = autoTask.entry;   // 별칭
+// let task = AutoTask.getInstance();
+// console.log(autoTask.do_depend)
+
+// t.batch.isAlias = true;
+// t.batch.dupType = 2;
+
+
+autoTask.do_relation();
+
+let e = autoTask.entry;
+
+console.log(1)

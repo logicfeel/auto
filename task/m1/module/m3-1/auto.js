@@ -12,12 +12,14 @@ class Auto extends Automation {
 
         // 속성 설정
         this.a = 'a'
+        this.install._except.push('KKK');   // 임의 코드
 
         // 템플릿 설정
 
         // 메타모델 설정
 
         // 인터페이스 설정 (마지막)
+
     }
 }
 

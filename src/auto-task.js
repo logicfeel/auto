@@ -10,6 +10,9 @@ class AutoTask {
     entry = null;
     batch = null;
     cursor = '';
+    FILE = {     // location
+        RELATION: '__Relation.json',
+    };
     // batch = a.SourceBatch.getInstance();
     // protected
     static _instance = null;
@@ -152,6 +155,35 @@ class AutoTask {
         // this.batch.pathType = 1;      // 전체절대경로
         // this.batch.pathType = 2;         // 기본절대경로
         this.batch.save();
+    }
+
+    do_relation() {
+        this.cursor = 'RELATION';
+        // 로딩
+        this._load();
+
+        // 대상 오토 조회
+        let list = this.entry._getAllList(true);
+
+        for (let i = 0; i < list.length; i++) {
+            list[i].readSource(true, true);
+        }
+
+        this.entry.isSaveRelation = true;
+        // 의존성 로딩 및 설정
+        for (let i = 0; i < list.length; i++) {
+            list[i].resolver.read();
+            list[i].resolver.resolve();
+        }
+    }
+
+    do_cover(auto = this.entry) {
+        this.cursor = 'RELATION';
+        // 로딩
+        this._load();
+
+        auto.readSource(true, true);``
+        auto.coverParentObject();
     }
 
     do_reset() {

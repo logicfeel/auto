@@ -1,8 +1,33 @@
 {
+	"out/bar.css": {
+		"out/bar.css": [
+			{
+				"idx": 102,
+				"line": 7,
+				"key": "bar.css"
+			}
+		]
+	},
 	"src/.DS_Store": {},
 	"src/100.webp": {},
 	"src/102-3.webp": {},
 	"src/board.css": {
+		"out/bar.css": [
+			{
+				"idx": 51,
+				"line": 2,
+				"key": "../out/bar.css"
+			}
+		],
+		"src/style.css": [
+			{
+				"idx": 13,
+				"line": 1,
+				"key": "../dep/M2-1/style.css"
+			}
+		]
+	},
+	"src/board_m.css": {
 		"out/bar.css": [
 			{
 				"idx": 51,

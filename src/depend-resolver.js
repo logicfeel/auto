@@ -20,6 +20,15 @@ class DependResolver {
         // this.#patterns.push({target: '**', include: '**'});
     }
 
+    // 객체 얻기
+    getObject() {
+
+        var obj = { pattern: []};
+        
+        this.#patterns.forEach( val => { obj.pattern.push(val) });
+        return obj; 
+    }
+
     read() {
         this._readOriginal();
         this._readReference();
@@ -33,6 +42,8 @@ class DependResolver {
         
         let arr, basePath, data, keyword;
         let list = [];
+        const entry = this._task.entry;
+        
         // 원본 소스 조회
         for (let i = 0; i < this._list.length; i++) {
             arr = this.#getPathList(this._list[i]);
@@ -53,26 +64,32 @@ class DependResolver {
                 }
             }
         }
+        
+        // 관계파일 자동 저장시
+        if (this._auto === entry && entry.isSaveRelation === true) this.saveRelation();
+    }
 
-        // relation 파일 저장
+    /**
+     * 의존성 정보 저장 : __Relation.json
+     */
+    saveRelation() {
+
         const entry = this._task.entry;
-
-        if (this._auto === entry && entry.isRelation === true) {
+        const saveName = this._task.FILE.RELATION;
+        let obj = {};
+        
+        // 내부함수 : relation.json 객체 생성
+        function createRelation(collection, obj) {
             
-            // 함수로 노출 #saveRelation()
-            let obj = {}, elem, name, locaPath;
+            let elem, name, oriPath, depPath;
             
-            for (let i = 0; i < entry.out.count; i++) {
-                
-            }
-            for (let i = 0; i < entry.src.count; i++) {
-                elem = entry.src[i];
-                // name = entry.src.propertyOf(i);
-                name = entry.src[i].localPath;
-                obj[name] = {};
+            for (let i = 0; i < collection.count; i++) {
+                elem = collection[i];
+                oriPath = collection[i].localPath;
+                obj[oriPath] = {};
                 elem._dep.forEach(v => {
-                    locaPath = v.ref.localPath;
-                    obj[name][locaPath] = [];
+                    depPath = v.ref.localPath;
+                    obj[oriPath][depPath] = [];
                     if (v.pos) {
                         // 정렬
                         v.pos.sort(function (a,b) {
@@ -82,7 +99,7 @@ class DependResolver {
                         });
                         // 샆입
                         v.pos.forEach(vv => {
-                            obj[name][locaPath].push({
+                            obj[oriPath][depPath].push({
                                 idx: vv.idx,
                                 line: vv.line,
                                 key: vv.key
@@ -91,13 +108,14 @@ class DependResolver {
                     }
                 });
             }
-            // console.log('obj =>' + obj);
-            
-            console.log('RELATION.json 파일 저장');
-            let data = JSON.stringify(obj, null, '\t');
-            fs.writeFileSync(entry.dir + path.sep + 'RELATION.json', data, 'utf8'); 
         }
         
+        createRelation(entry.out, obj); // out 관계 객체 생성
+        createRelation(entry.src, obj); // src 관계 객체 생성
+        
+        console.log(`${saveName} 파일 저장`);
+        let data = JSON.stringify(obj, null, '\t');
+        fs.writeFileSync(entry.dir + path.sep + saveName, data, 'utf8'); 
     }
 
     /**

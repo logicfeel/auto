@@ -24,11 +24,11 @@ class Automation {
     dep         = null;
     meta         = null;
     
-    
     // resolver    = new DependResolver(this);
     resolver    = null;
     install     = null;
     prop        = {};
+    isSaveRelation = false;
     LOC = {     // location
         OUT: 'out',
         SRC: 'src',
@@ -38,7 +38,27 @@ class Automation {
         DIS: 'dist',
         VIR: 'vir'
     };
-    isRelation = true;
+    FILE = {
+        PACKAGE: 'package.json',
+        INSTALL: 'install.json',
+        RESOLVER: 'resolver.json',
+        PROP: 'prop.json'
+    };
+    // PATH = {
+    //     PACKAGE: this.dir + path.sep + 'package.json',
+    //     INSTALL: this.dir + path.sep + 'install.json',
+    //     RESOLVER: this.dir + path.sep + 'resolver.json',
+    //     PROP: this.dir + path.sep + 'prop.json'
+    // };
+    // PATH = {};
+    _this = this;
+    PATH = {
+        auto: this,    // auto
+        get PACKAGE() { return this.auto.dir + path.sep + this.auto.FILE.PACKAGE },
+        get INSTALL() { return this.auto.dir + path.sep + this.auto.FILE.INSTALL },
+        get RESOLVER() { return this.auto.dir + path.sep + this.auto.FILE.RESOLVER },
+        get PROP() { return this.auto.dir + path.sep + this.auto.FILE.PROP }
+    };
     // protected
     _owner      = null;
     // _install    = null;     // 삭제대상
@@ -124,13 +144,24 @@ class Automation {
     //     this.install = new InstallMap(this, this._install);
     // }
     constructor() {
+        
+        const _this = this;
+        
         console.log('Automation load..');
+        
+        
         this.mod         = new AutoCollection(this);
         this.src         = new FileCollection(this);
         this.out         = new FileCollection(this);
         this.vir         = new FolderCollection(this);
         this.dep         = new DependCollection(this);
         this.meta        = new MetaCollection(this);
+    
+    
+        // this.PATH = {
+        //     get PACKAGE(){ return _this.dir + path.sep + 'package.json' }
+        // };
+    
     }
 
     /**
@@ -157,6 +188,52 @@ class Automation {
      */
     setDepend(oriPath, depPath, pos) {
         // TODO::
+    }
+
+    /**
+     * 부모의 객체를 가져와 파일로 쓰다
+     *  install, resolver, prop, src, out
+     */
+    coverParentObject() {
+        console.log('보모 객체 및 파일 덮어쓰기');
+
+        let data;
+
+        function copySource(collection, dir) {
+            
+            let  fullPath, savePath;
+            
+            for (let i = 0; i < collection.count; i++) {
+                fullPath = collection[i].fullPath;
+                savePath = dir + path.sep + collection[i].localPath;
+                if (!fs.existsSync(savePath)) {
+                    fs.copyFileSync(fullPath, savePath);
+                }
+            }    
+        }
+
+        if (!fs.existsSync(this.PATH.INSTALL)) {
+            data = JSON.stringify(this.install.getObject(), null, '\t');
+            fs.writeFileSync(this.PATH.INSTALL, data, 'utf8');             
+        }
+        if (!fs.existsSync(this.PATH.RESOLVER)) {
+            data = JSON.stringify(this.resolver.getObject(), null, '\t');
+            fs.writeFileSync(this.PATH.RESOLVER, data, 'utf8');             
+        }
+        if (!fs.existsSync(this.PATH.PROP)) {
+            data = JSON.stringify(this._getpropObject(), null, '\t');
+            fs.writeFileSync(this.PATH.PROP, data, 'utf8');             
+        }
+        // src, out 가져오기
+        copySource(this.src, this.dir);
+        // copySource(this.out, this.dir);        
+    }
+
+    /**
+     * prop 객체 가져오기
+     */
+    _getpropObject() {
+        return this.prop;
     }
 
     /**
@@ -235,18 +312,18 @@ class Automation {
     // 폴더에 
     #loadDir(dir) {
         
-        let packagePath;
-        let installPath;
-        let resolvePath;
-        let propPath;
-        let filePath;
+        // let packagePath;
+        // let installPath;
+        // let resolvePath;
+        // let propPath;
+        // let filePath;
         let _package, _install, _resolver, _prop;
 
         // *.json 로딩
-        packagePath = dir + path.sep + 'package.json';
-        installPath = dir + path.sep + 'install.json';
-        resolvePath = dir + path.sep + 'resolver.json';
-        propPath    = dir + path.sep + 'prop.json';
+        // packagePath = dir + path.sep + this.FILE.PACKAGE;
+        // installPath = dir + path.sep + this.FILE.INSTALL;
+        // resolvePath = dir + path.sep + this.FILE.RESOLVER;
+        // propPath    = dir + path.sep + this.FILE.PROP;
         
         // TODO:: 위치 찾아야함
         // 엔트리에서 로딩해야함
@@ -254,10 +331,10 @@ class Automation {
         // if (fs.existsSync(filePath)) this._file = require(filePath);
 
         // 필수 파일 검사
-        if (!fs.existsSync(packagePath)) {
+        if (!fs.existsSync(this.PATH.PACKAGE)) {
             throw new Error('package.json file fail...');
         } else {
-            _package = require(packagePath);
+            _package = require(this.PATH.PACKAGE);
             this.#name = _package.name;     // auto.name 설정
         }
 
@@ -265,13 +342,13 @@ class Automation {
         /**
          * 파일이 존재하면 새로 만들어고(덮어씀), 파일이 없으면 기존 객체 사용
          */
-        if (fs.existsSync(installPath)) _install = require(installPath);
+        if (fs.existsSync(this.PATH.INSTALL)) _install = require(this.PATH.INSTALL);
         if (this.install === null || _install) this.install = new InstallMap(this, _install);
 
-        if (fs.existsSync(resolvePath)) _resolver = require(resolvePath);
+        if (fs.existsSync(this.PATH.RESOLVER)) _resolver = require(this.PATH.RESOLVER);
         if (this.resolver === null || _resolver) this.resolver = new DependResolver(this, _resolver);
 
-        if (fs.existsSync(propPath)) _prop = require(propPath);
+        if (fs.existsSync(this.PATH.PROP)) _prop = require(this.PATH.PROP);
         if (_prop) this.prop = _prop;
     }
 }

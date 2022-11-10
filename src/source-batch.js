@@ -3,6 +3,7 @@ const fs = require('fs');
 const mm = require('micromatch');
 const at = require('./auto-task');
 const { NonTextFile, TextFile, VirtualFolder, BasePath } = require('./base-path');
+const { addAbortSignal } = require('stream');
 
 /**
  * 소스배치 클래스
@@ -94,13 +95,28 @@ class SourceBatch {
 
         }
 
+        function getMergeData(tar, isRoot) {
+            
+            let data = '';
+            // 자식 순환 조회
+            for (let i = 0; i < tar._owned.length; i++) {
+                if (tar._owned[i].isMerge === true) data += getMergeData(tar._owned[i], isRoot) + '\n';
+                data += tar._owned[i].setData(isRoot) + '\n';
+            }
+            return data;
+        }
         
         for (let i = 0; i < this._list.length; i++) {
             // TextFile 일 경우 콘텐츠 설정
             if (this._list[i]._original instanceof TextFile) {
                 this._list[i].setData(this.isRoot);
             }
+            // 병합 파일 처리
+            if (this._list[i].isMerge === true)  {
+                this._list[i].data = getMergeData(this._list[i], this.isRoot);
+            }
         }
+
 
         // TODO:: 중복제거        
 
@@ -117,7 +133,7 @@ class SourceBatch {
      */
     clear() {
 
-        const batchfile = this._task.entry.dir +path.sep+ '__BATCH_FILE.json';
+        const batchfile = this._task.entry.dir +path.sep+ '__SaveFile.json';
         let fullPath;
 
         for (let i = 0; i < this._batchFile.length; i++) {
@@ -232,7 +248,7 @@ class SourceBatch {
     #saveBatchFile() {
         // batchFile
         let data = JSON.stringify(this._batchFile, null, '\t');
-        fs.writeFileSync(this._task.entry.dir +path.sep+ '__BATCH_FILE.json', data, 'utf8');   
+        fs.writeFileSync(this._task.entry.dir +path.sep+ '__SaveFile.json', data, 'utf8');   
     }
 
     /**
@@ -354,6 +370,7 @@ class TargetSource {
     // public
     isSave      = true;     // 저장유무, 활성화 상태
     isExcept    = false;    // save 시점에 제외 여부
+    isMerge     = false;    // 병합 여부
     referType   = 0;        // 참조하는 타입
     refedType   = 0;        // 참조되어지는 타입
     type        = 0;        // 소스타입
@@ -534,6 +551,7 @@ class TargetSource {
         }
         // 파일내용 저장
         this.#replaceData(data, arrObj);
+        return this.data;
     }
 
     clone() {
@@ -685,6 +703,19 @@ class InstallMap {
     constructor(auto, json) {
         this._auto = auto;
         if (json) this.#load(json);
+    }
+
+    // 객체 얻기
+    getObject() {
+
+        var obj = {};
+        
+        for (var prop in this) {
+            if (['_setup', '_merge', '_except', '_global', '_rename', 'isOverlap'].indexOf(prop) > -1) {
+                obj[prop.replace('_', '')] = this[prop];            
+            }
+        }
+        return obj; 
     }
 
     add(target) {
@@ -862,7 +893,7 @@ class InstallMap {
      */
     #execMerge() {
 
-        let obj, arr = [], tars, newTar;
+        let obj, arr = [], tars = [], newTar;
         const entry = this._task.entry;
         const batch = this._task.batch;
 
@@ -870,6 +901,7 @@ class InstallMap {
             
             obj = this._merge[i];
 
+            // 유효성 검사
             if (typeof Array.isArray(obj.paths) && obj.paths.length > 0 && typeof obj.path === 'string' && obj.path.length > 0) {
                 obj.paths.forEach(v => {
                     if (typeof v === 'string' && v.length > 0) arr.push(v);
@@ -877,18 +909,22 @@ class InstallMap {
             }
             if (arr.length > 0) {
 
-                tars = this.targets.filter((obj) => { return arr.indexOf(obj.subPath) > -1 })
-                
+                arr.forEach(v => {
+                    let find = this.targets.find(vv => { return vv.subPath === v });
+                    if (find) tars.push(find);
+                });
+
                 if (tars.length > 0) {
                     newTar = new TargetSource(entry.LOC.INS, null);
                     newTar.dir = entry.dir;
                     newTar.type = 30;
                     newTar.subPath = obj.path;
                     newTar.data  = '';
+                    newTar.isMerge = true;
 
                     tars.forEach(v => {
                         if (v.type === 30) {
-                            newTar.data += v._original.data + '\n';
+                            newTar.data += v._original.data + '\n'; // TODO:: 삭제해야함 isMerge = true
                             v.owner = newTar;
                             v.isSave = false;    
                         }

@@ -1,7 +1,14 @@
+@import url("style.css");
+@import url("bar.css");
+
+h2 {
+    background-color: rgb(166, 64, 235);
+}
+/* com임  */
 /* 공통 */
 body {
     background-color: lightblue;
 }
-p {
-    background-color: rgb(176, 230, 173);
-}
+
+
+/*  merge.css */
