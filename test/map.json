@@ -1,0 +1,106 @@
+{
+	"name": "Project_A",
+	"list": [
+		{
+			"name": "PRT",
+			"link": "mod",
+			"list": [
+				{
+					"name": "NPM_name.View",
+					"link": "mod",
+					"interface": [
+						"NPM_name.IClass"
+					],
+					"file": [
+						"List.asp",
+						"View.asp"
+					],
+					"list": [
+						{
+							"extend": "NPM_Name<BaseAuto>",
+							"name": "Control",
+							"link": "super",
+							"file": [
+								"prt-adm-svc.js",
+								"prt-frt-svc.js"
+							],
+							"list": [
+								{
+									"name": "Server",
+									"link": "sub",
+									"file": [
+										"prt.Cls.asp",
+										"prt.adm.C.asp",
+										"prt.frt.C.asp"
+									],
+									"list": [
+										{
+											"name": "DB_PRT",
+											"static": false,
+											"instance": true,
+											"type": "instance",
+											"link": "sub",
+											"file": [
+												"prt_table.sql",
+												"prt_crudl.sql"
+											],
+											"list": [
+												{
+													"name": "DB_STO",
+													"link": "super",
+													"top": true,
+													"file": [
+														"sto_table.sql",
+														"sto_crudl.sql"
+													]
+												}
+											]
+										},
+										{
+											"name": "NPM_Name<Cmn_Server>",
+											"link": "super",
+											"file": [
+												"frt_g_define.i.asp",
+												"adm_g_define.i.asp"
+											],
+											"ref": [
+												"NPM_name<View>"
+											]
+										}
+									]
+								},
+								{
+									"name": "NPM_Name.Cmn_sv>",
+									"link": "super",
+									"file": [
+										"base-svc.js",
+										"_w-meta1.6.js"
+									],
+									"list": [
+										{
+											"name": "Cmn_js",
+											"link": "super",
+											"file": [
+												"jquery.js",
+												"common.js"
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "NPM_Name<Cmn_Server>",
+							"link": "super",
+							"refer": true
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "MEB",
+			"link": "mod"
+		}
+	]
+}

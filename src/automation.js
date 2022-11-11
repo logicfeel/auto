@@ -102,58 +102,17 @@ class Automation {
 
     /**
      * 생성자 
-     * @param {*} dir auth 의 위치 : __dirname 지정
+     * @param {*} dir? auth 의 위치 : __dirname 지정
      */
-    //  constructor(dir) {
-    //     console.log('Automation load..');
-
-    //     let installPath;
-    //     let resolvePath;
-    //     let autoPath;
-    //     let packagePath;
-    //     let filePath;
-
-    //     this.#dir = dir;
-
-    //     // *.json 로딩
-    //     installPath = this.#dir + path.sep + 'install.json';
-    //     resolvePath = this.#dir + path.sep + 'resolve.json';
-    //     autoPath    = this.#dir + path.sep + 'auto.json';
-    //     packagePath = this.#dir + path.sep + 'package.json';
-    //     filePath    = this.#dir + path.sep + '__BATCH_FILE.json';
-
-    //     // 선택 파일검사
-    //     if (fs.existsSync(installPath)) this._install = require(installPath);
-    //     if (fs.existsSync(resolvePath)) this._resolve = require(resolvePath);
-    //     if (fs.existsSync(autoPath)) this._auto = require(autoPath);
-    //     if (fs.existsSync(filePath)) this._file = require(filePath);
-        
-    //     // 필수 파일검사
-    //     if (!fs.existsSync(packagePath)) {
-    //         throw new Error('package.json file fail...');
-    //     } else {
-    //         this._package = require(packagePath);
-    //     }
-    //     this.install = new InstallMap(this, this._install);
-    // }
     constructor(dir) {
         
         const _this = this;
         
-        console.log('Automation load..');
-        
-        
- 
-    
         if (typeof dir === 'string' && dir.length > 0) {
             this.dir = dir;
             this.#isFinal = true;   // 최종 auto 로 설정
-        }
-
-        // this.PATH = {
-        //     get PACKAGE(){ return _this.dir + path.sep + 'package.json' }
-        // };
-    
+        }    
+        console.log('Automation load..');
     }
 
     static getInstance() {
@@ -203,7 +162,7 @@ class Automation {
      * 부모의 객체를 가져와 파일로 쓰다
      *  install, resolver, prop, src, out
      */
-    coverParentObject() {
+    writeParentObject() {
         console.log('보모 객체 및 파일 덮어쓰기');
 
         let data, dirname;
@@ -240,6 +199,22 @@ class Automation {
         // src, out 가져오기
         copySource(this.src, this.dir);
         copySource(this.out, this.dir);        
+    }
+    
+    /**
+     * 객체(오토모듈) 목록 쓰기
+     * @param {*} opt 옵션 -history
+     */
+    writeObjectList(opt) {
+        // TODO::
+    }
+
+    /**
+     * 객체(오토모듈) 맵 쓰기
+     * @param {*} opt 옵션 -detail, -depend
+     */
+    writeObjectMap(opt) {
+        // TODO::
     }
 
     /**

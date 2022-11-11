@@ -184,7 +184,7 @@ class AutoTask {
         this._load();
 
         auto.readSource(true, true);``
-        auto.coverParentObject();
+        auto.writeParentObject();
     }
 
     do_reset() {
