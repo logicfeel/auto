@@ -1,6 +1,7 @@
 const {Automation} = require('../../src/automation');
 let Mod2 = require('./module/m2-1/auto');
 let Mod3 = require('./module/m3-2/auto');
+let Mod4 = require('./module/m4/auto');
 // let Mod1_1 = require('./module/m1/auto');
 
 let mod1 = new Mod2();
@@ -8,6 +9,9 @@ let mod1 = new Mod2();
 // let mod2 = new Mod2();  // 중복테스트
 
 let mod3 = new Mod3();  // 상속테스트
+
+// let mod4 = new Mod4();  // static 테스트
+let mod4 = Mod4.getInstance();  // static 테스트
 
 // mod2.vvv = 10;
 
@@ -17,7 +21,7 @@ let mod3 = new Mod3();  // 상속테스트
 
 class Auto extends Automation {
     constructor() {
-        super(__dirname);
+        super();
 
         this.dir = __dirname;
 
@@ -27,6 +31,7 @@ class Auto extends Automation {
         // this.mod.super('M2', mod1);    // 동일 위치에 있음
         this.mod.sub('M2-1', mod1);       // 동일 위치에 있음
         this.mod.sub('M3-2', mod3);       // 상속 테스트
+        this.mod.sub('M4', mod4);       // static 테스트
 
         // this.mod.sub('M2-12', mod2);
         // this.mod.add('M2', mod1);       // 동일 위치에 있음        

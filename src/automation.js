@@ -11,25 +11,19 @@ const { InstallMap } = require('./source-batch');
 class Automation {
     
     // public
-    // mod         = new AutoCollection(this);
-    // src         = new FileCollection(this);
-    // out         = new FileCollection(this);
-    // vir         = new FolderCollection(this);
-    // dep         = new DependCollection(this);
-    // meta        = new MetaCollection(this);
-    mod         = null;
-    src         = null;
-    out         = null;
-    vir         = null;
-    dep         = null;
-    meta         = null;
+    static isStatic    = false;
+    mod         = new AutoCollection(this);
+    src         = new FileCollection(this);
+    out         = new FileCollection(this);
+    vir         = new FolderCollection(this);
+    dep         = new DependCollection(this);
+    meta        = new MetaCollection(this);
     
-    // resolver    = new DependResolver(this);
-    resolver    = null;
-    install     = null;
-    prop        = {};
-    isSaveRelation = false;
-    LOC = {     // location
+    resolver        = null;
+    install         = null;
+    prop            = {};
+    isSaveRelation  = false;
+    LOC = {
         OUT: 'out',
         SRC: 'src',
         DEP: 'dep',
@@ -44,14 +38,6 @@ class Automation {
         RESOLVER: 'resolver.json',
         PROP: 'prop.json'
     };
-    // PATH = {
-    //     PACKAGE: this.dir + path.sep + 'package.json',
-    //     INSTALL: this.dir + path.sep + 'install.json',
-    //     RESOLVER: this.dir + path.sep + 'resolver.json',
-    //     PROP: this.dir + path.sep + 'prop.json'
-    // };
-    // PATH = {};
-    _this = this;
     PATH = {
         auto: this,    // auto
         get PACKAGE() { return this.auto.dir + path.sep + this.auto.FILE.PACKAGE },
@@ -60,17 +46,23 @@ class Automation {
         get PROP() { return this.auto.dir + path.sep + this.auto.FILE.PROP }
     };
     // protected
-    _owner      = null;
+    static _instance    = null;     // 싱글톤 객체 위치
+    _isSingleton        = false;    // getInstance 생성시 true 변경됨
+    _owner              = null;
     // _install    = null;     // 삭제대상
     // _auto       = null;     // 삭제대상
     // _package    = null;     // 삭제대상
     // _resolve    = null;     // 삭제대상
-    _file       = [];
+    _file           = [];
+    
     // private
-    #name       = null;
-    #dir        = [];
-    #alias      = null;
-    #event      = new Observer(this, this);
+    #name           = '';
+    #dir            = [];
+    #alias          = '';
+    #event          = new Observer(this, this);
+    #isFinal        = false;    // 상속 금지 설정
+    
+    // static #instance = null;
 
     // property
     get dir() {
@@ -79,6 +71,7 @@ class Automation {
         return this.#dir[size - 1];
     }
     set dir(val) {
+        if (this.#isFinal === true) throw new Error('최종 오토 (상속금지)는 dir 설정할 수 없습니다.');        
         this.#dir.push(val);
         // package, prop, install, resolver.json 로딩
         // setter별 처리
@@ -143,25 +136,41 @@ class Automation {
     //     }
     //     this.install = new InstallMap(this, this._install);
     // }
-    constructor() {
+    constructor(dir) {
         
         const _this = this;
         
         console.log('Automation load..');
         
         
-        this.mod         = new AutoCollection(this);
-        this.src         = new FileCollection(this);
-        this.out         = new FileCollection(this);
-        this.vir         = new FolderCollection(this);
-        this.dep         = new DependCollection(this);
-        this.meta        = new MetaCollection(this);
+ 
     
-    
+        if (typeof dir === 'string' && dir.length > 0) {
+            this.dir = dir;
+            this.#isFinal = true;   // 최종 auto 로 설정
+        }
+
         // this.PATH = {
         //     get PACKAGE(){ return _this.dir + path.sep + 'package.json' }
         // };
     
+    }
+
+    static getInstance() {
+        
+        let instance = this._instance;
+
+        if (!instance) {
+            instance = new this();
+        }
+        /**
+         * REVIEW:: 특수한 경우여서 생성후 검사한다. static 이슈
+         */
+        if (instance.isStatic !== true) {
+            throw new Error(' static 으로 설정된 auto만 사용할수 있습니다. new 을 사용해서 생성.');
+        }
+        instance._isSingleton = true;   // add 시점에 검사함
+        return instance;
     }
 
     /**
@@ -197,7 +206,7 @@ class Automation {
     coverParentObject() {
         console.log('보모 객체 및 파일 덮어쓰기');
 
-        let data;
+        let data, dirname;
 
         function copySource(collection, dir) {
             
@@ -207,6 +216,10 @@ class Automation {
                 fullPath = collection[i].fullPath;
                 savePath = dir + path.sep + collection[i].localPath;
                 if (!fs.existsSync(savePath)) {
+                    dirname = path.dirname(savePath);   
+                    if(!fs.existsSync(dirname)) {
+                        fs.mkdirSync(dirname, {recursive: true} );  // 디렉토리 만들기
+                    }
                     fs.copyFileSync(fullPath, savePath);
                 }
             }    
@@ -226,7 +239,7 @@ class Automation {
         }
         // src, out 가져오기
         copySource(this.src, this.dir);
-        // copySource(this.out, this.dir);        
+        copySource(this.out, this.dir);        
     }
 
     /**
@@ -433,6 +446,10 @@ class Automation {
         // 별칭 중복 검사
         if (super.indexOfName(alias) > -1) {
             throw new Error(' 별칭 중복 오류!! ');
+        }
+        // static 검사
+        if (auto.isStatic == true && auto._isSingleton !== true) {
+            throw new Error('static auto 는 getInstance() 를 통해서 생성해야 합니다. ');
         }
         /**
          * TODO::

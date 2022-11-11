@@ -1,9 +1,9 @@
-const { Automation } = require('../m3-1/auto');
+// const { Automation } = require('../m3-1/auto');
+let Mod3 = require('../m3-1/auto');
 
-
-class Auto extends Automation {
+class Auto extends Mod3 {
     constructor() {
-        super(__dirname);
+        super();
 
         this.dir = __dirname;
 

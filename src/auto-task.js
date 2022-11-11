@@ -32,6 +32,7 @@ class AutoTask {
         this._instance.#dir = dir;
         return this._instance;
     }
+    
     static getInstance() {
         if (this._instance === null) {
             throw new Error(' 태스크가 생성되지 않았습니다. [dir] request fail...');

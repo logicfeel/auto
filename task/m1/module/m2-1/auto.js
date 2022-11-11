@@ -16,7 +16,7 @@ class Auto extends Automation {
     constructor() {
         super(__dirname);
 
-        this.dir = __dirname;
+        // this.dir = __dirname;
 
         // 오토 가져오기
         // this.mod.sub('M1', mod1);    // 동일 위치에 있음
