@@ -2,6 +2,9 @@
 let Mod3 = require('../m3-1/auto');
 
 class Auto extends Mod3 {
+    
+    // dir = __dirname;
+
     constructor() {
         super();
 

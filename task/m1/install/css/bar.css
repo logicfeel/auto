@@ -1,0 +1,7 @@
+/* bar  */
+@import url("../dep/M2-1/style.css");
+p {
+    background-color: rgb(176, 230, 173);
+}
+
+/*  bar.css */
