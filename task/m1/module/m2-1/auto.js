@@ -24,7 +24,7 @@ class Auto extends Automation {
 
         // this.mod.super('M2-2', mod3);       // module 하위에 있음
         // this.mod.super('M2-2_1', mod3_1);       // module 하위에 있음
-        this.mod.sub('M2-2', mod3);       // module 하위에 있음
+        this.mod.super('M2-2', mod3);       // module 하위에 있음
         this.mod.sub('M2-2_1', mod3_1);       // module 하위에 있음
 
         // this.mod.sub('M1', mod2);

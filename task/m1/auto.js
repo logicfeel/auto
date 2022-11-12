@@ -19,6 +19,12 @@ let mod4 = Mod4.getInstance();  // static 테스트
 // let mod2 = new Mod1();
 // let mod3 = new Mod1_1();
 
+class IAuto {
+    prop = {
+        test: ''
+    };
+}
+
 class Auto extends Automation {
     constructor() {
         super();
@@ -29,10 +35,11 @@ class Auto extends Automation {
         this.vir.add('aaa/bbb');
         // 오토 가져오기
         // this.mod.super('M2', mod1);    // 동일 위치에 있음
-        this.mod.sub('M2-1', mod1);       // 동일 위치에 있음
-        this.mod.sub('M3-2', mod3);       // 상속 테스트
-        this.mod.sub('M4', mod4);       // static 테스트
+        this.mod.super('M2-1', mod1, '중복로딩 테스트');       // 동일 위치에 있음
+        this.mod.sub('M3-2', mod3, '상속테스트');       // 상속 테스트
+        this.mod.sub('M4', mod4, 'static 테스크');       // static 테스트
 
+        this.title = '테스트 auto';
         // this.mod.sub('M2-12', mod2);
         // this.mod.add('M2', mod1);       // 동일 위치에 있음        
 
@@ -69,6 +76,7 @@ class Auto extends Automation {
         // 메타모델 설정
 
         // 인터페이스 설정 (마지막)
+        this._implements(IAuto);
     }
 }
 

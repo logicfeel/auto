@@ -183,8 +183,23 @@ class AutoTask {
         // 로딩
         this._load();
 
-        auto.readSource(true, true);``
+        auto.readSource(true, true);
         auto.writeParentObject();
+    }
+
+    do_map(opt) {
+        this.cursor = 'RELATION';
+        // 로딩
+        this._load();
+
+        // 대상 오토 조회
+        let list = this.entry._getAllList(true);
+
+        for (let i = 0; i < list.length; i++) {
+            list[i].readSource(false, false);
+        }
+
+        this.entry.writeObjectMap(opt);
     }
 
     do_reset() {

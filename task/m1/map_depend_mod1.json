@@ -1,0 +1,61 @@
+{
+	"name": "mod1",
+	"title": "테스트 auto",
+	"interface": [
+		"IAuto"
+	],
+	"file": [
+		"src/.DS_Store",
+		"src/100.webp",
+		"src/102-3.webp",
+		"src/board.css",
+		"src/board_m.css",
+		"src/m3.html",
+		"out/bar.css"
+	],
+	"depend": [
+		{
+			"name": "mod22",
+			"alias": "M2-2",
+			"super": true,
+			"file": [
+				"src/inc/left.css",
+				"src/m1.html",
+				"out/area/top.css",
+				"out/com.css"
+			]
+		},
+		{
+			"name": "mod2",
+			"alias": "M2-1",
+			"subTitle": "중복로딩 테스트",
+			"super": true,
+			"file": [
+				"src/m2.html",
+				"src/style.css"
+			]
+		},
+		{
+			"name": "mod3",
+			"alias": "M3-2",
+			"subTitle": "상속테스트",
+			"sub": true,
+			"file": [
+				"src/abc.css",
+				"src/super.css",
+				"out/kkk.css",
+				"out/sub/super.txt"
+			]
+		},
+		{
+			"name": "mod4",
+			"alias": "M4",
+			"subTitle": "static 테스크",
+			"static": true,
+			"sub": true,
+			"file": [
+				"src/file4.txt"
+			]
+		}
+	]
+}

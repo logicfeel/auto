@@ -312,7 +312,7 @@ class SourceBatch {
                     // 중복이 있는 경우
                     if (dupTar.length > 0) {
                         newTar = tar.clone();
-                        newTar.subPath = auto.name + path.sep + tar._original.subPath;    // set 에 설정
+                        newTar.subPath = auto.modName + path.sep + tar._original.subPath;    // set 에 설정
                         _this.add(newTar);
                         // 부모 변경
                         tar.owner = newTar;
@@ -353,7 +353,7 @@ class SourceBatch {
             this._list.forEach(tar => {
                 // 대상 찾기
                 if (tar._original._auto === auto) {
-                    tar.subPath  = auto.name + path.sep + tar._original.subPath;
+                    tar.subPath  = auto.modName + path.sep + tar._original.subPath;
                 }
             });
         });
@@ -594,7 +594,7 @@ class TargetSource {
                 
             } else {    // 하위 오토의 경우
                 useAuto = auto._owner;
-                alias = useAuto.name +'-'+ auto.alias;
+                alias = useAuto.modName +'-'+ auto.alias;
                 fullPath = auto.dir + path.sep + entry.LOC.DIS + path.sep + alias + path.sep + src.subPath;
             }
             this.#dir = auto.dir;
@@ -607,7 +607,7 @@ class TargetSource {
             this.#fullPath = fullPath;
         
         } else if (location == entry.LOC.INS) {
-            alias = auto.alias ? auto.name + path.sep + auto.alias : auto.name;
+            alias = auto.alias ? auto.modName + path.sep + auto.alias : auto.modName;
             fullPath = entry.dir + path.sep + entry.LOC.INS + path.sep + alias + path.sep + src.subPath;
             this.#dir = entry.dir;
             this.#fullPath = fullPath;          

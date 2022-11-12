@@ -1,0 +1,40 @@
+{
+	"name": "mod1",
+	"title": "테스트 auto",
+	"interface": [
+		"IAuto"
+	],
+	"module": [
+		{
+			"name": "mod2",
+			"alias": "M2-1",
+			"subTitle": "중복로딩 테스트",
+			"super": true,
+			"module": [
+				{
+					"name": "mod22",
+					"alias": "M2-2",
+					"super": true
+				},
+				{
+					"name": "mod22",
+					"alias": "M2-2_1",
+					"sub": true
+				}
+			]
+		},
+		{
+			"name": "mod3",
+			"alias": "M3-2",
+			"subTitle": "상속테스트",
+			"sub": true
+		},
+		{
+			"name": "mod4",
+			"alias": "M4",
+			"subTitle": "static 테스크",
+			"static": true,
+			"sub": true
+		}
+	]
+}

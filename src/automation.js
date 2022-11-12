@@ -23,6 +23,7 @@ class Automation {
     install         = null;
     prop            = {};
     isSaveRelation  = false;
+    title           = '';
     LOC = {
         OUT: 'out',
         SRC: 'src',
@@ -36,7 +37,9 @@ class Automation {
         PACKAGE: 'package.json',
         INSTALL: 'install.json',
         RESOLVER: 'resolver.json',
-        PROP: 'prop.json'
+        PROP: 'prop.json',
+        LIST: 'list.json',
+        MAP: 'map.json',
     };
     PATH = {
         auto: this,    // auto
@@ -54,17 +57,28 @@ class Automation {
     // _package    = null;     // 삭제대상
     // _resolve    = null;     // 삭제대상
     _file           = [];
+    _subTitle        = '';      // add 설명
     
     // private
-    #name           = '';
+    #modName           = '';
     #dir            = [];
     #alias          = '';
+    #modTyped       = 0;
     #event          = new Observer(this, this);
     #isFinal        = false;    // 상속 금지 설정
     
     // static #instance = null;
 
     // property
+    get modName() {
+        return this.#modName;
+    }
+    get alias() {
+        return this.#alias;
+    }
+    set alias(val) {
+        this.#alias = val;
+    }
     get dir() {
         let size = this.#dir.length;
         if (size === 0) throw new Error(' start [dir] request fail...');
@@ -80,14 +94,11 @@ class Automation {
     get dirs() {
         return this.#dir;
     }
-    get name() {
-        return this.#name;
+    get modTyped() {
+        return this.#modTyped;
     }
-    get alias() {
-        return this.#alias;
-    }
-    set alias(val) {
-        this.#alias = val;
+    set modTyped(val) {
+        this.#modTyped = val;
     }
     // event
     set onLoaded(fun) {
@@ -105,7 +116,7 @@ class Automation {
      * @param {*} dir? auth 의 위치 : __dirname 지정
      */
     constructor(dir) {
-        
+
         const _this = this;
         
         if (typeof dir === 'string' && dir.length > 0) {
@@ -211,10 +222,71 @@ class Automation {
 
     /**
      * 객체(오토모듈) 맵 쓰기
-     * @param {*} opt 옵션 -detail, -depend
+     * @param {*} opt 옵션 1:-detail, 2:-depend
      */
-    writeObjectMap(opt) {
-        // TODO::
+    writeObjectMap(opt = 0) {
+        
+        let wriObj = {}, data, saveName;
+        let _this = this;
+
+        // modType = 0:entry, 1:mod, 2:sub, 3: super
+        // isSubCall
+        function createModObject(auto, modType = 0, isSubCall = true) {
+        
+            let obj = {}, child;
+            let arrDepend = [];
+
+            obj.name = auto.modName;
+            if (auto.alias.length > 0) obj.alias = auto.alias;
+            if (auto.title.length > 0) obj.title = auto.title;
+            if (auto._subTitle.length > 0) obj.subTitle = auto._subTitle;
+            if (auto.isStatic === true) obj.static = true;
+            if (modType === 2) obj.sub = true;
+            if (modType === 3) obj.super = true;
+            if (Array.isArray(auto._interface) && auto._interface.length > 0) {
+                obj.interface = [];
+                auto._interface.forEach(val => obj.interface.push(val.name));
+            }
+            // -detail 
+            if (opt === 1 || opt === 2) {
+                obj.file = [];
+                for (let i = 0; i < auto.src.count; i++) {
+                    obj.file.push(auto.src[i].localPath);
+                }
+                for (let i = 0; i < auto.out.count; i++) {
+                    obj.file.push(auto.out[i].localPath);
+                }
+            }
+
+            if (isSubCall !== true) return obj; // 하위호출 안함
+
+            if (opt === 2) {    // opt : -depend
+
+                arrDepend = _this._getDependList(false);
+                if (arrDepend.length > 0) {
+                    child = obj.depend = [];
+                    arrDepend.forEach(val => child.push(createModObject(val, val.modTyped, false)));
+                }
+            } else {            // opt 0, 1 기본타입
+                
+                if (auto.mod.count > 0) {
+                    child = obj.module = [];
+                    for (let i = 0; i < auto.mod.count; i++) {
+                        child.push(createModObject(auto.mod[i], auto.mod[i].modTyped, true));
+                    }
+                }
+            }
+            return obj;
+        }
+
+        wriObj = createModObject(this, 0);  
+        saveName = path.basename(this.FILE.MAP, '.json');
+        if (opt === 1) saveName += '_detail';
+        if (opt === 2) saveName += '_depend';
+        saveName += '_'+ this.modName + '.json';
+        
+        data = JSON.stringify(wriObj, null, '\t');
+        fs.writeFileSync(this.dir + path.sep + saveName, data, 'utf8');
     }
 
     /**
@@ -230,16 +302,32 @@ class Automation {
      * @param {boolean} isSelf 최상위 호출처(오토) 포함 여부
      * @returns {arrary}
      */
+    // _getDependList(isSelf) {
+        
+    //     let list = [], prop, auto;
+        
+    //     // sub 가져오기
+    //     for (let i = 0; i < this.dep.count; i++) {
+    //         auto = this.dep[i]._onwer;
+    //         prop = this.dep.propertyOf(i);
+    //         if (this.mod._super.indexOf(prop) < 0) list.push(auto); // sub 가져오기
+    //         else list = list.concat(this._getSuperList());  // super 가져오기
+    //     }
+
+    //     if (isSelf === null || isSelf === true) list.push(this);    // 자신포함
+    //     return list;
+    // }
     _getDependList(isSelf) {
         
         let list = [], prop, auto;
         
         // sub 가져오기
-        for (let i = 0; i < this.dep.count; i++) {
-            auto = this.dep[i]._onwer;
-            prop = this.dep.propertyOf(i);
-            if (this.mod._super.indexOf(prop) < 0) list.push(auto); // sub 가져오기
-            else list = list.concat(this._getSuperList());  // super 가져오기
+        for (let i = 0; i < this.mod.count; i++) {
+            if (this.mod[i].modTyped === 3) {
+                list = list.concat(this.mod[i]._getSuperList());
+            } else if (this.mod[i].modTyped === 2) {
+                list.push(this.mod[i]);
+            }
         }
 
         if (isSelf === null || isSelf === true) list.push(this);    // 자신포함
@@ -252,19 +340,33 @@ class Automation {
      * @param {boolean} isSelf 최상위 호출처(오토) 포함 여부
      * @returns {arrary}
      */
+    // _getSuperList(isSelf = null) {
+
+    //     let list = [], prop, auto;
+
+    //     for (let i = 0; i < this.mod._super.length; i++) {
+    //         list = list.concat(this.mod[i]._getSuperList());
+    //         prop = this.mod._super[i];
+    //         auto = this.mod[prop];
+    //         list.push(auto);
+    //     }
+    //     if (isSelf === null || isSelf === true) list.push(this);    // 자신포함
+    //     return list;
+    // }
     _getSuperList(isSelf = null) {
 
         let list = [], prop, auto;
 
-        for (let i = 0; i < this.mod._super.length; i++) {
-            list = list.concat(auto._getSuperList());
-            prop = this.mod._super[i];
-            auto = this.mod[prop];
-            list.push(auto);
+        for (let i = 0; i < this.mod.count; i++) {
+            if (this.mod[i].modTyped === 3) {
+                list = list.concat(this.mod[i]._getSuperList(false));
+                list.push(this.mod[i]);
+            }
         }
         if (isSelf === null || isSelf === true) list.push(this);    // 자신포함
         return list;
     }
+
 
     /**
      * 전체 오토 목록 
@@ -323,7 +425,7 @@ class Automation {
             throw new Error('package.json file fail...');
         } else {
             _package = require(this.PATH.PACKAGE);
-            this.#name = _package.name;     // auto.name 설정
+            this.#modName = _package.name;     // auto.modName 설정
         }
 
         // 선택 파일 검사
@@ -377,13 +479,17 @@ class Automation {
      * 오토를 mod 에 추가한다.
      * @param {*} alias 별칭
      * @param {*} auto 오토 객체
+     * @param {*} modType 오토 객체
      */
-    add(alias, auto) {
+    add(alias, auto, subTitle = '', modType = 1) {
         if (this._valid(alias, auto)) {
             // auto._owner = this._onwer;   // TODO:: 명칭 바꿔야함
 
             auto._owner = this._auto;   // TODO:: 명칭 바꿔야함
             auto.alias = alias;
+            auto._subTitle = subTitle;
+            auto.modTyped = modType;
+
             super.add(alias, auto);
             
             // this[alias]._owner = this._auto;
@@ -392,16 +498,16 @@ class Automation {
         }
     }
     
-    sub(alias, auto) {
-        this.add(alias, auto);
+    sub(alias, auto, subTitle = '') {
+        this.add(alias, auto, subTitle, 2);
         // 별칭 이름 등록
         this._sub.push(alias);
         // 의존성 등록
         this._onwer.dep.add(alias, auto.src);
     }
     
-    super(alias, auto) {
-        this.add(alias, auto);
+    super(alias, auto, subTitle = '') {
+        this.add(alias, auto, subTitle, 3);
         // 별칭 이름 등록
         this._super.push(alias);
         // 의존성 등록
