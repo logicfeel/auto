@@ -320,7 +320,46 @@ class DependResolver {
 
         paths = this.getPatternObj(obj.path);
 
-        if (obj.location === 'src') {
+        /**
+         * src 참조위치 : src, out, dep
+         * out 참조위치 : out (자신만 참조) <= 너무 폐쇠적인 구조임
+         */
+        // if (obj.location === 'src') {
+        //     for (let i = 0; i < paths.length; i++) {
+        //         basePath = paths[i].origin;
+        //         if (['src', 'out'].indexOf(paths[i].location) > -1) {
+        //             // 절대경로 
+        //             localPath = path.sep + basePath.localPath;
+        //             dir = path.dirname(obj.origin.fullPath);
+        //             // 상대경로 
+        //             relativePath = path.relative(dir, basePath.fullPath);
+        //             // arr.push(createPathList(basePath, localPath, relativePath));
+        //             arr.push(createPathList(basePath, { type: 1, info: localPath }, { type: 2, info: relativePath }));
+        //         } else if (paths[i].location === 'dep') {
+        //             // 절대경로  (가상경로)
+        //             aliasPath = path.sep + this._auto.LOC.DEP + path.sep + paths[i].alias + path.sep + basePath.subPath;
+        //             dir = path.dirname(obj.origin.fullPath);
+        //             // 상대경로 
+        //             relativePath = path.relative(dir, this._auto.dir + path.sep + aliasPath);
+        //             // arr.push(createPathList(basePath, aliasPath, relativePath));
+        //             arr.push(createPathList(basePath, { type: 1, info: aliasPath }, { type: 2, info: relativePath }));
+        //         }
+        //     }
+        // } else if (obj.location === 'out') {
+        //     for (let i = 0; i < paths.length; i++) {
+        //         basePath = paths[i].origin;
+        //         if (['out'].indexOf(paths[i].location) > -1) {
+        //             // 절대경로 
+        //             localPath = path.sep + basePath.localPath;
+        //             // 상대경로 
+        //             dir = path.dirname(obj.origin.fullPath);
+        //             relativePath = path.relative(dir, basePath.fullPath);
+        //             // arr.push(createPathList(basePath, localPath, relativePath));
+        //             arr.push(createPathList(basePath, { type: 1, info: localPath }, { type: 2, info: relativePath }));
+        //         }
+        //     }
+        // }
+        if (obj.location === 'src' || obj.location === 'out') {
             for (let i = 0; i < paths.length; i++) {
                 basePath = paths[i].origin;
                 if (['src', 'out'].indexOf(paths[i].location) > -1) {
@@ -339,19 +378,6 @@ class DependResolver {
                     relativePath = path.relative(dir, this._auto.dir + path.sep + aliasPath);
                     // arr.push(createPathList(basePath, aliasPath, relativePath));
                     arr.push(createPathList(basePath, { type: 1, info: aliasPath }, { type: 2, info: relativePath }));
-                }
-            }
-        } else if (obj.location === 'out') {
-            for (let i = 0; i < paths.length; i++) {
-                basePath = paths[i].origin;
-                if (['out'].indexOf(paths[i].location) > -1) {
-                    // 절대경로 
-                    localPath = path.sep + basePath.localPath;
-                    // 상대경로 
-                    dir = path.dirname(obj.origin.fullPath);
-                    relativePath = path.relative(dir, basePath.fullPath);
-                    // arr.push(createPathList(basePath, localPath, relativePath));
-                    arr.push(createPathList(basePath, { type: 1, info: localPath }, { type: 2, info: relativePath }));
                 }
             }
         }
