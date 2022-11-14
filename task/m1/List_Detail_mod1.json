@@ -1,0 +1,97 @@
+[
+	{
+		"name": "mod1",
+		"title": "테스트 auto",
+		"interface": [
+			"IAuto"
+		],
+		"file": [
+			{
+				"name": "src/.DS_Store"
+			},
+			{
+				"name": "src/100.webp"
+			},
+			{
+				"name": "src/102-3.webp"
+			},
+			{
+				"name": "src/board.css"
+			},
+			{
+				"name": "src/board_m.css"
+			},
+			{
+				"name": "src/m3.html"
+			},
+			"out/bar.css"
+		]
+	},
+	{
+		"name": "mod4",
+		"alias": "M4",
+		"subTitle": "static 테스크",
+		"static": true,
+		"file": [
+			{
+				"name": "src/file4.txt"
+			}
+		]
+	},
+	{
+		"name": "mod3",
+		"alias": "M3-2",
+		"subTitle": "상속테스트",
+		"file": [
+			{
+				"name": "src/abc.css"
+			},
+			{
+				"name": "src/super.css"
+			},
+			"out/kkk.css",
+			"out/sub/super.txt"
+		]
+	},
+	{
+		"name": "mod2",
+		"alias": "M2-1",
+		"subTitle": "중복로딩 테스트",
+		"file": [
+			{
+				"name": "src/m2.html"
+			},
+			{
+				"name": "src/style.css"
+			}
+		]
+	},
+	{
+		"name": "mod22",
+		"alias": "M2-2_1",
+		"file": [
+			{
+				"name": "src/inc/left.css"
+			},
+			{
+				"name": "src/m1.html"
+			},
+			"out/area/top.css",
+			"out/com.css"
+		]
+	},
+	{
+		"name": "mod22",
+		"alias": "M2-2",
+		"file": [
+			{
+				"name": "src/inc/left.css"
+			},
+			{
+				"name": "src/m1.html"
+			},
+			"out/area/top.css",
+			"out/com.css"
+		]
+	}
+]

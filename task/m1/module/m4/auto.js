@@ -6,7 +6,7 @@ class Auto extends Automation {
         super();
 
         this.dir = __dirname;
-        this.isStatic = true;
+        this.isStatic = true;   // 정적 모드 설정
     }
 }
 

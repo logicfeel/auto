@@ -154,3 +154,33 @@ var list = [
         ]
     }
 ];
+
+// 개선
+var list = [
+    {
+        name: 'Npm명',
+        static: true,
+        location: ['mod[별칭].mod[별칭]'],  // 복수일수 있음 static
+        file: [
+            {
+                local: 'src/aaa.c',
+                static: true,
+                comment: '저장파일임',
+                history: [          // -histry 옵션
+                    {
+                        name: '모듈명1',
+                        batch: 'include/bbb.c'
+                    },
+                    {
+                        name: '모듈명2',
+                        batch: 'include/ccc.c'
+                    },
+                ],
+            },
+            {
+                local: 'src/aaa.c',
+                static: true,
+            }
+        ]
+    }
+];

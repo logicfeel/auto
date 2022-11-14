@@ -10,20 +10,24 @@ const { InstallMap } = require('./source-batch');
  */
 class Automation {
     
+    /*_______________________________________*/
     // public
-    static isStatic    = false;
-    mod         = new AutoCollection(this);
-    src         = new FileCollection(this);
-    out         = new FileCollection(this);
-    vir         = new FolderCollection(this);
-    dep         = new DependCollection(this);
-    meta        = new MetaCollection(this);
-    
+    // 주요 객체
+    mod             = new AutoCollection(this);
+    src             = new FileCollection(this);
+    out             = new FileCollection(this);
+    vir             = new FolderCollection(this);
+    dep             = new DependCollection(this);
+    meta            = new MetaCollection(this);
     resolver        = null;
     install         = null;
-    prop            = {};
-    isSaveRelation  = false;
-    title           = '';
+    prop            = {};       
+    // 주요 속성
+    isStatic        = false;
+    isSaveRelation  = false;    // 관계파일 저장 여부
+    isFinal         = false;    // 상속 금지 설정
+    title           = '';       // 제목(설명)
+    // 상위폴더 위치
     LOC = {
         OUT: 'out',
         SRC: 'src',
@@ -33,14 +37,16 @@ class Automation {
         DIS: 'dist',
         VIR: 'vir'
     };
+    // 파일명
     FILE = {
         PACKAGE: 'package.json',
         INSTALL: 'install.json',
         RESOLVER: 'resolver.json',
         PROP: 'prop.json',
-        LIST: 'list.json',
-        MAP: 'map.json',
+        LIST: 'List.json',      // 목록 저장 파일명
+        MAP: 'Map.json',        // 맵 저장 파일명
     };
+    // 주요경로
     PATH = {
         auto: this,    // auto
         get PACKAGE() { return this.auto.dir + path.sep + this.auto.FILE.PACKAGE },
@@ -48,27 +54,21 @@ class Automation {
         get RESOLVER() { return this.auto.dir + path.sep + this.auto.FILE.RESOLVER },
         get PROP() { return this.auto.dir + path.sep + this.auto.FILE.PROP }
     };
+    /*_______________________________________*/
     // protected
     static _instance    = null;     // 싱글톤 객체 위치
     _isSingleton        = false;    // getInstance 생성시 true 변경됨
     _owner              = null;
-    // _install    = null;     // 삭제대상
-    // _auto       = null;     // 삭제대상
-    // _package    = null;     // 삭제대상
-    // _resolve    = null;     // 삭제대상
-    _file           = [];
-    _subTitle        = '';      // add 설명
-    
+    _file               = [];
+    _subTitle           = '';      // add 설명
+    /*_______________________________________*/    
     // private
-    #modName           = '';
-    #dir            = [];
-    #alias          = '';
-    #modTyped       = 0;
-    #event          = new Observer(this, this);
-    #isFinal        = false;    // 상속 금지 설정
-    
-    // static #instance = null;
-
+    #modName            = '';
+    #dir                = [];
+    #alias              = '';
+    #modTyped           = 0;
+    #event              = new Observer(this, this);
+    /*_______________________________________*/        
     // property
     get modName() {
         return this.#modName;
@@ -85,11 +85,12 @@ class Automation {
         return this.#dir[size - 1];
     }
     set dir(val) {
-        if (this.#isFinal === true) throw new Error('최종 오토 (상속금지)는 dir 설정할 수 없습니다.');        
+        if (this.isFinal === true && this.#dir.length > 0) throw new Error('최종 오토 (상속금지)는 dir 설정할 수 없습니다.');        
         this.#dir.push(val);
         // package, prop, install, resolver.json 로딩
         // setter별 처리
         this.#loadDir(val);
+        console.log('Automation load path :: ' + val);
     }
     get dirs() {
         return this.#dir;
@@ -113,17 +114,13 @@ class Automation {
 
     /**
      * 생성자 
-     * @param {*} dir? auth 의 위치 : __dirname 지정
      */
-    constructor(dir) {
-
-        const _this = this;
-        
-        if (typeof dir === 'string' && dir.length > 0) {
-            this.dir = dir;
-            this.#isFinal = true;   // 최종 auto 로 설정
-        }    
-        console.log('Automation load..');
+    constructor() {
+        // if (typeof dir === 'string' && dir.length > 0) {
+        //     this.dir = dir;
+        //     this.#isFinal = true;   // 최종 auto 로 설정
+        // }    
+        // console.log('Automation load..');
     }
 
     static getInstance() {
@@ -136,6 +133,7 @@ class Automation {
         /**
          * REVIEW:: 특수한 경우여서 생성후 검사한다. static 이슈
          */
+        // getInstace() 사용타입 검사
         if (instance.isStatic !== true) {
             throw new Error(' static 으로 설정된 auto만 사용할수 있습니다. new 을 사용해서 생성.');
         }
@@ -174,7 +172,7 @@ class Automation {
      *  install, resolver, prop, src, out
      */
     writeParentObject() {
-        console.log('보모 객체 및 파일 덮어쓰기');
+        // console.log('보모 객체 및 파일 덮어쓰기');
 
         let data, dirname;
 
@@ -212,26 +210,19 @@ class Automation {
         copySource(this.out, this.dir);        
     }
     
-    /**
-     * 객체(오토모듈) 목록 쓰기
-     * @param {*} opt 옵션 -history
-     */
-    writeObjectList(opt) {
-        // TODO::
-    }
+    
 
     /**
      * 객체(오토모듈) 맵 쓰기
-     * @param {*} opt 옵션 1:-detail, 2:-depend
+     * @param {*} opt 옵션 0: -all, 1: "기본", 2: -detail, 3: -depend
      */
-    writeObjectMap(opt = 0) {
+    writeObjectMap(opt = 1) {
         
-        let wriObj = {}, data, saveName;
         let _this = this;
 
         // modType = 0:entry, 1:mod, 2:sub, 3: super
         // isSubCall
-        function createModObject(auto, modType = 0, isSubCall = true) {
+        function createModObject(auto, option, modType = 0, isSubCall = true) {
         
             let obj = {}, child;
             let arrDepend = [];
@@ -248,7 +239,7 @@ class Automation {
                 auto._interface.forEach(val => obj.interface.push(val.name));
             }
             // -detail 
-            if (opt === 1 || opt === 2) {
+            if (option === 2 || option === 3) {
                 obj.file = [];
                 for (let i = 0; i < auto.src.count; i++) {
                     obj.file.push(auto.src[i].localPath);
@@ -260,33 +251,135 @@ class Automation {
 
             if (isSubCall !== true) return obj; // 하위호출 안함
 
-            if (opt === 2) {    // opt : -depend
+            if (option === 3) {    // option : -depend
 
                 arrDepend = _this._getDependList(false);
                 if (arrDepend.length > 0) {
                     child = obj.depend = [];
-                    arrDepend.forEach(val => child.push(createModObject(val, val.modTyped, false)));
+                    arrDepend.forEach(val => child.push(createModObject(val, option, val.modTyped, false)));
                 }
-            } else {            // opt 0, 1 기본타입
+            } else {            // option 0, 1 기본타입
                 
                 if (auto.mod.count > 0) {
                     child = obj.module = [];
                     for (let i = 0; i < auto.mod.count; i++) {
-                        child.push(createModObject(auto.mod[i], auto.mod[i].modTyped, true));
+                        child.push(createModObject(auto.mod[i], option, auto.mod[i].modTyped, true));
                     }
                 }
             }
             return obj;
         }
 
-        wriObj = createModObject(this, 0);  
-        saveName = path.basename(this.FILE.MAP, '.json');
-        if (opt === 1) saveName += '_detail';
-        if (opt === 2) saveName += '_depend';
-        saveName += '_'+ this.modName + '.json';
+        // 
+        function saveFile(option) {
+            
+            let wriObj = {}, data, saveName;            
+            
+            wriObj = createModObject(_this, option, 0);  
+            saveName = path.basename(_this.FILE.MAP, '.json');
+            if (option === 2) saveName += '_Detail';
+            if (option === 3) saveName += '_Depend';
+            saveName += '_'+ _this.modName + '.json';
+            
+            data = JSON.stringify(wriObj, null, '\t');
+            fs.writeFileSync(_this.dir + path.sep + saveName, data, 'utf8');
+        }
+
+        if (opt === 0) {    // 전체 파일 쓰기
+            saveFile(1);
+            saveFile(2);
+            saveFile(3);
+            // 함수 추가시 확장함
+        } else {            // 단일 파일 쓰기
+            saveFile(opt);
+        }
+    }
+
+    /**
+     * 객체(오토모듈) 목록 쓰기
+     * @param {*} opt 옵션 0: -all, 1: "기본", 2: -detail,  3: -history
+     */
+     writeObjectList(opt = 1) {
+
+        let _this = this, list;
+
+        function createModObject(auto, option, modType = 0) {
         
-        data = JSON.stringify(wriObj, null, '\t');
-        fs.writeFileSync(this.dir + path.sep + saveName, data, 'utf8');
+            let obj = {}, child;
+            let arrDepend = [];
+
+            function fileInfoObject(file) {
+                
+                let fileObj = {}, histry = [];
+                
+                fileObj.name = file.localPath;
+                if (file.isStatic === true) fileObj.static = true;
+                if (file.comment.length > 0) fileObj.comment = file.comment;
+                if (option === 3) { // --history 옵션
+                    fileObj.history = [];
+                }
+                if (file._auto._owner !== null) {   // auto 이면
+
+                }
+
+                return fileObj;
+            }
+
+            obj.name = auto.modName;
+            if (auto.alias.length > 0) obj.alias = auto.alias;
+            if (auto.title.length > 0) obj.title = auto.title;
+            if (auto._subTitle.length > 0) obj.subTitle = auto._subTitle;
+            if (auto.isStatic === true) obj.static = true;
+            if (modType === 2) obj.sub = true;
+            if (modType === 3) obj.super = true;
+            if (Array.isArray(auto._interface) && auto._interface.length > 0) {
+                obj.interface = [];
+                auto._interface.forEach(val => obj.interface.push(val.name));
+            }
+            // location : 위치
+            // -detail, -history
+            if (option === 2 || option === 3) {
+                obj.file = [];
+                for (let i = 0; i < auto.src.count; i++) {
+                    obj.file.push( fileInfoObject(auto.src[i]));
+                    // comment : 파일 설명
+                }
+                for (let i = 0; i < auto.out.count; i++) {
+                    obj.file.push(auto.out[i].localPath);
+                    /**
+                     * TODO:: 상위를 공통으로 사용함
+                     */
+                }
+            }
+            return obj;
+        }
+
+        function saveFile(option) {
+            
+            let wriList = [], data, saveName;            
+
+            list = _this._getAllList(true);
+            for (let i = list.length - 1; i > -1; i--) {
+                wriList.push(createModObject(list[i], option));
+            }
+    
+            saveName = path.basename(_this.FILE.LIST, '.json');
+            if (option === 2) saveName += '_Detail';
+            if (option === 3) saveName += '_History';
+            saveName += '_'+ _this.modName + '.json';
+            
+            data = JSON.stringify(wriList, null, '\t');
+            fs.writeFileSync(_this.dir + path.sep + saveName, data, 'utf8');
+        }
+
+        if (opt === 0) {    // 전체 파일 쓰기
+            saveFile(1);
+            saveFile(2);
+            saveFile(3);
+            // 함수 추가시 확장함
+        } else {            // 단일 파일 쓰기
+            saveFile(opt);
+        }
     }
 
     /**

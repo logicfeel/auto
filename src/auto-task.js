@@ -201,6 +201,21 @@ class AutoTask {
 
         this.entry.writeObjectMap(opt);
     }
+    
+    do_list(opt) {
+        this.cursor = 'RELATION';
+        // 로딩
+        this._load();
+
+        // 대상 오토 조회
+        let list = this.entry._getAllList(true);
+
+        for (let i = 0; i < list.length; i++) {
+            list[i].readSource(false, false);
+        }
+
+        this.entry.writeObjectList(opt);
+    }
 
     do_reset() {
         

@@ -5,6 +5,7 @@ class Auto extends Automation {
         super();
 
         this.dir = __dirname;
+        // this.isFinal = true; // 상속금지 설정
         this.a = 'a'
         this.install._except.push('KKK');   // 임의 코드
     }

@@ -8,8 +8,11 @@ class Auto extends Mod3 {
     constructor() {
         super();
 
+
         this.dir = __dirname;
         this.a = 'b'
+
+
     }
 }
 // exports.Automation = Auto;

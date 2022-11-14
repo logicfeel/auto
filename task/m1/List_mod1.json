@@ -1,0 +1,33 @@
+[
+	{
+		"name": "mod1",
+		"title": "테스트 auto",
+		"interface": [
+			"IAuto"
+		]
+	},
+	{
+		"name": "mod4",
+		"alias": "M4",
+		"subTitle": "static 테스크",
+		"static": true
+	},
+	{
+		"name": "mod3",
+		"alias": "M3-2",
+		"subTitle": "상속테스트"
+	},
+	{
+		"name": "mod2",
+		"alias": "M2-1",
+		"subTitle": "중복로딩 테스트"
+	},
+	{
+		"name": "mod22",
+		"alias": "M2-2_1"
+	},
+	{
+		"name": "mod22",
+		"alias": "M2-2"
+	}
+]

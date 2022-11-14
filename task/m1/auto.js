@@ -9,6 +9,7 @@ let mod1 = new Mod2();
 // let mod2 = new Mod2();  // 중복테스트
 
 let mod3 = new Mod3();  // 상속테스트
+// let mod3 = Mod3.getInstance();  // 상속테스트
 
 // let mod4 = new Mod4();  // static 테스트
 let mod4 = Mod4.getInstance();  // static 테스트

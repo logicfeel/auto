@@ -16,6 +16,7 @@ class BasePath {
      * false : 이름변경 X, 내용변경 O
      */
     isStatic = null;
+    comment = '';   // 파일 설명
     // protected
     _auto = null;
     _target = null;

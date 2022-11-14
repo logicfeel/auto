@@ -8,7 +8,7 @@ let t = autoTask;
 
 t.batch.pathType = 2;
 
-autoTask.do_map(0);  // 전체
+autoTask.do_list(0);  // 전체
 // autoTask.do_map(1); // 요약 맵 (*default)
 // autoTask.do_map(2); // 세부 맵
 // autoTask.do_map(3); // 의존 맵
