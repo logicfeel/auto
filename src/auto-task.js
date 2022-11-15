@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { SourceBatch } = require('./source-batch');
+const { Observer } = require('entitybind');
 
 /**
  * 오토태스크 클래스
@@ -18,6 +19,18 @@ class AutoTask {
     static _instance = null;
     // private
     #dir = null;
+    #event              = new Observer(this, this);
+
+    // event
+    set onLoad(fun) {
+        this.#event.subscribe(fun, 'load');
+    }
+    set onSave(fun) {
+        this.#event.subscribe(fun, 'save');
+    }
+    set onSaved(fun) {
+        this.#event.subscribe(fun, 'saved');
+    }
 
     constructor() {
         this.batch = SourceBatch.getInstance();
@@ -188,7 +201,7 @@ class AutoTask {
     }
 
     do_map(opt) {
-        this.cursor = 'RELATION';
+        this.cursor = 'MAP';
         // 로딩
         this._load();
 
@@ -203,7 +216,7 @@ class AutoTask {
     }
     
     do_list(opt) {
-        this.cursor = 'RELATION';
+        this.cursor = 'LIST';
         // 로딩
         this._load();
 
@@ -226,10 +239,12 @@ class AutoTask {
         this._load();
         // 배치 파일 삭제
         this.batch.clear();
+        this.#event.unsubscribeAll();
         
         // 디렉토리 삭제        
         entry = this.entry;
         dir = entry.dir;
+        // dir = __dirname;
 
         delPath = dir +path.sep+ entry.LOC.DIS;
         if (fs.existsSync(delPath)) fs.rmSync(delPath, { recursive: true });
@@ -249,8 +264,9 @@ class AutoTask {
     }
 
     // entry 오토 로드
-    _load() {
+    _load() {        
         console.log('_load()....');
+
         // 현재 폴더의 auto.js 파일 로딩
         let entryFile  = this.#dir + '/auto.js'
         // 다양한 조건에 예외조건을 수용해야함
@@ -258,8 +274,23 @@ class AutoTask {
         // 타입 검사해야함
         this.entry = new EntryAuto();
         
-        this.batch._batchFile = this.entry._file;        
+        this.batch._batchFile = this.entry._file;
+        
+        // 이벤트 발생
+        this._onLoad();
     }
+
+    // 이벤트 호출
+    _onLoad() {
+        this.#event.publish('load', this.cursor, this.entry);
+    }
+    _onSave() {
+        this.#event.publish('save', this.cursor, this.entry);
+    }
+    _onSaved() {
+        this.#event.publish('saved', this.cursor, this.entry); 
+    }
+
 }
 
 exports.AutoTask = AutoTask;

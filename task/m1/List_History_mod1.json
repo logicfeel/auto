@@ -5,108 +5,107 @@
 		"interface": [
 			"IAuto"
 		],
-		"file": [
-			{
-				"name": "src/.DS_Store",
+		"file": {
+			"src/.DS_Store": {
 				"history": []
 			},
-			{
-				"name": "src/100.webp",
+			"src/100.webp": {
 				"history": []
 			},
-			{
-				"name": "src/102-3.webp",
+			"src/102-3.webp": {
 				"history": []
 			},
-			{
-				"name": "src/board.css",
+			"src/board.css": {
 				"history": []
 			},
-			{
-				"name": "src/board_m.css",
+			"src/board_m.css": {
 				"history": []
 			},
-			{
-				"name": "src/m3.html",
+			"src/m3.html": {
 				"history": []
 			},
-			"out/bar.css"
-		]
+			"out/bar.css": {
+				"history": []
+			}
+		}
 	},
 	{
 		"name": "mod4",
 		"alias": "M4",
 		"subTitle": "static 테스크",
 		"static": true,
-		"file": [
-			{
-				"name": "src/file4.txt",
+		"file": {
+			"src/file4.txt": {
 				"history": []
 			}
-		]
+		}
 	},
 	{
 		"name": "mod3",
 		"alias": "M3-2",
 		"subTitle": "상속테스트",
-		"file": [
-			{
-				"name": "src/abc.css",
+		"file": {
+			"src/abc.css": {
 				"history": []
 			},
-			{
-				"name": "src/super.css",
+			"src/super.css": {
 				"history": []
 			},
-			"out/kkk.css",
-			"out/sub/super.txt"
-		]
+			"out/kkk.css": {
+				"history": []
+			},
+			"out/sub/super.txt": {
+				"history": []
+			}
+		}
 	},
 	{
 		"name": "mod2",
 		"alias": "M2-1",
 		"subTitle": "중복로딩 테스트",
-		"file": [
-			{
-				"name": "src/m2.html",
+		"file": {
+			"src/m2.html": {
 				"history": []
 			},
-			{
-				"name": "src/style.css",
+			"src/style.css": {
 				"history": []
 			}
-		]
+		}
 	},
 	{
 		"name": "mod22",
 		"alias": "M2-2_1",
-		"file": [
-			{
-				"name": "src/inc/left.css",
+		"file": {
+			"src/inc/left.css": {
 				"history": []
 			},
-			{
-				"name": "src/m1.html",
+			"src/m1.html": {
 				"history": []
 			},
-			"out/area/top.css",
-			"out/com.css"
-		]
+			"out/area/top.css": {
+				"history": []
+			},
+			"out/com.css": {
+				"history": []
+			}
+		}
 	},
 	{
 		"name": "mod22",
 		"alias": "M2-2",
-		"file": [
-			{
-				"name": "src/inc/left.css",
+		"file": {
+			"src/inc/left.css": {
 				"history": []
 			},
-			{
-				"name": "src/m1.html",
+			"src/m1.html": {
 				"history": []
 			},
-			"out/area/top.css",
-			"out/com.css"
-		]
+			"out/area/top.css": {
+				"history": []
+			},
+			"out/com.css": {
+				"history": []
+			}
+		}
 	}
 ]

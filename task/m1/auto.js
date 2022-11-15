@@ -41,6 +41,8 @@ class Auto extends Automation {
         this.mod.sub('M4', mod4, 'static 테스크');       // static 테스트
 
         this.title = '테스트 auto';
+
+
         // this.mod.sub('M2-12', mod2);
         // this.mod.add('M2', mod1);       // 동일 위치에 있음        
 
@@ -48,6 +50,7 @@ class Auto extends Automation {
         // this.mod.sub('M1', mod2);
         // this.mod.super('M1', mod1);
 
+        this.isSaveRelation  = true;
         // 속성 설정
         this.prop.a = 'a'
 
@@ -59,22 +62,34 @@ class Auto extends Automation {
         // 강제 의존성 설정
         
         // 콜백 이벤트 설정
-        this.onLoaded = (auto) => {
+        this.onRead = (task, auto) => {
             // 강제 의존성 설정
             auto.src['m3.html'].addDepend(auto.src['102-3.webp']);    // 객체로 추가
             // 확장
             auto.setDepend('src/m3.html', '/out/bar.css');
+            auto.src[0].comment = '파일설명입니다.';
         };
-        this.onBatch = function (entry) {
-            console.log('onBatch 이벤트 처리');
-        };
-        this.onBatched = function (entry) {
-            console.log('onBatched 이벤트 처리');
-        };
+        // this.onSave = function (entry) {
+        //     console.log('onSave 이벤트 처리');
+        // };
+        // this.onSaved = function (entry) {
+        //     console.log('onSaved 이벤트 처리');
+        // };
+        // 이벤트 테스트
+        this.onLoad = (task, entry) => { 
+            console.log(`onLoad event :: ${task}, modName: ${entry.modName }`)
+        }
+        this.onRead = (task, entry) => console.log(`onRead event :: ${task}, modName: ${entry.modName }`)
+        this.onResolve = (task, entry) => console.log(`onResolve event :: ${task}, modName: ${entry.modName }`)
+        this.onResolved = (task, entry) => console.log(`onResolved event :: ${task}, modName: ${entry.modName }`)
+        this.onSave = (task, entry) => console.log(`onSave event :: ${task}, modName: ${entry.modName }`)
+        this.onSaved = (task, entry) => console.log(`onSaved event :: ${task}, modName: ${entry.modName }`)
 
         // 템플릿 설정
 
         // 메타모델 설정
+
+// console.log('Test :'+ this.modName)
 
         // 인터페이스 설정 (마지막)
         this._implements(IAuto);

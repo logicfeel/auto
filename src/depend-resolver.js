@@ -32,9 +32,6 @@ class DependResolver {
     read() {
         this._readOriginal();
         this._readReference();
-
-        // 이벤트 발생
-        this._auto._onLoaded(null, null);
     }
 
     // 의존성 처리
@@ -44,6 +41,9 @@ class DependResolver {
         let list = [];
         const entry = this._task.entry;
         
+        // 이벤트 발생
+        this._auto._onResolve(this._task.cursor, this._auto);
+
         // 원본 소스 조회
         for (let i = 0; i < this._list.length; i++) {
             arr = this.#getPathList(this._list[i]);
@@ -67,6 +67,9 @@ class DependResolver {
         
         // 관계파일 자동 저장시
         if (this._auto === entry && entry.isSaveRelation === true) this.saveRelation();
+
+        // 이벤트 발생
+        this._auto._onResolved(this._task.cursor, this._auto);
     }
 
     /**

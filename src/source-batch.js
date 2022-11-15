@@ -3,7 +3,6 @@ const fs = require('fs');
 const mm = require('micromatch');
 const at = require('./auto-task');
 const { NonTextFile, TextFile, VirtualFolder, BasePath } = require('./base-path');
-const { addAbortSignal } = require('stream');
 
 /**
  * 소스배치 클래스
@@ -63,8 +62,19 @@ class SourceBatch {
 
         let autos;
 
+        function getMergeData(tar, isRoot) {
+            
+            let data = '';
+            // 자식 순환 조회
+            for (let i = 0; i < tar._owned.length; i++) {
+                if (tar._owned[i].isMerge === true) data += getMergeData(tar._owned[i], isRoot) + '\n';
+                data += tar._owned[i].setData(isRoot) + '\n';
+            }
+            return data;
+        }
+
         // 이벤트 발생
-        this._task.entry._onBatch(this._task.entry);
+        this._task._onSave();
 
         // install map 처리
         autos = this._task.entry._getAllList(true);
@@ -95,17 +105,6 @@ class SourceBatch {
 
         }
 
-        function getMergeData(tar, isRoot) {
-            
-            let data = '';
-            // 자식 순환 조회
-            for (let i = 0; i < tar._owned.length; i++) {
-                if (tar._owned[i].isMerge === true) data += getMergeData(tar._owned[i], isRoot) + '\n';
-                data += tar._owned[i].setData(isRoot) + '\n';
-            }
-            return data;
-        }
-        
         for (let i = 0; i < this._list.length; i++) {
             // TextFile 일 경우 콘텐츠 설정
             if (this._list[i]._original instanceof TextFile) {
@@ -117,15 +116,11 @@ class SourceBatch {
             }
         }
 
-
-        // TODO:: 중복제거        
-
         // 타겟 저장
         this.#saveFile();
 
         // 이벤트 발생
-        this._task.entry._onBatched(this._task.entry);
-
+        this._task._onSaved();
     }
 
     /**

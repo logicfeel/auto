@@ -6,6 +6,13 @@
 				"line": 7,
 				"key": "bar.css"
 			}
+		],
+		"src/style.css": [
+			{
+				"idx": 24,
+				"line": 2,
+				"key": "../dep/M2-1/style.css"
+			}
 		]
 	},
 	"src/.DS_Store": {},
@@ -61,18 +68,13 @@
 			{
 				"idx": 152,
 				"line": 7,
-				"key": "m3.html"
-			},
-			{
-				"idx": 185,
-				"line": 8,
 				"key": "/src/m3.html"
 			}
 		],
 		"src/m2.html": [
 			{
-				"idx": 412,
-				"line": 14,
+				"idx": 379,
+				"line": 13,
 				"key": "/dep/M2-1/m2.html"
 			}
 		]

@@ -4,7 +4,7 @@ const { MetaElement, PropertyCollection, MetaObject, Observer } = require('entit
 const { DependResolver } = require('./depend-resolver');
 const { FileCollection, FolderCollection } = require('./base-path');
 const { InstallMap } = require('./source-batch');
-
+const at = require('./auto-task');
 /**
  * 오토메이션 클래스
  */
@@ -61,6 +61,7 @@ class Automation {
     _owner              = null;
     _file               = [];
     _subTitle           = '';      // add 설명
+    _task               = at.AutoTask.getInstance();
     /*_______________________________________*/    
     // private
     #modName            = '';
@@ -102,14 +103,26 @@ class Automation {
         this.#modTyped = val;
     }
     // event
-    set onLoaded(fun) {
-        this.#event.subscribe(fun, 'loaded');  // 소스 로딩후
+    set onLoad(fun) {
+        // this.#event.subscribe(fun, 'load');
+        this._task.onLoad = fun;
     }
-    set onBatch(fun) {
-        this.#event.subscribe(fun, 'batch');
+    set onRead(fun) {
+        this.#event.subscribe(fun, 'read');
     }
-    set onBatched(fun) {
-        this.#event.subscribe(fun, 'batched');
+    set onResolve(fun) {
+        this.#event.subscribe(fun, 'resolve');
+    }
+    set onResolved(fun) {
+        this.#event.subscribe(fun, 'resolved');
+    }
+    set onSave(fun) {
+        // this.#event.subscribe(fun, 'save');
+        this._task.onSave = fun;
+    }
+    set onSaved(fun) {
+        // this.#event.subscribe(fun, 'saved');
+        this._task.onSaved = fun;
     }
 
     /**
@@ -155,6 +168,8 @@ class Automation {
             this.out.addLocation(this.LOC.OUT);
             if (isOut === true) this.out.fillData();
         }
+        // 이벤트 발생
+        this._onRead(this._task.cursor, this);
     }
 
     /**
@@ -312,7 +327,7 @@ class Automation {
                 
                 let fileObj = {}, histry = [];
                 
-                fileObj.name = file.localPath;
+                // fileObj.name = file.localPath;
                 if (file.isStatic === true) fileObj.static = true;
                 if (file.comment.length > 0) fileObj.comment = file.comment;
                 if (option === 3) { // --history 옵션
@@ -339,16 +354,15 @@ class Automation {
             // location : 위치
             // -detail, -history
             if (option === 2 || option === 3) {
-                obj.file = [];
+                obj.file = {};
                 for (let i = 0; i < auto.src.count; i++) {
-                    obj.file.push( fileInfoObject(auto.src[i]));
+                    obj.file[auto.src[i].localPath] = fileInfoObject(auto.src[i]);
+                    
+                    // obj.file.push( fileInfoObject(auto.src[i]));
                     // comment : 파일 설명
                 }
                 for (let i = 0; i < auto.out.count; i++) {
-                    obj.file.push(auto.out[i].localPath);
-                    /**
-                     * TODO:: 상위를 공통으로 사용함
-                     */
+                    obj.file[auto.out[i].localPath] = fileInfoObject(auto.out[i]);
                 }
             }
             return obj;
@@ -482,15 +496,17 @@ class Automation {
 
 
     // 이벤트 호출
-    _onLoaded() {
-        this.#event.publish('loaded', this);
+    
+    _onRead(task, auto) {
+        this.#event.publish('read', task, this);
     }
-    _onBatch(entry) {
-        this.#event.publish('batch', entry);
+    _onResolve(task, auto) {
+        this.#event.publish('resolve', task, this);
     }
-    _onBatched(entry) {
-        this.#event.publish('batched', entry); 
+    _onResolved(task, auto) {
+        this.#event.publish('resolved', task, this);
     }
+    
 
     // 폴더에 
     #loadDir(dir) {
@@ -566,8 +582,6 @@ class Automation {
         return obj;                      
     }
 
-    
-    
     /**
      * 오토를 mod 에 추가한다.
      * @param {*} alias 별칭
@@ -578,16 +592,14 @@ class Automation {
         if (this._valid(alias, auto)) {
             // auto._owner = this._onwer;   // TODO:: 명칭 바꿔야함
 
-            auto._owner = this._auto;   // TODO:: 명칭 바꿔야함
-            auto.alias = alias;
-            auto._subTitle = subTitle;
-            auto.modTyped = modType;
+            auto._owner     = this._auto;   // TODO:: 명칭 바꿔야함
+            auto._subTitle  = subTitle;
+            auto.alias      = alias;
+            auto.modTyped   = modType;
 
             super.add(alias, auto);
-            
             // this[alias]._owner = this._auto;
             // this[alias].alias = alias;
-
         }
     }
     
