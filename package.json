@@ -17,8 +17,11 @@
   },
   "homepage": "https://github.com/logicfeel/auto#readme",
   "devDependencies": {
+    "docdash": "^2.0.0",
     "entitybind": "github:logicfeel/EntityBind",
     "is-binary-path": "^2.1.0",
+    "jaguarjs-jsdoc": "^1.1.0",
+    "jsdoc": "^4.0.0",
     "r.x.x-auto": "github:logicfeel/Automation#r.x.x-auto"
   },
   "dependencies": {

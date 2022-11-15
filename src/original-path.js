@@ -5,8 +5,9 @@ const { MetaElement, PropertyCollection, MetaObject } = require('entitybind');
 /**
  * 의존성 파일시스템
  */
-class BasePath {
+class OriginalPath {
     
+    /*_______________________________________*/        
     //public
     // location = null;
     // fullPath = '';
@@ -17,13 +18,15 @@ class BasePath {
      */
     isStatic = null;
     comment = '';   // 파일 설명
+    /*_______________________________________*/        
     // protected
     _auto = null;
     _target = null;
+    /*_______________________________________*/        
     // private
     #location   = null;
     #dir        = null;
-
+    /*_______________________________________*/        
     // property
     get location() {
         return this.#location;
@@ -46,6 +49,13 @@ class BasePath {
     get localPath() {
         throw new Error(' localPath 프로퍼티를 정의해야 합니다.');
     }
+    
+    /**
+     * 생성자
+     * @param {ㅅ} auto 
+     * @param {*} location 
+     * @param {*} dir 
+     */
     constructor(auto, location, dir) {
         this._auto = auto;
         this.#location = location;
@@ -64,11 +74,13 @@ class BasePath {
 /**
  * 가상폴더 클래스
  */
-class VirtualFolder extends BasePath {
+class VirtualFolder extends OriginalPath {
 
+    /*_______________________________________*/        
     // private
     #fullPath = null;
 
+    /*_______________________________________*/        
     // property
     get fullPath() {
         return this.#fullPath;
@@ -89,6 +101,12 @@ class VirtualFolder extends BasePath {
         return this.fullPath;
     }
 
+    /**
+     * VirtualFolder 생성자
+     * @param {*} auto 소유하는 auto
+     * @param {*} localPath 
+     * @param {*} dir 
+     */
     constructor(auto, localPath, dir) {
         super(auto, 'vir', dir);
         
@@ -101,15 +119,17 @@ class VirtualFolder extends BasePath {
 /**
  * 비텍스트파일 클래스
  */
-class NonTextFile extends BasePath {
+class NonTextFile extends OriginalPath {
     
+    /*_______________________________________*/        
     // public
-
+    /*_______________________________________*/        
     // protected
     _dep = [];
+    /*_______________________________________*/        
     // private
     #fullPath = null;
-
+    /*_______________________________________*/        
     // property
     get fullPath() {
         return this.#fullPath;
@@ -130,6 +150,13 @@ class NonTextFile extends BasePath {
         return path.relative(this.dir, this.fullPath);
     }
 
+    /**
+     * 생성자
+     * @param {*} auto 
+     * @param {*} fullPath 
+     * @param {*} location 
+     * @param {*} dir 
+     */
     constructor(auto, fullPath, location, dir) {
         super(auto, location, dir);
 
@@ -154,11 +181,17 @@ class NonTextFile extends BasePath {
  */
 class TextFile extends NonTextFile {
 
+    /*_______________________________________*/        
     // public
     data = null;
 
-    // property
-
+    /**
+     * 생성자
+     * @param {*} auto 
+     * @param {*} fullPath 
+     * @param {*} location 
+     * @param {*} dir 
+     */
     constructor(auto, fullPath, location, dir) {
         super(auto, fullPath, location, dir);
     }
@@ -169,52 +202,19 @@ class TextFile extends NonTextFile {
  */
  class FileCollection extends PropertyCollection {
     
+    /**
+     * 생성자
+     * @param {*} owner 
+     */
     constructor(owner) {
         super(owner);
     }
 
     /**
-     * 위치 정치 정보에 따른 addLocation()
+     * 지정위치의 파일들 추가 (src, out)
      * @param {*} location 
      * @param {*} opt 
      */
-    //  addLocation(location, opt) {
-
-    //     const _this = this;
-    //     const dir = this._onwer.dir +'/'+ location
-    //     const sep = path.sep;
-
-
-    //     // 내부 함수
-    //     function _addPath(path, dir = '') {
-
-    //         let arr, file, alias;
-    
-    //         arr = fs.readdirSync(path);
-    
-    //         for (let i = 0; i < arr.length; i++) {
-                
-    //             // REVIEW:: 비동기 성능이슈 있음
-                
-    //             // 대상 파일의 필터  TODO::
-    //             if (fs.statSync(path +'/'+ arr[i]).isFile()) {
-    //                 // 컬렉션에 등록
-    //                 alias = dir === '' ? arr[i] : dir + sep + arr[i];
-    //                 if (isBinaryPath(path +'/'+ arr[i])) {
-    //                     file = new NonTextFile(_this._onwer, path + sep + arr[i], location);
-    //                 } else {
-    //                     file = new TextFile(_this._onwer, path + sep + arr[i], location);
-    //                 }
-    //                 _this.add(alias, file);
-    //             } else if (fs.statSync(path + sep + arr[i]).isDirectory()) {
-    //                 _addPath(path + sep + arr[i], arr[i], dir);
-    //             }
-    //         }
-    //     }
-    //     // 폴더가 있는경우만
-    //     if (fs.existsSync(dir)) _addPath(dir);
-    // }
-
     addLocation(location, opt) {
 
         const _this = this;
@@ -263,7 +263,9 @@ class TextFile extends NonTextFile {
     }
 
 
-
+    /**
+     * 파일 data 채우기
+     */
     fillData() {
         
         let filePath;
@@ -280,10 +282,18 @@ class TextFile extends NonTextFile {
  */
  class FolderCollection extends PropertyCollection {
     
+    /**
+     * 생성자
+     * @param {*} owner 
+     */
     constructor(owner) {
         super(owner);
     }
 
+    /**
+     * 가상폴더 추가
+     * @param {string} vFolder 
+     */
     add(vFolder) {
         
         let obj;
@@ -293,7 +303,7 @@ class TextFile extends NonTextFile {
     }
 }
 
-exports.BasePath = BasePath;
+exports.OriginalPath = OriginalPath;
 exports.VirtualFolder = VirtualFolder;
 exports.NonTextFile = NonTextFile;
 exports.TextFile = TextFile;

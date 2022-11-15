@@ -2,30 +2,37 @@ const path = require('path');
 const fs = require('fs');
 const mm = require('micromatch');
 const at = require('./auto-task');
-const { NonTextFile, TextFile, VirtualFolder, BasePath } = require('./base-path');
+const { NonTextFile, TextFile, VirtualFolder, OriginalPath } = require('./original-path');
 
 /**
  * 소스배치 클래스
  */
 class SourceBatch {
+    /*_______________________________________*/        
     // public
     pathType = 0;       // (0:자동, 1:절대, 2:상대)
     dupType = 1;        // (0:하위참조, 1:중복제거, 2:중복허용)
     isAlias = false;    // 설치시 별칭 포함 여부
     isRoot = true;
+    /*_______________________________________*/        
     // protected
     static _instance = null;
     _batchFile = [];
     //_filter = [];
     _task = null;
     //_map = [];
+    /*_______________________________________*/        
     // private
     _list = [];
 
     constructor() {
     }
 
-    static getInstance() {  // TODO:: 제거 검토
+    /**
+     * TODO:: 제거 검토
+     * @returns {this}
+     */
+    static getInstance() {  
         if (this._instance === null) {
             this._instance = new this();
         }
@@ -33,12 +40,11 @@ class SourceBatch {
     }
 
     /**
-     * 배치할 소스 추가
+     * 배치할 소스 추가 (컬렉션)
      * @param {*} collection SourceCollection 
      * @param {*} location 배치 위치 
      * @param {*} isSave 저장 유무
      */
-    // add(collection) {
     addCollection(collection, location) {
 
         let ori, tar;        
@@ -51,6 +57,10 @@ class SourceBatch {
         }
     }
     
+    /**
+     * 배칠할 소스 추가  (단일)
+     * @param {*} tar 
+     */
     add(tar) {
         if (tar instanceof TargetSource) this._list.push(tar);
     }
@@ -145,7 +155,7 @@ class SourceBatch {
 
     /**
      * 배치파일 목록 얻기
-     * @returns {arr}
+     * @returns {array}
      */
     getBatchList() {
         
@@ -163,7 +173,11 @@ class SourceBatch {
     }
 
     
-
+    /**
+     * 경로 검사
+     * @param {string} fullPath 
+     * @returns {*}
+     */
     validPath(fullPath) {
         for(let i = 0; i < this._list.length; i++)  {
             if (this._list[i].fullPath === fullPath) return false;
@@ -171,6 +185,11 @@ class SourceBatch {
         return true;
     }
 
+    /**
+     * 파일경로 중복발생시 새파일이름,이름_숫자
+     * @param {string} fullPath 
+     * @returns {*}
+     */
     newFileName(fullPath) {
         
         let obj, filename;
@@ -322,6 +341,9 @@ class SourceBatch {
         });
     }
 
+    /**
+     * 경로 및 파일 중복 제거시, 모듈명 + 별칭 >> 모듈명으로 변경
+     */
     #removeAlias() {
         
         const all = this._task.entry._getAllList(false); // entry 는 별칭이 없으므로
@@ -362,6 +384,7 @@ class SourceBatch {
  */
 class TargetSource {
         
+    /*_______________________________________*/
     // public
     isSave      = true;     // 저장유무, 활성화 상태
     isExcept    = false;    // save 시점에 제외 여부
@@ -370,17 +393,20 @@ class TargetSource {
     refedType   = 0;        // 참조되어지는 타입
     type        = 0;        // 소스타입
     data        = null;
+    /*_______________________________________*/
     // protected
     _original   = null;
     _owner      = null;
     _owned      = [];
     _batch      = SourceBatch.getInstance();
 
+    /*_______________________________________*/
     // private
     #dir        = null;
     #location   = null;
     #fullPath   = null;
 
+    /*_______________________________________*/
     // property
     get fullPath() {
         // return this.#fullPath;
@@ -439,7 +465,7 @@ class TargetSource {
 
         this.#location = location;
         
-        if (ori instanceof BasePath) {
+        if (ori instanceof OriginalPath) {
             this._original = ori;    
             auto = ori._auto;
             this.#setType(ori);
@@ -549,6 +575,10 @@ class TargetSource {
         return this.data;
     }
 
+    /**
+     * 타겟소스 복제본 리턴
+     * @returns {this}
+     */
     clone() {
         
         let obj = new TargetSource(this.location, this._original);
@@ -609,6 +639,11 @@ class TargetSource {
         }
     }    
 
+    /**
+     * 타입 설정
+     * @param {OriginalPath} ori 
+     * @returns {*}
+     */
     #setType(ori) {
         
         let type = 0;
@@ -624,7 +659,6 @@ class TargetSource {
      * 파일내용(data) 을 배열에 맞게 교체한다.
      * @param {*} data 
      * @param {*} arrObj 
-     * @returns 
      */
     #replaceData(data, arrObj) {
         // replace
@@ -668,9 +702,11 @@ class TargetSource {
  */
 class InstallMap {
     
+    /*_______________________________________*/        
     // public
     isOverlap = false;
 
+    /*_______________________________________*/        
     // protected
     _auto = null;
     _task = at.AutoTask.getInstance();
@@ -682,6 +718,8 @@ class InstallMap {
     _except = [];
     _list = [];
 
+    /*_______________________________________*/      
+    // property  
     get targets() {
         
         let arr = [];
@@ -713,10 +751,17 @@ class InstallMap {
         return obj; 
     }
 
+    /**
+     * 타겟소스 추가
+     * @param {TargetSource} target 
+     */
     add(target) {
         this._list.push(target);
     }
     
+    /**
+     * 인스톨맵 초기화 : _parent, _child 설정
+     */
     init() {
 
         const auto = this._auto;
@@ -727,12 +772,9 @@ class InstallMap {
         }
     }
 
-    deduplication(dupType) {
-        // TODO:: isStatic 처리는 어디서??
-
-        
-    }
-
+    /**
+     * 인트롤맵 처리 : 세팅 >> 이름변경 >> 병합 >> 제외
+     */
     execute() {
         
         if (this._setup.length > 0) this.#execSetup();
@@ -741,6 +783,10 @@ class InstallMap {
         if (this._except.length > 0) this.#execExcept();
     }
 
+    /**
+     * json 객체를 통해 객체 가져오기 (생성시)
+     * @param {JSON} json 
+     */
     #load(json) {
 
         let obj;
@@ -777,8 +823,9 @@ class InstallMap {
         }
     }
 
-
-
+    /**
+     * setup 실행
+     */
     #execSetup() {
 
         let obj, tars = [], arr = [];
@@ -808,8 +855,11 @@ class InstallMap {
         }
     }
 
-    
-
+    /**
+     * 이름변경 실행 
+     *  - 단일 파일명 변경
+     *  - 복수 경로 변경 (폴더)
+     */
     #execRename() {
         
         let arr = [], obj, tars = [];
@@ -930,6 +980,9 @@ class InstallMap {
         }
     }
 
+    /**
+     * install 시 제외 파일 설정
+     */
     #execExcept() {
 
         let str, tars = [], arr = [];

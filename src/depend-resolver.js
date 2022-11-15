@@ -5,12 +5,14 @@ const at = require('./auto-task');
 
 class DependResolver {
     
+    /*_______________________________________*/        
     // protectd
     _auto = null;
     _list = [];
     _paths = [];
     _task = at.AutoTask.getInstance();
     // _entry = this._task.entry;
+    /*_______________________________________*/        
     //private
     #patterns = [];
 
@@ -20,7 +22,10 @@ class DependResolver {
         // this.#patterns.push({target: '**', include: '**'});
     }
 
-    // 객체 얻기
+    /**
+     * 객체 얻기
+     * @returns {this}
+     */
     getObject() {
 
         var obj = { pattern: []};
@@ -29,15 +34,20 @@ class DependResolver {
         return obj; 
     }
 
+    /**
+     * 해결대상과 해결참조 읽기 (불러오기)
+     */
     read() {
         this._readOriginal();
         this._readReference();
     }
 
-    // 의존성 처리
+    /**
+     * 의존성 처리
+     */
     resolve() {
         
-        let arr, basePath, data, keyword;
+        let arr, OriginalPath, data, keyword;
         let list = [];
         const entry = this._task.entry;
         
@@ -52,7 +62,7 @@ class DependResolver {
             for (let ii = 0; ii < arr.length; ii++) {
                 // 대상의 상대, 절대 경로
                 list = [];  // 초기화
-                basePath = arr[ii].basePath;
+                OriginalPath = arr[ii].OriginalPath;
                 for (let iii = 0; iii < arr[ii].paths.length; iii++) {
                     keyword = arr[ii].paths[iii].info;    
                     // list = list.concat(this.#getMatch(keyword, data, arr[ii].paths[iii].type));    // 벼열 합침
@@ -60,7 +70,7 @@ class DependResolver {
                 }
                 // 참조가 있으면 등록
                 if (list.length > 0) {
-                    this._list[i].origin.addDepend(basePath, list);
+                    this._list[i].origin.addDepend(OriginalPath, list);
                 }
             }
         }
@@ -172,8 +182,8 @@ class DependResolver {
 
     /**
      * src, out, vir 경로에 대한 패턴 객체 얻기 : _paths[*]
-     * @param {str} localPath 
-     * @returns {arr{str>}}
+     * @param {string} localPath 
+     * @returns {array<string>}}
      */
     getPatternObj(localPath) { 
         
@@ -228,13 +238,15 @@ class DependResolver {
      *  - list별 paths를 가져외서 의존성을 해결한다.
      */
 
-    // 해결대상 가져오기
+    /**
+     * 원본 읽기 (해결대상)
+     */
     _readOriginal() {
         
-        function createObject(basePath, location, alias = '') {           
+        function createObject(OriginalPath, location, alias = '') {           
              let objPath = {
-                path: basePath.localPath,
-                origin: basePath,
+                path: OriginalPath.localPath,
+                origin: OriginalPath,
                 location: location,
                 include: ['*.*'],
                 exclude: [],
@@ -252,15 +264,17 @@ class DependResolver {
         }
     }
 
-    // 참조대상 가져오기
+    /**
+     * 참조대상 읽기
+     */
     _readReference() {
 
         let alias = '';
 
-        function createObject(basePath, location, alias = '') {
+        function createObject(OriginalPath, location, alias = '') {
             let objPath = {
-                path: basePath.localPath,
-                origin: basePath,
+                path: OriginalPath.localPath,
+                origin: OriginalPath,
                 location: location,
                 alias: alias,
             };    
@@ -288,6 +302,10 @@ class DependResolver {
         }
     }
  
+    /**
+     * 설정파일 로딩
+     * @param {JSON} json 
+     */
     #load(json) {
      
         let obj;
@@ -303,19 +321,19 @@ class DependResolver {
     /**
      * _ref 참조경로에 대한 상대경로와 절대경로를 배열로 리턴
      * @param {*} obj 
-     * @returns 
+     * @returns {array}
      */
     #getPathList(obj) {
         // 
         let arr = [];
         let relativePath = null;
-        let basePath, dir, localPath, aliasPath;
+        let OriginalPath, dir, localPath, aliasPath;
         let paths = [];
 
         // 내부함수 
-        function createPathList(basePath, ...paths) {
+        function createPathList(OriginalPath, ...paths) {
             let key = {
-                basePath: basePath,
+                OriginalPath: OriginalPath,
                 paths: paths,   // {type: 절대(1), 상대(2), 사용자(3) | info: }
             };
             return key;
@@ -329,58 +347,58 @@ class DependResolver {
          */
         // if (obj.location === 'src') {
         //     for (let i = 0; i < paths.length; i++) {
-        //         basePath = paths[i].origin;
+        //         OriginalPath = paths[i].origin;
         //         if (['src', 'out'].indexOf(paths[i].location) > -1) {
         //             // 절대경로 
-        //             localPath = path.sep + basePath.localPath;
+        //             localPath = path.sep + OriginalPath.localPath;
         //             dir = path.dirname(obj.origin.fullPath);
         //             // 상대경로 
-        //             relativePath = path.relative(dir, basePath.fullPath);
-        //             // arr.push(createPathList(basePath, localPath, relativePath));
-        //             arr.push(createPathList(basePath, { type: 1, info: localPath }, { type: 2, info: relativePath }));
+        //             relativePath = path.relative(dir, OriginalPath.fullPath);
+        //             // arr.push(createPathList(OriginalPath, localPath, relativePath));
+        //             arr.push(createPathList(OriginalPath, { type: 1, info: localPath }, { type: 2, info: relativePath }));
         //         } else if (paths[i].location === 'dep') {
         //             // 절대경로  (가상경로)
-        //             aliasPath = path.sep + this._auto.LOC.DEP + path.sep + paths[i].alias + path.sep + basePath.subPath;
+        //             aliasPath = path.sep + this._auto.LOC.DEP + path.sep + paths[i].alias + path.sep + OriginalPath.subPath;
         //             dir = path.dirname(obj.origin.fullPath);
         //             // 상대경로 
         //             relativePath = path.relative(dir, this._auto.dir + path.sep + aliasPath);
-        //             // arr.push(createPathList(basePath, aliasPath, relativePath));
-        //             arr.push(createPathList(basePath, { type: 1, info: aliasPath }, { type: 2, info: relativePath }));
+        //             // arr.push(createPathList(OriginalPath, aliasPath, relativePath));
+        //             arr.push(createPathList(OriginalPath, { type: 1, info: aliasPath }, { type: 2, info: relativePath }));
         //         }
         //     }
         // } else if (obj.location === 'out') {
         //     for (let i = 0; i < paths.length; i++) {
-        //         basePath = paths[i].origin;
+        //         OriginalPath = paths[i].origin;
         //         if (['out'].indexOf(paths[i].location) > -1) {
         //             // 절대경로 
-        //             localPath = path.sep + basePath.localPath;
+        //             localPath = path.sep + OriginalPath.localPath;
         //             // 상대경로 
         //             dir = path.dirname(obj.origin.fullPath);
-        //             relativePath = path.relative(dir, basePath.fullPath);
-        //             // arr.push(createPathList(basePath, localPath, relativePath));
-        //             arr.push(createPathList(basePath, { type: 1, info: localPath }, { type: 2, info: relativePath }));
+        //             relativePath = path.relative(dir, OriginalPath.fullPath);
+        //             // arr.push(createPathList(OriginalPath, localPath, relativePath));
+        //             arr.push(createPathList(OriginalPath, { type: 1, info: localPath }, { type: 2, info: relativePath }));
         //         }
         //     }
         // }
         if (obj.location === 'src' || obj.location === 'out') {
             for (let i = 0; i < paths.length; i++) {
-                basePath = paths[i].origin;
+                OriginalPath = paths[i].origin;
                 if (['src', 'out'].indexOf(paths[i].location) > -1) {
                     // 절대경로 
-                    localPath = path.sep + basePath.localPath;
+                    localPath = path.sep + OriginalPath.localPath;
                     dir = path.dirname(obj.origin.fullPath);
                     // 상대경로 
-                    relativePath = path.relative(dir, basePath.fullPath);
-                    // arr.push(createPathList(basePath, localPath, relativePath));
-                    arr.push(createPathList(basePath, { type: 1, info: localPath }, { type: 2, info: relativePath }));
+                    relativePath = path.relative(dir, OriginalPath.fullPath);
+                    // arr.push(createPathList(OriginalPath, localPath, relativePath));
+                    arr.push(createPathList(OriginalPath, { type: 1, info: localPath }, { type: 2, info: relativePath }));
                 } else if (paths[i].location === 'dep') {
                     // 절대경로  (가상경로)
-                    aliasPath = path.sep + this._auto.LOC.DEP + path.sep + paths[i].alias + path.sep + basePath.subPath;
+                    aliasPath = path.sep + this._auto.LOC.DEP + path.sep + paths[i].alias + path.sep + OriginalPath.subPath;
                     dir = path.dirname(obj.origin.fullPath);
                     // 상대경로 
                     relativePath = path.relative(dir, this._auto.dir + path.sep + aliasPath);
-                    // arr.push(createPathList(basePath, aliasPath, relativePath));
-                    arr.push(createPathList(basePath, { type: 1, info: aliasPath }, { type: 2, info: relativePath }));
+                    // arr.push(createPathList(OriginalPath, aliasPath, relativePath));
+                    arr.push(createPathList(OriginalPath, { type: 1, info: aliasPath }, { type: 2, info: relativePath }));
                 }
             }
         }
@@ -394,7 +412,7 @@ class DependResolver {
      * @param {*} data 
      * @param {*} type 절대, 상대 
      * @param {*} filename? 파일명 로그용 
-     * @returns 
+     * @returns {array}
      */
     #getMatch(strPath, data, type = null, filename) {
         

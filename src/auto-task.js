@@ -7,6 +7,7 @@ const { Observer } = require('entitybind');
  * 오토태스크 클래스
  */
 class AutoTask {
+    /*_______________________________________*/        
     // public
     entry = null;
     batch = null;
@@ -15,12 +16,14 @@ class AutoTask {
         RELATION: '__Relation.json',
     };
     // batch = a.SourceBatch.getInstance();
+    /*_______________________________________*/        
     // protected
     static _instance = null;
+    /*_______________________________________*/        
     // private
     #dir = null;
     #event              = new Observer(this, this);
-
+    /*_______________________________________*/        
     // event
     set onLoad(fun) {
         this.#event.subscribe(fun, 'load');
@@ -37,6 +40,9 @@ class AutoTask {
         this.batch._task = this;
     }
 
+    /**
+     * taask 생성
+     */
     static create(dir) {
         if (typeof dir !== 'string' || dir.length === 0) {
             throw new Error(' start [dir] request fail...');
@@ -46,6 +52,10 @@ class AutoTask {
         return this._instance;
     }
     
+    /**
+     * 객체 얻기
+     * @returns {this}
+     */
     static getInstance() {
         if (this._instance === null) {
             throw new Error(' 태스크가 생성되지 않았습니다. [dir] request fail...');
@@ -143,6 +153,9 @@ class AutoTask {
         this.batch.save();            
     }
 
+    /**
+     * install 태스크 실행
+     */
     do_install() {
         this.cursor = 'INSTALL';
         // 로딩
@@ -171,6 +184,9 @@ class AutoTask {
         this.batch.save();
     }
 
+    /**
+     * 의존 관계 파일 생성 태스크 실행
+     */
     do_relation() {
         this.cursor = 'RELATION';
         // 로딩
@@ -191,8 +207,12 @@ class AutoTask {
         }
     }
 
+    /**
+     * 상속한 부모의 객체 및 소스(src, out) 가져오기 태스크 실행
+     * @param {*} auto 
+     */
     do_cover(auto = this.entry) {
-        this.cursor = 'RELATION';
+        this.cursor = 'COVER';
         // 로딩
         this._load();
 
@@ -200,6 +220,10 @@ class AutoTask {
         auto.writeParentObject();
     }
 
+    /**
+     * 오토모듈의 구조를 파일로 저장하는 태스트 실행
+     * @param {number} opt 0:전체, 1:요약, 2:세부, 3:대상의존성
+     */
     do_map(opt) {
         this.cursor = 'MAP';
         // 로딩
@@ -214,7 +238,11 @@ class AutoTask {
 
         this.entry.writeObjectMap(opt);
     }
-    
+
+    /**
+     * 오토모듈의 모록을 파일로 저장하는 태스트 실행
+     * @param {number} opt 0:전체, 1:요약, 2:세부, 3:이력
+     */
     do_list(opt) {
         this.cursor = 'LIST';
         // 로딩
@@ -230,6 +258,9 @@ class AutoTask {
         this.entry.writeObjectList(opt);
     }
 
+    /**
+     * 리셋 태스크 실행 (파일 및 폴더 삭제, 객체 초기화)
+     */
     do_reset() {
         
         let dir, entry, delPath;
@@ -263,7 +294,9 @@ class AutoTask {
         }
     }
 
-    // entry 오토 로드
+    /**
+     * 앤트리 오토 조회 및 적재
+     */
     _load() {        
         console.log('_load()....');
 
@@ -280,13 +313,15 @@ class AutoTask {
         this._onLoad();
     }
 
-    // 이벤트 호출
+    // 오토 객체 생성후 호출 이벤트
     _onLoad() {
         this.#event.publish('load', this.cursor, this.entry);
     }
+    // 저장전 호출 이벤트
     _onSave() {
         this.#event.publish('save', this.cursor, this.entry);
     }
+    // 저장후 호출 이벤트
     _onSaved() {
         this.#event.publish('saved', this.cursor, this.entry); 
     }

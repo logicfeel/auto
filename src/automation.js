@@ -2,32 +2,84 @@ const fs = require('fs');
 const path = require('path');
 const { MetaElement, PropertyCollection, MetaObject, Observer } = require('entitybind');
 const { DependResolver } = require('./depend-resolver');
-const { FileCollection, FolderCollection } = require('./base-path');
+const { FileCollection, FolderCollection } = require('./original-path');
 const { InstallMap } = require('./source-batch');
 const at = require('./auto-task');
 /**
  * 오토메이션 클래스
+ */
+/**
+ * 바인드 명령 (상위)
+ * @constructs Automation
  */
 class Automation {
     
     /*_______________________________________*/
     // public
     // 주요 객체
+    /**
+     * 오토 모듈 
+     * @type {FileCollection} 
+     * @public
+     */
     mod             = new AutoCollection(this);
+    /**
+     * src 소스 
+     * @type {FileCollection} 
+     * @public
+     */
     src             = new FileCollection(this);
+    /**
+     * out 소스 
+     * @type {FileCollection} 
+     * @public
+     */
     out             = new FileCollection(this);
+    /**
+     * 가상 폴더 컬렉션
+     * @type {FileCollection} 
+     * @public
+     */
     vir             = new FolderCollection(this);
+    /**
+     * 의존 소스
+     * @type {DependCollection} 
+     * @public
+     */
     dep             = new DependCollection(this);
+    /**
+     * 메타 컬렉션
+     * @type {MetaCollection} 
+     * @public
+     */
     meta            = new MetaCollection(this);
+    /**
+     * 의존성 해결자
+     * @type {DependResolver} 
+     * @public
+     */
     resolver        = null;
+    /**
+     * install 지도
+     * @type {InstallMap} 
+     * @public
+     */
     install         = null;
-    prop            = {};       
+    
+    /**
+     * prop 속성
+     * @type {Object}
+     * @public
+     */prop            = {};       
     // 주요 속성
     isStatic        = false;
     isSaveRelation  = false;    // 관계파일 저장 여부
     isFinal         = false;    // 상속 금지 설정
     title           = '';       // 제목(설명)
-    // 상위폴더 위치
+    /**
+     * 상위폴더 위치
+     * @public
+     */
     LOC = {
         OUT: 'out',
         SRC: 'src',
@@ -102,6 +154,7 @@ class Automation {
     set modTyped(val) {
         this.#modTyped = val;
     }
+    /*_______________________________________*/        
     // event
     set onLoad(fun) {
         // this.#event.subscribe(fun, 'load');
@@ -136,6 +189,10 @@ class Automation {
         // console.log('Automation load..');
     }
 
+    /**
+     * isStatic = true 인 경우 객체 생성
+     * @returns {*}
+     */
     static getInstance() {
         
         let instance = this._instance;
@@ -409,21 +466,6 @@ class Automation {
      * @param {boolean} isSelf 최상위 호출처(오토) 포함 여부
      * @returns {arrary}
      */
-    // _getDependList(isSelf) {
-        
-    //     let list = [], prop, auto;
-        
-    //     // sub 가져오기
-    //     for (let i = 0; i < this.dep.count; i++) {
-    //         auto = this.dep[i]._onwer;
-    //         prop = this.dep.propertyOf(i);
-    //         if (this.mod._super.indexOf(prop) < 0) list.push(auto); // sub 가져오기
-    //         else list = list.concat(this._getSuperList());  // super 가져오기
-    //     }
-
-    //     if (isSelf === null || isSelf === true) list.push(this);    // 자신포함
-    //     return list;
-    // }
     _getDependList(isSelf) {
         
         let list = [], prop, auto;
@@ -447,19 +489,6 @@ class Automation {
      * @param {boolean} isSelf 최상위 호출처(오토) 포함 여부
      * @returns {arrary}
      */
-    // _getSuperList(isSelf = null) {
-
-    //     let list = [], prop, auto;
-
-    //     for (let i = 0; i < this.mod._super.length; i++) {
-    //         list = list.concat(this.mod[i]._getSuperList());
-    //         prop = this.mod._super[i];
-    //         auto = this.mod[prop];
-    //         list.push(auto);
-    //     }
-    //     if (isSelf === null || isSelf === true) list.push(this);    // 자신포함
-    //     return list;
-    // }
     _getSuperList(isSelf = null) {
 
         let list = [], prop, auto;
@@ -495,39 +524,28 @@ class Automation {
     }
 
 
-    // 이벤트 호출
-    
+    // 소스 읽은 후 호출 이벤트
     _onRead(task, auto) {
         this.#event.publish('read', task, this);
     }
+    // 의존성 해결 전 호출 이벤트
     _onResolve(task, auto) {
         this.#event.publish('resolve', task, this);
     }
+    // 의존성 해결 후 호출 이벤트
     _onResolved(task, auto) {
         this.#event.publish('resolved', task, this);
     }
     
 
-    // 폴더에 
+    /**
+     * 오토 경로를 기준으로 로딩
+     * package.json, install.json, resolver.json, prop.json
+     * @param {string} dir auto 의 경로
+     */
     #loadDir(dir) {
         
-        // let packagePath;
-        // let installPath;
-        // let resolvePath;
-        // let propPath;
-        // let filePath;
         let _package, _install, _resolver, _prop;
-
-        // *.json 로딩
-        // packagePath = dir + path.sep + this.FILE.PACKAGE;
-        // installPath = dir + path.sep + this.FILE.INSTALL;
-        // resolvePath = dir + path.sep + this.FILE.RESOLVER;
-        // propPath    = dir + path.sep + this.FILE.PROP;
-        
-        // TODO:: 위치 찾아야함
-        // 엔트리에서 로딩해야함
-        // filePath    = dir + path.sep + '__BATCH_FILE.json';
-        // if (fs.existsSync(filePath)) this._file = require(filePath);
 
         // 필수 파일 검사
         if (!fs.existsSync(this.PATH.PACKAGE)) {
@@ -568,6 +586,11 @@ class Automation {
         this._auto = owner;
     }
 
+    /**
+     * 객체 얻기
+     * @param {*} p_context 
+     * @returns {*}
+     */
     getObject(p_context) {
 
         let obj     = {};
@@ -603,6 +626,12 @@ class Automation {
         }
     }
     
+    /**
+     * sub 로 추가 : 단일 의존성
+     * @param {*} alias 
+     * @param {*} auto 
+     * @param {*} subTitle 
+     */
     sub(alias, auto, subTitle = '') {
         this.add(alias, auto, subTitle, 2);
         // 별칭 이름 등록
@@ -611,6 +640,12 @@ class Automation {
         this._onwer.dep.add(alias, auto.src);
     }
     
+    /**
+     * super 로 추가, 대상의 super 까지 같이 의존함
+     * @param {*} alias 
+     * @param {*} auto 
+     * @param {*} subTitle 
+     */
     super(alias, auto, subTitle = '') {
         this.add(alias, auto, subTitle, 3);
         // 별칭 이름 등록
@@ -619,7 +654,14 @@ class Automation {
         this._onwer.dep.add(alias, auto.src);
     }
 
-    select(selector, obj) {}
+    /**
+     * 오토 모듈 조회
+     * @param {*} selector 
+     * @param {*} obj 
+     */
+    select(selector, obj) {
+        // TODO::
+    }
 
     /**
      * 별칭 중복 검사 및 버전 검사
@@ -650,6 +692,10 @@ class Automation {
  */
 class DependCollection extends PropertyCollection {
     
+    /**
+     * 생성자
+     * @param {*} owner 
+     */
     constructor(owner) {
         super(owner);
     }
@@ -660,6 +706,10 @@ class DependCollection extends PropertyCollection {
  */
  class MetaCollection extends PropertyCollection {
     
+    /**
+     * 생성자
+     * @param {*} owner 
+     */
     constructor(owner) {
         super(owner);
     }
