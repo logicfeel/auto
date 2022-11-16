@@ -16,15 +16,18 @@ class AutoTask {
         RELATION: '__Relation.json',
     };
     // batch = a.SourceBatch.getInstance();
+    
     /*_______________________________________*/        
     // protected
     static _instance = null;
+    
     /*_______________________________________*/        
     // private
     #dir = null;
     #event              = new Observer(this, this);
+    
     /*_______________________________________*/        
-    // event
+    // event property
     set onLoad(fun) {
         this.#event.subscribe(fun, 'load');
     }
@@ -39,6 +42,9 @@ class AutoTask {
         this.batch = SourceBatch.getInstance();
         this.batch._task = this;
     }
+
+    /*_______________________________________*/
+    // public method
 
     /**
      * taask 생성
@@ -294,6 +300,9 @@ class AutoTask {
         }
     }
 
+    /*_______________________________________*/
+    // protected method
+
     /**
      * 앤트리 오토 조회 및 적재
      */
@@ -312,6 +321,9 @@ class AutoTask {
         // 이벤트 발생
         this._onLoad();
     }
+
+    /*_______________________________________*/
+    // event call
 
     // 오토 객체 생성후 호출 이벤트
     _onLoad() {

@@ -12,6 +12,7 @@ class DependResolver {
     _paths = [];
     _task = at.AutoTask.getInstance();
     // _entry = this._task.entry;
+    
     /*_______________________________________*/        
     //private
     #patterns = [];
@@ -21,6 +22,10 @@ class DependResolver {
         if (json) this.#load(json);
         // this.#patterns.push({target: '**', include: '**'});
     }
+
+
+    /*_______________________________________*/
+    // public method
 
     /**
      * 객체 얻기
@@ -199,6 +204,9 @@ class DependResolver {
         return arr;
     }
 
+    /*_______________________________________*/
+    // protected method
+
     /**
      * 참조 경로 배열 리턴
      * @returns {array}
@@ -302,6 +310,9 @@ class DependResolver {
         }
     }
  
+    /*_______________________________________*/
+    // private method
+
     /**
      * 설정파일 로딩
      * @param {JSON} json 

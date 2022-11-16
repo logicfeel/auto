@@ -155,9 +155,8 @@ class Automation {
         this.#modTyped = val;
     }
     /*_______________________________________*/        
-    // event
+    // event property
     set onLoad(fun) {
-        // this.#event.subscribe(fun, 'load');
         this._task.onLoad = fun;
     }
     set onRead(fun) {
@@ -170,11 +169,9 @@ class Automation {
         this.#event.subscribe(fun, 'resolved');
     }
     set onSave(fun) {
-        // this.#event.subscribe(fun, 'save');
         this._task.onSave = fun;
     }
     set onSaved(fun) {
-        // this.#event.subscribe(fun, 'saved');
         this._task.onSaved = fun;
     }
 
@@ -188,6 +185,9 @@ class Automation {
         // }    
         // console.log('Automation load..');
     }
+
+    /*_______________________________________*/
+    // public method
 
     /**
      * isStatic = true 인 경우 객체 생성
@@ -452,6 +452,9 @@ class Automation {
             saveFile(opt);
         }
     }
+    
+    /*_______________________________________*/
+    // protected method
 
     /**
      * prop 객체 가져오기
@@ -523,6 +526,8 @@ class Automation {
         return list;
     }
 
+    /*_______________________________________*/
+    // event call
 
     // 소스 읽은 후 호출 이벤트
     _onRead(task, auto) {
@@ -537,6 +542,8 @@ class Automation {
         this.#event.publish('resolved', task, this);
     }
     
+    /*_______________________________________*/
+    // private method
 
     /**
      * 오토 경로를 기준으로 로딩
@@ -575,6 +582,7 @@ class Automation {
  */
  class AutoCollection extends PropertyCollection {
 
+    /*_______________________________________*/
     // protected
     _super = [];
     _sub = [];
@@ -585,6 +593,9 @@ class Automation {
         super(owner);
         this._auto = owner;
     }
+
+    /*_______________________________________*/
+    // public method
 
     /**
      * 객체 얻기
@@ -662,6 +673,9 @@ class Automation {
     select(selector, obj) {
         // TODO::
     }
+
+    /*_______________________________________*/
+    // protected method
 
     /**
      * 별칭 중복 검사 및 버전 검사

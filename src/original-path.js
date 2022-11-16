@@ -18,14 +18,17 @@ class OriginalPath {
      */
     isStatic = null;
     comment = '';   // 파일 설명
+    
     /*_______________________________________*/        
     // protected
     _auto = null;
     _target = null;
+    
     /*_______________________________________*/        
     // private
     #location   = null;
     #dir        = null;
+    
     /*_______________________________________*/        
     // property
     get location() {
@@ -52,7 +55,7 @@ class OriginalPath {
     
     /**
      * 생성자
-     * @param {ㅅ} auto 
+     * @param {*} auto 
      * @param {*} location 
      * @param {*} dir 
      */
@@ -61,6 +64,9 @@ class OriginalPath {
         this.#location = location;
         this.#dir = dir;
     }
+
+    /*_______________________________________*/        
+    // protected method
 
     /**
      * 타겟 설정
@@ -103,6 +109,7 @@ class VirtualFolder extends OriginalPath {
 
     /**
      * VirtualFolder 생성자
+     * @extends OriginalPath
      * @param {*} auto 소유하는 auto
      * @param {*} localPath 
      * @param {*} dir 
@@ -123,12 +130,15 @@ class NonTextFile extends OriginalPath {
     
     /*_______________________________________*/        
     // public
+    
     /*_______________________________________*/        
     // protected
     _dep = [];
+    
     /*_______________________________________*/        
     // private
     #fullPath = null;
+    
     /*_______________________________________*/        
     // property
     get fullPath() {
@@ -152,6 +162,7 @@ class NonTextFile extends OriginalPath {
 
     /**
      * 생성자
+     * @extends OriginalPath
      * @param {*} auto 
      * @param {*} fullPath 
      * @param {*} location 
@@ -162,6 +173,9 @@ class NonTextFile extends OriginalPath {
 
         this.#fullPath = fullPath;
     }
+
+    /*_______________________________________*/        
+    // public method
 
     /**
      * 참조객체 등록
@@ -187,6 +201,7 @@ class TextFile extends NonTextFile {
 
     /**
      * 생성자
+     * @extends NonTextFile
      * @param {*} auto 
      * @param {*} fullPath 
      * @param {*} location 
@@ -204,11 +219,16 @@ class TextFile extends NonTextFile {
     
     /**
      * 생성자
+     * @class 
+     * @extends PropertyCollection
      * @param {*} owner 
      */
     constructor(owner) {
         super(owner);
     }
+
+    /*_______________________________________*/        
+    // public method
 
     /**
      * 지정위치의 파일들 추가 (src, out)
@@ -289,6 +309,9 @@ class TextFile extends NonTextFile {
     constructor(owner) {
         super(owner);
     }
+
+    /*_______________________________________*/        
+    // public method
 
     /**
      * 가상폴더 추가

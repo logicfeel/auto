@@ -14,6 +14,7 @@ class SourceBatch {
     dupType = 1;        // (0:하위참조, 1:중복제거, 2:중복허용)
     isAlias = false;    // 설치시 별칭 포함 여부
     isRoot = true;
+    
     /*_______________________________________*/        
     // protected
     static _instance = null;
@@ -21,12 +22,16 @@ class SourceBatch {
     //_filter = [];
     _task = null;
     //_map = [];
+    
     /*_______________________________________*/        
     // private
     _list = [];
 
     constructor() {
     }
+
+    /*_______________________________________*/        
+    // public method
 
     /**
      * TODO:: 제거 검토
@@ -204,6 +209,9 @@ class SourceBatch {
         console.warn('[실패 newFileName()] ' + fullPath );
         return obj.name;    // 원래 이름 리턴
     }
+
+    /*_______________________________________*/        
+    // private method
 
     /**
      * 배치파일 저장
@@ -393,6 +401,7 @@ class TargetSource {
     refedType   = 0;        // 참조되어지는 타입
     type        = 0;        // 소스타입
     data        = null;
+    
     /*_______________________________________*/
     // protected
     _original   = null;
@@ -473,6 +482,9 @@ class TargetSource {
             if (location === entry.LOC.INS) auto.install.add(this);
         }
     }
+
+    /*_______________________________________*/        
+    // public method
 
     /**
      * 소스 내용(data) 설정
@@ -597,6 +609,9 @@ class TargetSource {
 
         return obj;
     }
+
+    /*_______________________________________*/        
+    // private method
 
     /**
      * fullPath, dir 속성을 설정한다.
@@ -738,6 +753,9 @@ class InstallMap {
         if (json) this.#load(json);
     }
 
+    /*_______________________________________*/        
+    // public method
+
     // 객체 얻기
     getObject() {
 
@@ -782,6 +800,9 @@ class InstallMap {
         if (this._merge.length > 0) this.#execMerge();
         if (this._except.length > 0) this.#execExcept();
     }
+
+    /*_______________________________________*/        
+    // private method
 
     /**
      * json 객체를 통해 객체 가져오기 (생성시)
