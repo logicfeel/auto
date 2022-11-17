@@ -5,11 +5,9 @@ const { DependResolver } = require('./depend-resolver');
 const { FileCollection, FolderCollection } = require('./original-path');
 const { InstallMap } = require('./source-batch');
 const at = require('./auto-task');
+
 /**
  * 오토메이션 클래스
- */
-/**
- * 바인드 명령 (상위)
  * @constructs Automation
  */
 class Automation {
