@@ -315,7 +315,9 @@ class AutoTask {
         const EntryAuto = require(entryFile);
         // 타입 검사해야함
         this.entry = new EntryAuto();
-        
+        // 초기화
+        this.entry.init();
+
         this.batch._batchFile = this.entry._file;
         
         // 이벤트 발생

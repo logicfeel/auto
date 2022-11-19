@@ -209,6 +209,15 @@ class Automation {
         return instance;
     }
 
+    init() {
+        console.log('init() :'+ this.modName);
+        // 템플릿 같이 1회만 초기화 해야 하는 곳에 활용
+        
+        for (let i = 0; i < this.mod.count; i++) {
+            this.mod[i].init(); // 재귀 호출함 
+        }
+    }
+
     /**
      * 소스 읽기 (src, out)
      * @param {boolean} isSrc false: 구조 로딩, true 구조/데이터 로딩
