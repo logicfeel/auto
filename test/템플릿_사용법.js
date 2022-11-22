@@ -25,8 +25,10 @@ class AutoTemp extends AutoTemplate {
         // 접두사를 사용해서 가져옴 : 이름 충독방지 
         this.import(t1, 'web');
 
-        // 부분(data) 가져오기 
+        // 부분(data) 가져오기 (각각 가져오기)
         this.import(t1.part, 'web');
+        this.import(t1.data, 'web');
+        this.import(t1.helper, 'web');
 
         // 조각 가져오기 : head
         this.part.add(t1.part['head']);
@@ -65,3 +67,15 @@ class AutoTemp extends AutoTemplate {
 
     }
 }
+
+/**
+ * 기본 폴더 구조
+ *  - /src
+ *  - /template/helper/*.*
+ *  - /template/part/*.*
+ *  - /template/data/*.*
+ *  - /template.js : 
+ *  - /auto.js : 앤트리 오토
+ *  - /index.js {Auto: .., Temple: ..}
+ *  // Template 은 독립적으로 구현해둬야 나중에 재활용할 수 있다.
+ */
