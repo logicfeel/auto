@@ -253,7 +253,8 @@ class TextFile extends NonTextFile {
                 
                 // REVIEW:: 비동기 성능이슈 있음
                 
-                // 대상 파일의 필터  TODO::
+                // 대상 파일의 필터  TODO:: 
+                // TODO: 템플릿 파일은 제외해야야함
                 if (fs.statSync(path +'/'+ arr[i]).isFile()) {
                     // 컬렉션에 등록
                     alias = dir === '' ? arr[i] : dir + sep + arr[i];
