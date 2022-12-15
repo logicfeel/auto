@@ -93,6 +93,7 @@ class Auto extends Automation {
 
         // 인터페이스 설정 (마지막)
         this._implements(IAuto);
+        console.log(`Warning!! 대상 없음 this.prop.test : string  << 나오면 OK`)
     }
 }
 

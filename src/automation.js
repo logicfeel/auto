@@ -4,6 +4,7 @@ const { MetaElement, PropertyCollection, MetaObject, Observer } = require('entit
 const { DependResolver } = require('./depend-resolver');
 const { FileCollection, FolderCollection } = require('./original-path');
 const { InstallMap } = require('./source-batch');
+const { AutoTemplate } = require('auto-template');
 const at = require('./auto-task');
 
 /**
@@ -64,6 +65,8 @@ class Automation {
      */
     install         = null;
     
+    template        = null;
+
     /**
      * prop 속성
      * @type {Object}
@@ -209,6 +212,15 @@ class Automation {
         return instance;
     }
 
+    /**
+     * 준비가 된 상태, overriding 으로 사용함
+     * @virtual
+     */
+    ready() {/** 가상함수 */}
+
+    /**
+     * 초기화
+     */
     init() {
         console.log('init() :'+ this.modName);
         // 템플릿 같이 1회만 초기화 해야 하는 곳에 활용
@@ -216,6 +228,11 @@ class Automation {
         for (let i = 0; i < this.mod.count; i++) {
             this.mod[i].init(); // 재귀 호출함 
         }
+        // 템플릿 초기화
+        this.template.init();
+        
+        // 가상함수 호출
+        this.ready();
     }
 
     /**
@@ -581,6 +598,9 @@ class Automation {
 
         if (fs.existsSync(this.PATH.PROP)) _prop = require(this.PATH.PROP);
         if (_prop) this.prop = _prop;
+
+        // 템플릿 생성
+        // this.template = new AutoTemplate(dir, this);
     }
 }
 

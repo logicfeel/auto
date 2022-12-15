@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/logicfeel/auto#readme",
   "devDependencies": {
+    "auto-template": "github:logicfeel/AutoTemplate#v01",
     "docdash": "^2.0.0",
     "entitybind": "github:logicfeel/EntityBind",
     "gulp": "^4.0.2",

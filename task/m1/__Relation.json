@@ -1,20 +1,5 @@
 {
-	"out/bar.css": {
-		"out/bar.css": [
-			{
-				"idx": 102,
-				"line": 7,
-				"key": "bar.css"
-			}
-		],
-		"src/style.css": [
-			{
-				"idx": 24,
-				"line": 2,
-				"key": "../dep/M2-1/style.css"
-			}
-		]
-	},
+	"out/bar.css": {},
 	"src/.DS_Store": {},
 	"src/100.webp": {},
 	"src/102-3.webp": {},

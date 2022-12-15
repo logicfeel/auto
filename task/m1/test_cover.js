@@ -14,7 +14,7 @@ let t = autoTask;
 // t.batch.dupType = 2;
 
 // 특수한 경우 테스트
-autoTask._load();
+// autoTask._load();
 autoTask.do_cover(autoTask.entry.mod[1]);
 
 let e = autoTask.entry;

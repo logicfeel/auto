@@ -11,7 +11,7 @@ let autoTask = AutoTask.create(__dirname);
 let e = autoTask.entry;
 
 
-autoTask.do_reset();
+// autoTask.do_reset();
 autoTask.do_depend();
 
 console.log(1)
