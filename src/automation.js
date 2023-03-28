@@ -600,7 +600,7 @@ class Automation {
         if (_prop) this.prop = _prop;
 
         // 템플릿 생성
-        // this.template = new AutoTemplate(dir, this);
+        this.template = new AutoTemplate(dir, this);
     }
 }
 
